@@ -29,21 +29,20 @@ type HeroSliderProps = {
   interval?: number;
 };
 
-export function HeroSlider({ slides, autoPlay = false, interval = 5000 }: HeroSliderProps) {
+export function HeroSlider({ slides, autoPlay = true, interval = 3000 }: HeroSliderProps) {
   const plugin = React.useRef(
-    Autoplay({ delay: interval, stopOnInteraction: true })
+    Autoplay({ delay: interval, stopOnInteraction: false })
   );
 
   return (
     <Carousel
       plugins={autoPlay ? [plugin.current] : []}
-      className="w-full"
-      onMouseEnter={plugin.current.stop}
-      onMouseLeave={plugin.current.reset}
+      className="w-full group"
+      style={{ perspective: '1000px' }}
     >
       <CarouselContent>
         {slides.map((slide) => (
-          <CarouselItem key={slide.id}>
+          <CarouselItem key={slide.id} className="transition-transform duration-500 ease-in-out group-hover:rotate-y-2">
             <div className="relative h-[60vh] md:h-[80vh] w-full">
               <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/50" />
@@ -58,7 +57,7 @@ export function HeroSlider({ slides, autoPlay = false, interval = 5000 }: HeroSl
                     <Button asChild size="lg" className="btn-hero">
                       <Link to={slide.cta.primary.link}>{slide.cta.primary.text}</Link>
                     </Button>
-                    <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+                    <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-gray-200">
                       <Link to={slide.cta.secondary.link}>{slide.cta.secondary.text}</Link>
                     </Button>
                   </div>

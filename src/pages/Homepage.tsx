@@ -57,7 +57,7 @@ export default function Homepage() {
   return (
     <main className="min-h-screen">
       {/* Hero Slider Section */}
-      <HeroSlider slides={sliderData} autoPlay={true} interval={6000} />
+      <HeroSlider slides={sliderData} autoPlay={true} interval={3000} />
 
       {/* Features Section */}
       <section className="py-16 bg-muted/30">

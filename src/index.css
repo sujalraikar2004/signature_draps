@@ -40,6 +40,10 @@
     --accent-foreground: 210 15% 15%;
     --accent-hover: 40 90% 55%;
 
+    /* Premium Gold for 3D Effects */
+    --premium-gold: 45 100% 70%;
+    --primary-glow: 180 50% 35%;
+
     /* System Colors */
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
