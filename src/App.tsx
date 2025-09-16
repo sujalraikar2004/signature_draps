@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProductProvider } from "@/contexts/ProductContext";
+import { OrderProvider } from "@/contexts/OrderContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Homepage from "./pages/Homepage";
@@ -13,6 +15,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyOtp from "./pages/VerifyOtp";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import Wishlist from "./pages/Wishlist";
@@ -29,37 +32,42 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <CartProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <div className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Homepage />} />
-                  <Route path="/category/:categoryId" element={<ProductListing />} />
-                  <Route path="/search" element={<ProductListing />} />
-                  <Route path="/product/:productId" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/account" element={<Account />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/about" element={<AboutUs />} />
-                  <Route path="/contact" element={<ContactUs />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<TermsConditions />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-              <Footer />
-            </div>
-          </BrowserRouter>
-        </CartProvider>
+        <ProductProvider>
+          <OrderProvider>
+            <CartProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <div className="flex flex-col min-h-screen">
+                  <Navbar />
+                  <div className="flex-1">
+                    <Routes>
+                      <Route path="/" element={<Homepage />} />
+                      <Route path="/category/:categoryId" element={<ProductListing />} />
+                      <Route path="/search" element={<ProductListing />} />
+                      <Route path="/product/:productId" element={<ProductDetail />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/verify-otp" element={<VerifyOtp />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/account" element={<Account />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      <Route path="/about" element={<AboutUs />} />
+                      <Route path="/contact" element={<ContactUs />} />
+                      <Route path="/faq" element={<FAQ />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
+                      <Route path="/terms" element={<TermsConditions />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </div>
+                  <Footer />
+                </div>
+              </BrowserRouter>
+            </CartProvider>
+          </OrderProvider>
+        </ProductProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

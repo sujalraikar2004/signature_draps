@@ -18,15 +18,26 @@ import {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { state: cartState } = useCart();
+  const cart = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+
+  const itemCount = cart?.getItemCount() || 0;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      // Error is handled in the context
     }
   };
 
@@ -91,7 +102,7 @@ export function Navbar() {
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {isAuthenticated ? user?.name?.split(' ')[0] : 'Account'}
+                    {isAuthenticated ? user?.username?.split(' ')[0] : 'Account'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
@@ -108,7 +119,7 @@ export function Navbar() {
                       Wishlist
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="text-destructive">
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                       Logout
                     </DropdownMenuItem>
                   </>
@@ -145,12 +156,12 @@ export function Navbar() {
             >
               <ShoppingCart className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Cart</span>
-              {cartState.itemCount > 0 && (
+              {itemCount > 0 && (
                 <Badge 
                   variant="destructive" 
                   className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 >
-                  {cartState.itemCount}
+                  {itemCount}
                 </Badge>
               )}
             </Button>

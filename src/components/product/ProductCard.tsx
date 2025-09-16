@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -15,15 +16,16 @@ interface ProductCardProps {
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { toggleLike } = useProducts();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(product._id, 1);
   };
 
-  const handleAddToWishlist = (e: React.MouseEvent) => {
+  const handleToggleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -32,10 +34,10 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
       return;
     }
 
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
+    try {
+      await toggleLike(product._id);
+    } catch (error) {
+      // Error is already handled in the context
     }
   };
 
@@ -43,24 +45,24 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
+  const isInStock = product.stock > 0;
+  const primaryImage = product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg';
+
   return (
     <div className={`card-product group ${className}`}>
-      <Link to={`/product/${product.id}`} className="block">
+      <Link to={`/product/${product._id}`} className="block">
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <img
-            src={product.image}
+            src={primaryImage}
             alt={product.name}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isNew && (
-              <Badge className="bg-success text-success-foreground">New</Badge>
-            )}
-            {product.isBestSeller && (
-              <Badge className="bg-accent text-accent-foreground">Best Seller</Badge>
+            {product.featured && (
+              <Badge className="bg-success text-success-foreground">Featured</Badge>
             )}
             {discountPercentage > 0 && (
               <Badge variant="destructive">{discountPercentage}% OFF</Badge>
@@ -73,11 +75,11 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               size="sm"
               variant="secondary"
               className={`h-8 w-8 p-0 ${
-                isInWishlist(product.id) ? 'text-red-500 bg-red-50 hover:bg-red-100' : ''
+                product.isLiked ? 'text-red-500 bg-red-50 hover:bg-red-100' : ''
               }`}
-              onClick={handleAddToWishlist}
+              onClick={handleToggleLike}
             >
-              <Heart className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
+              <Heart className={`h-4 w-4 ${product.isLiked ? 'fill-current' : ''}`} />
             </Button>
             <Button
               size="sm"
@@ -94,6 +96,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               size="sm"
               className="w-full btn-hero"
               onClick={handleAddToCart}
+              disabled={!isInStock}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Add to Cart
@@ -129,7 +132,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               ))}
             </div>
             <span className="text-xs text-muted-foreground">
-              ({product.reviewCount})
+              ({product.reviewCount || 0})
             </span>
           </div>
 
@@ -147,9 +150,9 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 
           {/* Stock Status */}
           <div className="mb-3">
-            {product.inStock ? (
+            {isInStock ? (
               <Badge variant="outline" className="text-success border-success">
-                In Stock
+                In Stock ({product.stock})
               </Badge>
             ) : (
               <Badge variant="outline" className="text-destructive border-destructive">
@@ -164,7 +167,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               size="sm"
               className="w-full btn-hero"
               onClick={handleAddToCart}
-              disabled={!product.inStock}
+              disabled={!isInStock}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Add to Cart

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, Product } from '@/types';
 import { toast } from 'sonner';
 
@@ -10,37 +10,17 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  register: (username: string, email: string, password: string, phoneNo: string) => Promise<void>;
+  verifyOtp: (phoneNo: string, otp: string) => Promise<void>;
+  resendOtp: (phoneNo: string) => Promise<void>;
+  logout: () => Promise<void>;
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
+  getCurrentUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user data for demonstration
-const mockUser: User = {
-  id: '1',
-  name: 'John Doe',
-  email: 'john@example.com',
-  phone: '+91 9876543210',
-  addresses: [
-    {
-      id: '1',
-      name: 'John Doe',
-      phone: '+91 9876543210',
-      addressLine1: '123 Main Street',
-      addressLine2: 'Apartment 4B',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400001',
-      isDefault: true
-    }
-  ],
-  orders: [],
-  wishlist: []
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
@@ -49,55 +29,169 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: false
   });
 
-  const login = async (email: string, password: string) => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (email === 'demo@signaturedraps.com' && password === 'demo123') {
-      setAuthState({
-        user: mockUser,
-        isAuthenticated: true,
-        isLoading: false
+  // Check if user is logged in on app start
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  const getCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/users/current', {
+        method: 'GET',
+        credentials: 'include',
       });
-      toast.success('Login successful!');
-    } else {
+
+      if (response.ok) {
+        const data = await response.json();
+        setAuthState({
+          user: data.data,
+          isAuthenticated: true,
+          isLoading: false
+        });
+      }
+    } catch (error) {
+      // User not logged in, which is fine
       setAuthState(prev => ({ ...prev, isLoading: false }));
-      toast.error('Invalid credentials. Try demo@signaturedraps.com / demo123');
-      throw new Error('Invalid credentials');
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      ...mockUser,
-      id: Date.now().toString(),
-      name,
-      email,
-      addresses: []
-    };
-    
-    setAuthState({
-      user: newUser,
-      isAuthenticated: true,
-      isLoading: false
-    });
-    
-    toast.success('Registration successful!');
+    try {
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      setAuthState({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false
+      });
+
+      toast.success(data.message || 'Login successful!');
+    } catch (error: any) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      toast.error(error.message || 'An error occurred during login.');
+      throw error;
+    }
   };
 
-  const logout = () => {
+  const register = async (username: string, email: string, password: string, phoneNo: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    try {
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password, phoneNo }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      toast.success(data.message || 'Registration successful! Please verify your OTP.');
+      // Store phone number for OTP verification
+      localStorage.setItem('pendingVerificationPhone', phoneNo);
+
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during registration.');
+      throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const verifyOtp = async (phoneNo: string, otp: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await fetch('/api/users/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNo, otp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'OTP verification failed');
+      }
+
+      // Clear pending verification phone
+      localStorage.removeItem('pendingVerificationPhone');
+      
+      toast.success(data.message || 'Account verified successfully!');
+      
+      // Don't automatically log in, let user go to login page
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid OTP. Please try again.');
+      throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const resendOtp = async (phoneNo: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await fetch('/api/users/resend-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNo }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to resend OTP');
+      }
+
+      toast.success(data.message || 'OTP resent successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to resend OTP.');
+      throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/users/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      // Even if logout fails on server, clear local state
+    }
+
     setAuthState({
       user: null,
       isAuthenticated: false,
       isLoading: false
     });
+    
     toast.success('Logged out successfully');
   };
 
@@ -107,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const isAlreadyInWishlist = authState.user.wishlist.some(item => item.id === product.id);
+    const isAlreadyInWishlist = authState.user.wishlist.some(item => item._id === product._id);
     if (isAlreadyInWishlist) {
       toast.info('Product is already in your wishlist');
       return;
@@ -131,7 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const updatedUser = {
       ...authState.user,
-      wishlist: authState.user.wishlist.filter(item => item.id !== productId)
+      wishlist: authState.user.wishlist.filter(item => item._id !== productId)
     };
 
     setAuthState(prev => ({
@@ -144,7 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isInWishlist = (productId: string) => {
     if (!authState.user) return false;
-    return authState.user.wishlist.some(item => item.id === productId);
+    return authState.user.wishlist.some(item => item._id === productId);
   };
 
   return (
@@ -152,10 +246,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...authState,
       login,
       register,
+      verifyOtp,
+      resendOtp,
       logout,
       addToWishlist,
       removeFromWishlist,
-      isInWishlist
+      isInWishlist,
+      getCurrentUser
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,26 +1,27 @@
 export interface Product {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   originalPrice?: number;
   discount?: number;
   rating: number;
   reviewCount: number;
-  image: string;
   images: string[];
   category: string;
   subcategory?: string;
   description: string;
   features: string[];
-  inStock: boolean;
-  isNew?: boolean;
-  isBestSeller?: boolean;
+  stock: number;
+  featured?: boolean;
   brand?: string;
+  isLiked?: boolean;
+  createdAt: string;
+  updatedAt: string;
   reviews?: Review[];
 }
 
 export interface Review {
-  id: string;
+  _id: string;
   userId: string;
   userName: string;
   userAvatar?: string;
@@ -30,6 +31,7 @@ export interface Review {
   date: string;
   verified: boolean;
   helpful: number;
+  helpfulBy: string[];
   images?: string[];
 }
 
@@ -37,6 +39,8 @@ export interface Category {
   id: string;
   name: string;
   image: string;
+  icon: any;
+  description: string;
   subcategories?: Subcategory[];
   productCount: number;
 }
@@ -53,17 +57,17 @@ export interface CartItem {
 }
 
 export interface User {
-  id: string;
-  name: string;
+  _id: string;
+  username: string;
   email: string;
-  phone?: string;
+  phoneNo?: string;
   addresses: Address[];
   orders: Order[];
   wishlist: Product[];
 }
 
 export interface Address {
-  id: string;
+  _id: string;
   name: string;
   phone: string;
   addressLine1: string;
@@ -75,13 +79,15 @@ export interface Address {
 }
 
 export interface Order {
-  id: string;
+  _id: string;
+  orderId: string;
   date: string;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   items: CartItem[];
-  total: number;
+  totalAmount: number;
   shippingAddress: Address;
-  paymentMethod: string;
+  paymentMode: string;
+  paymentStatus: 'pending' | 'completed' | 'failed';
 }
 
 export interface FilterOptions {

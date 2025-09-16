@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Filter, Grid, List, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,24 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ProductCard } from '@/components/product/ProductCard';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
-import { mockProducts, getProductsByCategory, searchProducts } from '@/data/products';
 import { FilterOptions } from '@/types';
 
 export default function ProductListing() {
   const { categoryId } = useParams();
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
+  
+  const { 
+    products, 
+    loading, 
+    error, 
+    fetchProducts, 
+    fetchProductsByCategory, 
+    searchProducts: searchProductsAPI 
+  } = useProducts();
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<FilterOptions>({
@@ -31,41 +41,43 @@ export default function ProductListing() {
   // Get current category info
   const currentCategory = categoryId ? categories.find(cat => cat.id === categoryId) : null;
 
-  // Get products based on category or search
-  const baseProducts = useMemo(() => {
+  // Fetch products based on category or search
+  useEffect(() => {
     if (searchQuery) {
-      return searchProducts(searchQuery);
+      searchProductsAPI(searchQuery);
     } else if (categoryId) {
-      return getProductsByCategory(categoryId);
+      fetchProductsByCategory(categoryId);
     } else {
-      return mockProducts;
+      fetchProducts();
     }
-  }, [categoryId, searchQuery]);
+  }, [categoryId, searchQuery, fetchProducts, fetchProductsByCategory, searchProductsAPI]);
 
   // Apply filters and sorting
   const filteredProducts = useMemo(() => {
-    let products = [...baseProducts];
+    if (!products) return [];
+    
+    let filteredList = [...products];
 
     // Price filter
-    products = products.filter(product => 
+    filteredList = filteredList.filter(product => 
       product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
     );
 
     // In stock filter
     if (filters.inStock) {
-      products = products.filter(product => product.inStock);
+      filteredList = filteredList.filter(product => product.stock > 0);
     }
 
     // Rating filter
     if (filters.ratings.length > 0) {
-      products = products.filter(product => 
+      filteredList = filteredList.filter(product => 
         filters.ratings.some(rating => product.rating >= rating)
       );
     }
 
     // Brand filter
     if (filters.brands.length > 0) {
-      products = products.filter(product => 
+      filteredList = filteredList.filter(product => 
         product.brand && filters.brands.includes(product.brand)
       );
     }
@@ -73,24 +85,24 @@ export default function ProductListing() {
     // Sorting
     switch (filters.sortBy) {
       case 'price-low':
-        products.sort((a, b) => a.price - b.price);
+        filteredList.sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
-        products.sort((a, b) => b.price - a.price);
+        filteredList.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
-        products.sort((a, b) => b.rating - a.rating);
+        filteredList.sort((a, b) => b.rating - a.rating);
         break;
       case 'newest':
-        products.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        filteredList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
       default:
         // Keep original order for relevance
         break;
     }
 
-    return products;
-  }, [baseProducts, filters]);
+    return filteredList;
+  }, [products, filters]);
 
   const handlePriceRangeChange = (value: number[]) => {
     setFilters(prev => ({ ...prev, priceRange: value as [number, number] }));
@@ -161,6 +173,45 @@ export default function ProductListing() {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container-premium py-8">
+          <div className="flex items-center justify-center py-16">
+            <LoadingSpinner size="lg" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container-premium py-8">
+          <div className="text-center py-16">
+            <p className="text-lg text-destructive mb-4">
+              Error loading products: {error}
+            </p>
+            <Button 
+              onClick={() => {
+                if (searchQuery) {
+                  searchProductsAPI(searchQuery);
+                } else if (categoryId) {
+                  fetchProductsByCategory(categoryId);
+                } else {
+                  fetchProducts();
+                }
+              }}
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -279,7 +330,7 @@ export default function ProductListing() {
               }`}>
                 {filteredProducts.map((product) => (
                   <ProductCard 
-                    key={product.id} 
+                    key={product._id} 
                     product={product}
                     className={viewMode === 'list' ? 'flex-row' : ''}
                   />

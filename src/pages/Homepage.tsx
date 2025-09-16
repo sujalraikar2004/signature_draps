@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Headphones, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/product/ProductCard';
 import { HeroSlider } from '@/components/ui/HeroSlider';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
-import { getBestSellerProducts, getNewProducts } from '@/data/products';
 import slide1 from '@/assets/slider/slide-1.jpg';
 import slide2 from '@/assets/slider/slide-2.jpg';
 import slide3 from '@/assets/slider/slide-3.jpg';
 
 export default function Homepage() {
-  const bestSellers = getBestSellerProducts().slice(0, 8);
-  const newProducts = getNewProducts().slice(0, 8);
+  const { featuredProducts, loading, fetchFeaturedProducts } = useProducts();
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, [fetchFeaturedProducts]);
 
   const sliderData = [
     {
@@ -48,216 +52,147 @@ export default function Homepage() {
       description: "From concept to completion, we provide comprehensive interior design services with premium materials and expert craftsmanship.",
       badge: "Design Consultation",
       cta: {
-        primary: { text: "Get Quote", link: "/contact" },
-        secondary: { text: "Our Services", link: "/about" }
+        primary: { text: "Get Consultation", link: "/contact" },
+        secondary: { text: "View Portfolio", link: "/about" }
       }
     }
   ];
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Slider Section */}
-      <HeroSlider slides={sliderData} autoPlay={true} interval={3000} />
+    <main className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative">
+        <HeroSlider slides={sliderData} />
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container-premium">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-heading font-bold mb-4">Shop by Category</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Explore our comprehensive range of interior furnishing solutions, carefully curated to transform your living spaces.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                to={`/category/${category.id}`}
+                className="group card-premium p-6 text-center hover:shadow-lg transition-all duration-300"
+              >
+                <div className="mb-4 flex justify-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    {category.icon && <category.icon className="w-8 h-8 text-primary" />}
+                  </div>
+                </div>
+                <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
+                  {category.name}
+                </h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {category.description || `Explore our ${category.name.toLowerCase()} collection`}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products Section */}
+      <section className="py-16">
+        <div className="container-premium">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-heading font-bold mb-4">Featured Products</h2>
+              <p className="text-muted-foreground">
+                Discover our handpicked selection of premium interior furnishing products.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/products">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {featuredProducts?.slice(0, 8).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-16 bg-muted/30">
         <div className="container-premium">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Truck className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Free Delivery</h3>
-                <p className="text-sm text-muted-foreground">Mumbai & Delhi NCR</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Quality Guarantee</h3>
-                <p className="text-sm text-muted-foreground">Premium materials only</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Headphones className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Expert Support</h3>
-                <p className="text-sm text-muted-foreground">Design consultation</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <RefreshCw className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Easy Returns</h3>
-                <p className="text-sm text-muted-foreground">30-day return policy</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="section-padding">
-        <div className="container-premium">
           <div className="text-center mb-12">
-            <h2 className="text-section-title font-heading mb-4">
-              Shop by Category
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Explore our comprehensive collection of premium interior solutions
+            <h2 className="text-3xl font-heading font-bold mb-4">Why Choose Signature Draps?</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Experience excellence in every aspect of our service, from premium quality products to exceptional customer care.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.slice(0, 8).map((category) => (
-              <Link
-                key={category.id}
-                to={`/category/${category.id}`}
-                className="group card-premium overflow-hidden hover-lift"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Truck,
+                title: "Free Delivery",
+                description: "Free delivery on orders above ₹2,000 within city limits"
+              },
+              {
+                icon: Shield,
+                title: "Quality Guarantee",
+                description: "Premium quality materials with comprehensive warranty coverage"
+              },
+              {
+                icon: Headphones,
+                title: "Expert Support",
+                description: "Professional consultation and 24/7 customer support"
+              },
+              {
+                icon: RefreshCw,
+                title: "Easy Returns",
+                description: "Hassle-free returns and exchanges within 30 days"
+              }
+            ].map((feature, index) => (
+              <div key={index} className="text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <feature.icon className="w-8 h-8 text-primary" />
                 </div>
-                <div className="p-6">
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    {category.productCount} products
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Explore Collection
-                  </Button>
-                </div>
-              </Link>
+                <h3 className="font-semibold mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Best Sellers Section */}
-      <section className="section-padding bg-muted/30">
-        <div className="container-premium">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-section-title font-heading mb-4">
-                Best Sellers
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Our most popular premium products
-              </p>
-            </div>
-            <Button 
-              variant="outline" 
-              className="hidden md:flex"
-              asChild
-            >
-              <Link to="/bestsellers">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <div className="text-center mt-8 md:hidden">
-            <Button 
-              variant="outline"
-              asChild
-            >
-              <Link to="/bestsellers">
-                View All Best Sellers <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* New Arrivals Section */}
-      <section className="section-padding">
-        <div className="container-premium">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-section-title font-heading mb-4">
-                New Arrivals
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Latest additions to our premium collection
-              </p>
-            </div>
-            <Button 
-              variant="outline" 
-              className="hidden md:flex"
-              asChild
-            >
-              <Link to="/new-arrivals">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {newProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <div className="text-center mt-8 md:hidden">
-            <Button 
-              variant="outline"
-              asChild
-            >
-              <Link to="/new-arrivals">
-                View All New Arrivals <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding bg-gradient-primary text-white">
+      <section className="py-16 bg-primary text-primary-foreground">
         <div className="container-premium text-center">
-          <h2 className="text-section-title font-heading mb-6">
+          <h2 className="text-3xl font-heading font-bold mb-4">
             Ready to Transform Your Space?
           </h2>
-          <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-            Get a free consultation with our interior design experts. 
-            We'll help you choose the perfect solutions for your home or office.
+          <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
+            Get in touch with our design experts for a personalized consultation and bring your vision to life.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="btn-gold text-lg px-8 py-4"
-              asChild
-            >
+            <Button size="lg" variant="secondary" asChild>
               <Link to="/contact">
-                Book Free Consultation
+                Get Free Consultation
               </Link>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-primary"
-              asChild
-            >
-              <Link to="/catalog">
-                Browse Catalog
+            <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+              <Link to="/products">
+                Browse Products
               </Link>
             </Button>
           </div>

@@ -11,13 +11,12 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    phoneNo: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
@@ -27,8 +26,8 @@ export default function Register() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
     }
     
     if (!formData.email) {
@@ -37,17 +36,18 @@ export default function Register() {
       newErrors.email = 'Please enter a valid email';
     }
     
+    if (!formData.phoneNo.trim()) {
+      newErrors.phoneNo = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(formData.phoneNo)) {
+      newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
+    }
+    
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
     
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
     
     if (!acceptTerms) {
       newErrors.terms = 'Please accept the terms and conditions';
@@ -71,8 +71,8 @@ export default function Register() {
     if (!validateForm()) return;
     
     try {
-      await register(formData.name, formData.email, formData.password);
-      navigate('/');
+      await register(formData.username, formData.email, formData.password, formData.phoneNo);
+      navigate(`/verify-otp?phone=${formData.phoneNo}`);
     } catch (error) {
       // Error is handled in the auth context
     }
@@ -101,18 +101,18 @@ export default function Register() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
+                  placeholder="Enter your username"
+                  value={formData.username}
                   onChange={handleChange}
-                  className={errors.name ? 'border-destructive' : ''}
+                  className={errors.username ? 'border-destructive' : ''}
                 />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
+                {errors.username && (
+                  <p className="text-sm text-destructive">{errors.username}</p>
                 )}
               </div>
 
@@ -129,6 +129,22 @@ export default function Register() {
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phoneNo">Phone Number</Label>
+                <Input
+                  id="phoneNo"
+                  name="phoneNo"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={formData.phoneNo}
+                  onChange={handleChange}
+                  className={errors.phoneNo ? 'border-destructive' : ''}
+                />
+                {errors.phoneNo && (
+                  <p className="text-sm text-destructive">{errors.phoneNo}</p>
                 )}
               </div>
               
@@ -163,36 +179,6 @@ export default function Register() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className={errors.confirmPassword ? 'border-destructive' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">{errors.confirmPassword}</p>
-                )}
-              </div>
 
               <div className="space-y-2">
                 <div className="flex items-start space-x-2">
