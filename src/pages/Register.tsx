@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import  api from '../api'
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -41,6 +42,7 @@ export default function Register() {
     } else if (!/^\d{10}$/.test(formData.phoneNo)) {
       newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
     }
+    formData.phoneNo="+91"+formData.phoneNo;
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -68,13 +70,13 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) return ;
     
     try {
-      await register(formData.username, formData.email, formData.password, formData.phoneNo);
+      const responce=api.post("/user/register", formData);
       navigate(`/verify-otp?phone=${formData.phoneNo}`);
     } catch (error) {
-      // Error is handled in the auth context
+      console.log("error  accure  during registration:",error.messege)
     }
   };
 

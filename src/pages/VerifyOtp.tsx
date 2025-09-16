@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
+import api from '../api'
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState('');
@@ -63,11 +64,12 @@ export default function VerifyOtp() {
     if (!validateForm()) return;
     
     try {
-      await verifyOtp(phoneNo, otp);
+      const  responce = await api.post("/user/verify",{phoneNo,otp})
       toast.success('Account verified successfully! You can now login.');
       navigate('/login');
     } catch (error) {
-      // Error is handled in the auth context
+       toast.error(" failed to verify otp");
+       console.log(error);
     }
   };
 
