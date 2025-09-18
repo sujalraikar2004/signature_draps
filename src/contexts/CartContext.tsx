@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/types';
 import { toast } from 'sonner';
+import api from '@/Api';
 
 export interface CartItem {
   productId: string;
@@ -47,21 +48,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = async (productId: string, quantity: number) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ productId, quantity }),
-      });
+      const response = await api.post('cart/add', { productId, quantity });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || data.messege);
+   
+      if (!response) throw new Error(response.data.message || response.data.messege);
 
-      toast.success(data.messege || 'Item added to cart');
+      toast.success(response.data.messege || 'Item added to cart');
       
-      // Refresh cart data
+   
       await getCartTotal();
     } catch (error: any) {
       toast.error(error.message || 'Failed to add item to cart');
@@ -72,24 +66,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = async (productId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/remove', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ productId }),
-      });
+      const response = await api.delete('/cart/remove', { productId });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      if (!response) throw new Error(response.data.message);
 
-      // Update local state with returned cart data
-      if (data.products && data.totalPrice !== undefined) {
+     
+      if (response.data.products && response.data.totalPrice !== undefined) {
         setCartState(prev => ({
           ...prev,
-          items: data.products,
-          totalPrice: data.totalPrice,
+          items: response.data.products,
+          totalPrice: response.data.totalPrice,
           isLoading: false
         }));
       } else {
@@ -111,24 +97,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ productId, quantity }),
-      });
+      const response = await api.put('/cart/update',{ productId, quantity });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+ 
+      if (!response) throw new Error(response.data.message);
 
       // Update local state with returned cart data
-      if (data.products && data.totalPrice !== undefined) {
+      if (response.data.products && response.data.totalPrice !== undefined) {
         setCartState(prev => ({
           ...prev,
-          items: data.products,
-          totalPrice: data.totalPrice,
+          items: response.data.products,
+          totalPrice: response.data.totalPrice,
           isLoading: false
         }));
       } else {
@@ -145,13 +124,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const getCartTotal = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/total', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
+      const response = await api.get('/cart/total');
       if (response.status === 404) {
-        // Cart not found - user has empty cart
         setCartState({
           items: [],
           totalPrice: 0,
@@ -160,16 +134,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      if (!response) throw new Error(response.data.message);
 
       setCartState({
-        items: data.items || [],
-        totalPrice: data.total || 0,
+        items: response.data.items || [],
+        totalPrice: response.data.total || 0,
         isLoading: false
       });
     } catch (error: any) {
-      // If cart doesn't exist, set empty cart
+     
       setCartState({
         items: [],
         totalPrice: 0,
@@ -181,13 +154,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/clear', {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+      const response = await fetch('/cart/clear');
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+
+      if (!response) throw new Error(response.data.message);
 
       setCartState({
         items: [],
@@ -195,7 +165,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isLoading: false
       });
 
-      toast.success(data.message || 'Cart cleared successfully');
+      toast.success(response.data.message || 'Cart cleared successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to clear cart');
       setLoading(false);

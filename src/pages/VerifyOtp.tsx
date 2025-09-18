@@ -47,7 +47,7 @@ export default function VerifyOtp() {
     } else if (!/^\d{10}$/.test(phoneNo)) {
       newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
     }
-    
+   
     if (!otp.trim()) {
       newErrors.otp = 'OTP is required';
     } else if (!/^\d{6}$/.test(otp)) {

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, Product } from '@/types';
 import { toast } from 'sonner';
+import api from '../Api'
+
 
 interface AuthState {
   user: User | null;
@@ -29,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: false
   });
 
-  // Check if user is logged in on app start
+
   useEffect(() => {
     getCurrentUser();
   }, []);
@@ -59,28 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await api.post('/user/login', { email, password });
+  
 
-      const data = await response.json();
+    
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      if (!response) {
+        throw new Error(response.data.message || 'Login failed');
       }
 
       setAuthState({
-        user: data.user,
+        user: response.data.user,
         isAuthenticated: true,
         isLoading: false
       });
 
-      toast.success(data.message || 'Login successful!');
+      toast.success(response.data.message || 'Login successful!');
     } catch (error: any) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
       toast.error(error.message || 'An error occurred during login.');
@@ -89,24 +85,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (username: string, email: string, password: string, phoneNo: string) => {
+    console.log(username,email,password,phoneNo);
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password, phoneNo }),
-      });
+      const response = await api.post('/user/register', { username, email, password, phoneNo },
+      );
 
-      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+
+      if (!response) {
+        throw new Error(response.data.message || 'Registration failed');
       }
 
-      toast.success(data.message || 'Registration successful! Please verify your OTP.');
-      // Store phone number for OTP verification
+      toast.success(response.data.message || 'Registration successful! Please verify your OTP.');
+    
       localStorage.setItem('pendingVerificationPhone', phoneNo);
 
     } catch (error: any) {
@@ -121,26 +113,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await fetch('/api/users/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNo, otp }),
-      });
+      const response = await api.post('/user/verify',  { phoneNo, otp });
 
-      const data = await response.json();
+    
 
-      if (!response.ok) {
-        throw new Error(data.message || 'OTP verification failed');
+      if (!response) {
+        throw new Error(response.data.message || 'OTP verification failed');
       }
 
-      // Clear pending verification phone
+  
       localStorage.removeItem('pendingVerificationPhone');
       
-      toast.success(data.message || 'Account verified successfully!');
+      toast.success(response.data.message || 'Account verified successfully!');
       
-      // Don't automatically log in, let user go to login page
+     
     } catch (error: any) {
       toast.error(error.message || 'Invalid OTP. Please try again.');
       throw error;
@@ -178,12 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/users/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await api.post('/user/logout');
     } catch (error) {
-      // Even if logout fails on server, clear local state
+      console.log(error);
     }
 
     setAuthState({

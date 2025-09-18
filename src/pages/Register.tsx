@@ -73,7 +73,7 @@ export default function Register() {
     if (!validateForm()) return ;
     
     try {
-      const responce=api.post("/user/register", formData);
+       await register(formData.username,formData.email,formData.password,formData.phoneNo);
       navigate(`/verify-otp?phone=${formData.phoneNo}`);
     } catch (error) {
       console.log("error  accure  during registration:",error.messege)

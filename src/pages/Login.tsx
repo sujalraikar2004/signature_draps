@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import api from '../api'
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -43,7 +44,7 @@ export default function Login() {
     if (!validateForm()) return;
     
     try {
-      await login(email, password);
+      const responce=await login(email, password);
       navigate('/');
     } catch (error) {
       // Error is handled in the auth context
@@ -142,25 +143,7 @@ export default function Login() {
               </Button>
             </form>
             
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Demo Credentials
-                  </span>
-                </div>
-              </div>
-              
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm">
-                <p className="font-medium mb-1">Try the demo:</p>
-                <p><strong>Email:</strong> demo@signaturedraps.com</p>
-                <p><strong>Password:</strong> demo123</p>
-              </div>
-            </div>
-            
+          
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
