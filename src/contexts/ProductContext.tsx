@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Product, Review } from '@/types';
 import { toast } from 'sonner';
+import axios from 'axios';
+import api from '@/Api';
 
 interface ProductContextType {
   // State
@@ -143,12 +145,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
   const createProduct = useCallback(async (productData: Partial<Product>) => {
     await handleApiCall(
-      () => fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(productData)
-      }),
+      () =>   api.post("/products",productData),
       'Product created successfully',
       'Failed to create product'
     );
@@ -158,12 +155,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
   const updateProduct = useCallback(async (productId: string, productData: Partial<Product>) => {
     await handleApiCall(
-      () => fetch(`/api/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(productData)
-      }),
+      () =>  api.put(`/products/${productId}`),
       'Product updated successfully',
       'Failed to update product'
     );
@@ -173,10 +165,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
   const deleteProduct = useCallback(async (productId: string) => {
     await handleApiCall(
-      () => fetch(`/api/products/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      }),
+      () => api.delete(`/products/${productId}`),
       'Product deleted successfully',
       'Failed to delete product'
     );
@@ -186,7 +175,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
   const fetchCategories = useCallback(async () => {
     const data = await handleApiCall<{ categories: string[] }>(
-      () => fetch('/api/products/categories', { credentials: 'include' })
+      () => api.get('/products/categories')
     );
     if (data) {
       setCategories(data.categories);
