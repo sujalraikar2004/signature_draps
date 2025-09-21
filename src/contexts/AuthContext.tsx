@@ -38,15 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getCurrentUser = async () => {
     try {
-      const response = await fetch('/api/users/current', {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await api.get('/user/current-user');
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response) {
+      
         setAuthState({
-          user: data.data,
+          user: response.data.data,
           isAuthenticated: true,
           isLoading: false
         });
@@ -113,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await api.post('/user/verify',  { phoneNo, otp });
+      const response = await api.post('/user/verify',{ phoneNo, otp });
 
     
 

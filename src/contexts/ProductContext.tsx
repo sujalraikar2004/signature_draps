@@ -93,9 +93,10 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
   const fetchProducts = useCallback(async () => {
     const data = await handleApiCall<{ products: Product[] }>(
-      () => fetch('/api/products', { credentials: 'include' })
+      () => api.get('/products')
     );
     if (data) {
+      console.log(data)
       setProducts(data.products);
     }
   }, []);
