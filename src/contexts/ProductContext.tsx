@@ -94,14 +94,23 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
   };
 
 const fetchProducts = useCallback(async () => {
-  const data = await handleApiCall<{ products: Product[] }>(
-    () => api.get('/products')
-  );
-  if (data) setProducts(data.products);
+  try {
+    const response = await api.get<ProductApiResponse>('/products');
+   
+
+    if (response && response.data?.data) {
+      setProducts(response.data.data); 
+    } else {
+      console.warn('No products found in response:', response.data);
+    }
+  } catch (error) {
+    console.error('API fetch failed:', error);
+  }
 }, []);
+
 useEffect(() => {
   fetchProducts();
-}, []);
+}, [fetchProducts]);
 
 
 
@@ -116,10 +125,10 @@ useEffect(() => {
 
   const fetchFeaturedProducts = useCallback(async () => {
     const data = await handleApiCall<{ products: Product[] }>(
-      () => fetch('/api/products/featured', { credentials: 'include' })
+      () => api.get('/products/featured')
     );
     if (data) {
-      setFeaturedProducts(data.products);
+      setFeaturedProducts(data.data);
     }
   }, []);
 

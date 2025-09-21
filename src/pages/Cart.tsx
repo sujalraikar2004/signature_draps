@@ -65,13 +65,13 @@ export default function Cart() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
-              <div key={item.product._id} className="card-premium p-6">
+              <div key={item.productId._id} className="card-premium p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     <img
-                      src={item.product.images?.[0] || '/placeholder.svg'}
-                      alt={item.product.name}
+                      src={item.productId.image }
+                      alt={item.productId.name}
                       className="w-full sm:w-24 h-48 sm:h-24 object-cover rounded-lg"
                     />
                   </div>
@@ -81,21 +81,21 @@ export default function Cart() {
                     <div className="flex justify-between items-start">
                       <div>
                         <Link
-                          to={`/product/${item.product._id}`}
+                          to={`/product/${item.productId._id}`}
                           className="font-semibold hover:text-primary transition-colors"
                         >
-                          {item.product.name}
+                          {item.productId.name}
                         </Link>
-                        {item.product.brand && (
+                        {item.productId.brand && (
                           <p className="text-sm text-muted-foreground">
-                            Brand: {item.product.brand}
+                            Brand: {item.productId.brand}
                           </p>
                         )}
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeFromCart(item.product._id)}
+                        onClick={() => removeFromCart(item.productId._id)}
                         className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -107,7 +107,7 @@ export default function Cart() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.productId._id, item.quantity - 1)}
                           className="h-8 w-8 p-0"
                         >
                           <Minus className="h-3 w-3" />
@@ -115,14 +115,14 @@ export default function Cart() {
                         <Input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value) || 1)}
+                          onChange={(e) => handleQuantityChange(item.productId._id, parseInt(e.target.value) || 1)}
                           className="w-16 h-8 text-center"
                           min="1"
                         />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.productId._id, item.quantity + 1)}
                           className="h-8 w-8 p-0"
                         >
                           <Plus className="h-3 w-3" />
@@ -131,17 +131,17 @@ export default function Cart() {
 
                       <div className="text-right">
                         <div className="font-semibold text-lg">
-                          ₹{(item.product.price * item.quantity).toLocaleString()}
+                          ₹{(item.productId.price * item.quantity).toLocaleString()}
                         </div>
-                        {item.product.originalPrice && (
+                        {item.productId.originalPrice && (
                           <div className="text-sm text-muted-foreground line-through">
-                            ₹{(item.product.originalPrice * item.quantity).toLocaleString()}
+                            ₹{(item.productId.originalPrice * item.quantity)}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {item.product.stock <= 0 && (
+                    {item.productId.stock <= 0 && (
                       <Badge variant="destructive" className="w-fit">
                         Out of Stock
                       </Badge>

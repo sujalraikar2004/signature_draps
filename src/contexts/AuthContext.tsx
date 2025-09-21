@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.get('/user/current-user');
 
+
       if (response) {
       
         setAuthState({

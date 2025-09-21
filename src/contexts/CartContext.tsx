@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/types';
 import { toast } from 'sonner';
-import api from '@/Api';
+import api from '../Api';
 
 export interface CartItem {
   productId: string;
@@ -64,9 +64,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromCart = async (productId: string) => {
+    console.log(productId)
     setLoading(true);
     try {
-      const response = await api.delete('/cart/remove', { productId });
+      const response = await api.delete(`/cart/remove/${productId}`);
 
       if (!response) throw new Error(response.data.message);
 
@@ -81,7 +82,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         await getCartTotal();
       }
-
+   
+         getCartTotal();
       toast.success('Item removed from cart');
     } catch (error: any) {
       toast.error(error.message || 'Failed to remove item from cart');
@@ -90,8 +92,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = async (productId: string, quantity: number) => {
+    console.log(productId)
     if (quantity <= 0) {
       await removeFromCart(productId);
+
       return;
     }
 
@@ -113,7 +117,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         await getCartTotal();
       }
-
+         getCartTotal();
       toast.success('Cart updated');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update cart');
@@ -125,7 +129,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const response = await api.get('/cart/total');
+      console.log(response.data)
       if (response.status === 404) {
+
         setCartState({
           items: [],
           totalPrice: 0,
