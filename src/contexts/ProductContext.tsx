@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useEffect, useContext, useState, useCallback, ReactNode } from 'react';
 import { Product, Review } from '@/types';
 import { toast } from 'sonner';
 import axios from 'axios';
-import api from '@/Api';
+import api from '../Api';
 
 interface ProductContextType {
   // State
@@ -14,6 +14,7 @@ interface ProductContextType {
   error: string | null;
 
   // Product operations
+
   fetchProducts: () => Promise<void>;
   fetchProductsByCategory: (categoryId: string) => Promise<void>;
   fetchFeaturedProducts: () => Promise<void>;
@@ -50,7 +51,7 @@ export const useProducts = () => {
 
 interface ProductProviderProps {
   children: ReactNode;
-}
+}  
 
 export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) => {
   const [products, setProducts] = useState<Product[] | null>(null);
@@ -59,6 +60,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
   const [categories, setCategories] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
 
   const handleApiCall = async <T,>(
     apiCall: () => Promise<Response>,
@@ -91,15 +93,21 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     }
   };
 
-  const fetchProducts = useCallback(async () => {
-    const data = await handleApiCall<{ products: Product[] }>(
-      () => api.get('/products')
-    );
-    if (data) {
-      console.log(data)
-      setProducts(data.products);
-    }
-  }, []);
+const fetchProducts =async () => {
+  const data =  await api.get('/products')
+
+  if (data) {
+    
+    setProducts(data.data.data);
+  }
+  console.log(data);
+}
+
+useEffect(() => {
+  fetchProducts();
+}, []);
+
+
 
   const fetchProductsByCategory = useCallback(async (categoryId: string) => {
     const data = await handleApiCall<{ products: Product[] }>(
