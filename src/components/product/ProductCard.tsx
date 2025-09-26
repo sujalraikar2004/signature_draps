@@ -45,9 +45,8 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  const isInStock = product.stock > 0;
+  const isInStock = product.inStock && product.stockQuantity > 0;
   const primaryImage = product.images[0];
-   console.log("this is primary image",primaryImage)
 
   return (
     
@@ -154,7 +153,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           <div className="mb-3">
             {isInStock ? (
               <Badge variant="outline" className="text-success border-success">
-                In Stock ({product.stock})
+                In Stock ({product.stockQuantity})
               </Badge>
             ) : (
               <Badge variant="outline" className="text-destructive border-destructive">

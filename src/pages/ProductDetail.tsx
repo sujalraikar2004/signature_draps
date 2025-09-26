@@ -218,9 +218,9 @@ export default function ProductDetail() {
 
             {/* Stock Status */}
             <div>
-              {product.stock ? (
+              {product.inStock && product.stockQuantity > 0 ? (
                 <Badge variant="outline" className="text-success border-success">
-                  ✓ In Stock - Ready to Ship
+                  ✓ In Stock - Ready to Ship ({product.stockQuantity} available)
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-destructive border-destructive">
@@ -259,7 +259,7 @@ export default function ProductDetail() {
                   className="flex-1 btn-hero" 
                   size="lg"
                   onClick={handleAddToCart}
-                  disabled={!product.stock}
+                  disabled={!product.inStock || product.stockQuantity <= 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
@@ -277,7 +277,7 @@ export default function ProductDetail() {
               <Button 
                 className="w-full btn-gold" 
                 size="lg"
-                disabled={!product.stock}
+                disabled={!product.inStock || product.stockQuantity <= 0}
               >
                 Buy Now
               </Button>
