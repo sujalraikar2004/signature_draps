@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ interface ProductCardProps {
   product: Product;
   className?: string;
 }
+const navigate=useNavigate()
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
   const { addToCart } = useCart();
@@ -22,7 +23,13 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product._id, 1);
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to Cart');
+       navigate("/login")
+    }else{
+        addToCart(product._id, 1);
+    }
+  
   };
 
   const handleToggleLike = async (e: React.MouseEvent) => {

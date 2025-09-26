@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Headphones, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,19 +7,32 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { HeroSlider } from '@/components/ui/HeroSlider';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useProducts } from '@/contexts/ProductContext';
-import { categories } from '@/data/categories';
+import api from '@/Api';
 import slide1 from '@/assets/slider/slide-1.jpg';
 import slide2 from '@/assets/slider/slide-2.jpg';
 import slide3 from '@/assets/slider/slide-3.jpg';
+interface Product {
+  count: number;
+  category: string;
+  image: string;
+}
 
 export default function Homepage() {
   const { featuredProducts, loading, fetchFeaturedProducts } = useProducts();
-
+const [categories, setCategories] = useState<Product[]>([]);
+ 
   useEffect(() => {
+      fetchCategories()
     fetchFeaturedProducts();
   }, [fetchFeaturedProducts]);
   console.log(featuredProducts);
-
+  
+  const fetchCategories = async () => {
+    const response = await api.get("/products/categories");
+  
+    if (response) setCategories(response.data.data);
+   
+  };
   const sliderData = [
     {
       id: 1,
@@ -79,21 +92,23 @@ export default function Homepage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {categories.map((category) => (
               <Link
-                key={category.id}
-                to={`/category/${category.id}`}
+                key={category.category}
+                to={`/category/${category.category}`}
                 className="group card-premium p-6 text-center hover:shadow-lg transition-all duration-300"
               >
                 <div className="mb-4 flex justify-center">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    {category.icon && <category.icon className="w-8 h-8 text-primary" />}
+                    <img
+            src={category.image}
+            alt={category.category}
+            className="w-20 h-20"
+          /> 
                   </div>
                 </div>
                 <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
-                  {category.name}
+                  {category.category}
                 </h3>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {category.description || `Explore our ${category.name.toLowerCase()} collection`}
-                </p>
+             
               </Link>
             ))}
           </div>

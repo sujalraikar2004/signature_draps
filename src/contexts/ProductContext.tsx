@@ -187,15 +187,17 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     [fetchProducts]
   );
 
-  // --- Category APIs ---
+  
   const fetchCategories = useCallback(async () => {
-    const data = await handleApiCall<{ data: string[] }>(() =>
+    const response = await handleApiCall<{ data: string[] }>(() =>
       api.get("/products/categories")
     );
-    if (data) setCategories(data.data);
+    console.log("this is categories api responce ",response)
+    if (response) setCategories(response.data.data);
+    console.log(categories)
   }, []);
 
-  // --- Reviews ---
+  
   const addReview = useCallback(
     async (
       productId: string,
