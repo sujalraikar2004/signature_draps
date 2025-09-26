@@ -46,15 +46,17 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     : 0;
 
   const isInStock = product.stock > 0;
-  const primaryImage = product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg';
+  const primaryImage = product.images[0];
+   console.log("this is primary image",primaryImage)
 
   return (
+    
     <div className={`card-product group ${className}`}>
       <Link to={`/product/${product._id}`} className="block">
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <img
-            src={primaryImage}
+            src={primaryImage.url}
             alt={product.name}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />

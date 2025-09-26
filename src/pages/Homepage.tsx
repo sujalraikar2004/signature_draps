@@ -18,6 +18,7 @@ export default function Homepage() {
   useEffect(() => {
     fetchFeaturedProducts();
   }, [fetchFeaturedProducts]);
+  console.log(featuredProducts);
 
   const sliderData = [
     {

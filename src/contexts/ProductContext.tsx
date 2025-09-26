@@ -145,6 +145,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
       const data = await handleApiCall<{ data: Product }>(() =>
         api.get(`/products/${productId}`)
       );
+      console.log(data)
       return data?.data || null;
     },
     []

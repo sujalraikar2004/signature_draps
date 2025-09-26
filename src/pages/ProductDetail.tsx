@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,17 +7,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ProductCard } from '@/components/product/ProductCard';
-import { getProductById, mockProducts } from '@/data/products';
+import { ProductCard } from '@/components/product/ProductCard'; 
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
+import api from '@/Api';
 
 export default function ProductDetail() {
   const { productId } = useParams();
+  
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { getProductById,products,toggleLike}=useProducts()
   const { user } = useAuth();
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [newReview, setNewReview] = useState({
@@ -26,7 +30,29 @@ export default function ProductDetail() {
     comment: ''
   });
 
-  const product = productId ? getProductById(productId) : null;
+ const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!productId) return;
+
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getProductById(productId); 
+        setProduct(data);
+      } catch (err) {
+        setError("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, getProductById]); 
+
   
   if (!product) {
     return (
@@ -44,8 +70,8 @@ export default function ProductDetail() {
     );
   }
 
-  const relatedProducts = mockProducts
-    .filter(p => p.category === product.category && p.id !== product.id)
+  const relatedProducts = products
+    .filter(p => p.category === product.category && p._id !== product._id)
     .slice(0, 4);
 
   const discountPercentage = product.originalPrice 
@@ -53,13 +79,23 @@ export default function ProductDetail() {
     : 0;
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
+     if(user){
+      addToCart(product._id,quantity);
+     }else{
+      navigate("/login");
+     }
+    
+      
+    
   };
 
   const handleAddToWishlist = () => {
-    toast.success(`${product.name} added to wishlist`);
+       if(user){
+     toggleLike(product._id);
+     }else{
+      navigate("/login");
+     }
+    
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -93,7 +129,7 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted">
               <img
-                src={product.images[selectedImage]}
+                src={product.images[selectedImage].url}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -110,7 +146,7 @@ export default function ProductDetail() {
                     }`}
                   >
                     <img
-                      src={image}
+                      src={image.url}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -182,7 +218,7 @@ export default function ProductDetail() {
 
             {/* Stock Status */}
             <div>
-              {product.inStock ? (
+              {product.stock ? (
                 <Badge variant="outline" className="text-success border-success">
                   ✓ In Stock - Ready to Ship
                 </Badge>
@@ -223,7 +259,7 @@ export default function ProductDetail() {
                   className="flex-1 btn-hero" 
                   size="lg"
                   onClick={handleAddToCart}
-                  disabled={!product.inStock}
+                  disabled={!product.stock}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
@@ -241,7 +277,7 @@ export default function ProductDetail() {
               <Button 
                 className="w-full btn-gold" 
                 size="lg"
-                disabled={!product.inStock}
+                disabled={!product.stock}
               >
                 Buy Now
               </Button>
