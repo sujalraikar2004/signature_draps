@@ -25,7 +25,8 @@ import FAQ from "./pages/FAQ";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import NotFound from "./pages/NotFound";
-
+import RazorpayPayment from "./components/payment/RazorpayPayment"
+// import order
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -56,6 +57,7 @@ const App = () => (
                       <Route path="/about" element={<AboutUs />} />
                       <Route path="/contact" element={<ContactUs />} />
                       <Route path="/faq" element={<FAQ />} />
+                      <Route path="payment" element={<RazorpayPayment/>}/>
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsConditions />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

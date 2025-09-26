@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from 'sonner';
+import api from '@/Api';
 
 interface ShippingAddress {
   name: string;
@@ -148,17 +149,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const getUserOrders = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/orders/user', {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await api.get('orders/my-orders');
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      
+      if (!response) throw new Error(data.message);
 
       setOrderState(prev => ({
         ...prev,
-        orders: data.orders || [],
+        orders: response.data.orders || [],
         isLoading: false
       }));
     } catch (error: any) {

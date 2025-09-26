@@ -1,141 +1,121 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { useOrders, type PlaceOrderResponse, type PaymentVerificationRequest } from '@/contexts/OrderContext';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import api from "@/Api";
 
-interface RazorpayPaymentProps {
-  orderData: PlaceOrderResponse;
-  onSuccess: () => void;
-  onError: (error: string) => void;
-}
+const RazorpayPayment = () => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [checkoutData, setCheckoutData] = useState<any>(null);
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
 
-const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
-  orderData,
-  onSuccess,
-  onError
-}) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { verifyPayment } = useOrders();
 
-  const loadRazorpayScript = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        resolve(true);
+  useEffect(() => {
+    const data = sessionStorage.getItem("checkoutData");
+    if (data) {
+      setCheckoutData(JSON.parse(data));
+    } else {
+      setMessage("No checkout data found. Please go back to Checkout page.");
+    }
+  }, []);
+  console.log(checkoutData)
+
+  const payNow = async () => {
+    if (!checkoutData) {
+      setMessage("Missing checkout data");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      // Step 1: Place order on backend
+      const placeOrderRes = await api.post("/orders/place",
+        {
+          shippingAddress: checkoutData.shippingAddress,
+          paymentMode: checkoutData.paymentMode,
+        
+        }
+      );
+
+      const { razorpayOrder, key, order } = placeOrderRes.data;
+
+      if (!razorpayOrder || !key) {
+        setMessage("Failed to create Razorpay order");
+        setLoading(false);
         return;
       }
 
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handlePayment = async () => {
-    setIsProcessing(true);
-
-    try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        throw new Error('Failed to load Razorpay SDK');
-      }
-
-      if (!orderData.razorpayOrder || !orderData.key) {
-        throw new Error('Invalid payment data');
-      }
-
+      // Step 2: Open Razorpay Checkout
       const options = {
-        key: orderData.key,
-        amount: orderData.razorpayOrder.amount,
-        currency: orderData.razorpayOrder.currency,
-        name: 'Signature Draps',
-        description: `Order ${orderData.order.orderId}`,
-        order_id: orderData.razorpayOrder.id,
-        handler: async (response: any) => {
+        key,
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "My Store",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
+        handler: async function (response: any) {
           try {
-            const verificationData: PaymentVerificationRequest = {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              receipt: orderData.order.orderId
-            };
-
-            await verifyPayment(verificationData);
-            onSuccess();
-          } catch (error: any) {
-            onError(error.message || 'Payment verification failed');
+            const verifyRes = await api.post("/orders/verify",
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                receipt: order.orderId,
+              }
+            );
+            setMessage(
+              verifyRes.data.message || "Payment Verified Successfully!"
+            );
+            sessionStorage.removeItem("checkoutData"); 
+          } catch (verifyErr: any) {
+            setMessage(
+              verifyErr.response?.data?.message ||
+                "Payment verification failed"
+            );
           }
+          setLoading(false);
         },
         prefill: {
-          name: orderData.order.shippingAddress.name,
-          contact: orderData.order.shippingAddress.phone,
+          name: checkoutData.shippingAddress.fullName,
+          contact: checkoutData.shippingAddress.phone,
         },
         theme: {
-          color: '#8B5A3C'
+          color: "#3399cc",
         },
         modal: {
-          ondismiss: () => {
-            setIsProcessing(false);
-            onError('Payment cancelled by user');
-          }
-        }
+          ondismiss: function () {
+            setLoading(false);
+            setMessage("Payment popup closed");
+          },
+        },
       };
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (error: any) {
-      setIsProcessing(false);
-      onError(error.message || 'Failed to initiate payment');
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err: any) {
+      setMessage(
+        err.response?.data?.message ||
+          "Error placing order: " + err.message
+      );
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <h3 className="font-semibold mb-2">Payment Details</h3>
-        <div className="space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span>Order ID:</span>
-            <span className="font-mono">{orderData.order.orderId}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Amount:</span>
-            <span className="font-semibold">₹{orderData.order.totalAmount}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Payment Mode:</span>
-            <span>{orderData.order.paymentMode}</span>
-          </div>
-        </div>
-      </div>
-
-      <Button
-        onClick={handlePayment}
-        disabled={isProcessing}
-        className="w-full btn-hero"
-        size="lg"
+    <div style={{ padding: "30px", fontFamily: "Arial, sans-serif" }}>
+      <h1>Razorpay Payment</h1>
+      <button
+        onClick={payNow}
+        disabled={loading || !checkoutData}
+        style={{ padding: "10px 20px", fontSize: "16px" }}
       >
-        {isProcessing ? (
-          <>
-            <LoadingSpinner size="sm" className="mr-2" />
-            Processing Payment...
-          </>
-        ) : (
-          `Pay ₹${orderData.order.totalAmount}`
-        )}
-      </Button>
-
-      <p className="text-xs text-muted-foreground text-center">
-        Secure payment powered by Razorpay
-      </p>
+        {loading ? "Processing..." : "Pay Now"}
+      </button>
+      {message && (
+        <p style={{ marginTop: "20px", fontWeight: "bold", color: "green" }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 };
