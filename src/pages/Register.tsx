@@ -42,7 +42,7 @@ export default function Register() {
     } else if (!/^\d{10}$/.test(formData.phoneNo)) {
       newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
     }
-    formData.phoneNo="+91"+formData.phoneNo;
+   
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
