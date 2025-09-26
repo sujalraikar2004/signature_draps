@@ -1,19 +1,23 @@
-import React, { createContext, useEffect, useContext, useState, useCallback, ReactNode } from 'react';
-import { Product, Review } from '@/types';
-import { toast } from 'sonner';
-import axios from 'axios';
-import api from '../Api';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
+import { toast } from "sonner";
+import { Product, Review } from "@/types";
+import api from "../Api"; // axios instance with baseURL & interceptors
 
+// Types
 interface ProductContextType {
-  // State
   products: Product[] | null;
   featuredProducts: Product[] | null;
   newProducts: Product[] | null;
   categories: string[] | null;
   loading: boolean;
   error: string | null;
-
-  // Product operations
 
   fetchProducts: () => Promise<void>;
   fetchProductsByCategory: (categoryId: string) => Promise<void>;
@@ -22,271 +26,273 @@ interface ProductContextType {
   searchProducts: (query: string) => Promise<void>;
   getProductById: (productId: string) => Promise<Product | null>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
-  updateProduct: (productId: string, productData: Partial<Product>) => Promise<void>;
+  updateProduct: (
+    productId: string,
+    productData: Partial<Product>
+  ) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
 
-  // Category operations
   fetchCategories: () => Promise<void>;
 
-  // Review operations
-  addReview: (productId: string, reviewData: { rating: number; title: string; comment: string }) => Promise<void>;
-  updateReview: (productId: string, reviewId: string, reviewData: { rating: number; title: string; comment: string }) => Promise<void>;
+  addReview: (
+    productId: string,
+    reviewData: { rating: number; title: string; comment: string }
+  ) => Promise<void>;
+  updateReview: (
+    productId: string,
+    reviewId: string,
+    reviewData: { rating: number; title: string; comment: string }
+  ) => Promise<void>;
   deleteReview: (productId: string, reviewId: string) => Promise<void>;
   markReviewHelpful: (productId: string, reviewId: string) => Promise<void>;
-  getProductReviews: (productId: string, page?: number, sort?: string) => Promise<Review[]>;
+  getProductReviews: (
+    productId: string,
+    page?: number,
+    sort?: string
+  ) => Promise<Review[]>;
 
-  // Like operations
   toggleLike: (productId: string) => Promise<void>;
 }
 
+// Context
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const useProducts = () => {
-  const context = useContext(ProductContext);
-  if (!context) {
-    throw new Error('useProducts must be used within a ProductProvider');
-  }
-  return context;
+  const ctx = useContext(ProductContext);
+  if (!ctx) throw new Error("useProducts must be used within ProductProvider");
+  return ctx;
 };
 
-interface ProductProviderProps {
+interface Props {
   children: ReactNode;
-}  
+}
 
-export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) => {
+export const ProductProvider: React.FC<Props> = ({ children }) => {
   const [products, setProducts] = useState<Product[] | null>(null);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[] | null>(null);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[] | null>(
+    null
+  );
   const [newProducts, setNewProducts] = useState<Product[] | null>(null);
   const [categories, setCategories] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
+  // --- Central API handler ---
   const handleApiCall = async <T,>(
-    apiCall: () => Promise<Response>,
+    apiCall: () => Promise<{ data: T }>,
     successMessage?: string,
     errorMessage?: string
   ): Promise<T | null> => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiCall();
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'API call failed');
-      }
-
-      if (successMessage) {
-        toast.success(successMessage);
-      }
-
-      return data;
+      if (successMessage) toast.success(successMessage);
+      return response.data;
     } catch (err: any) {
-      const message = err.message || errorMessage || 'An error occurred';
-      setError(message);
-      toast.error(message);
+      const msg =
+        err?.response?.data?.message ||
+        errorMessage ||
+        "Something went wrong, please try again.";
+      setError(msg);
+      toast.error(msg);
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-const fetchProducts = useCallback(async () => {
-  try {
-    const response = await api.get<ProductApiResponse>('/products');
-   
-
-    if (response && response.data?.data) {
-      setProducts(response.data.data); 
-    } else {
-      console.warn('No products found in response:', response.data);
-    }
-  } catch (error) {
-    console.error('API fetch failed:', error);
-  }
-}, []);
-
-useEffect(() => {
-  fetchProducts();
-}, [fetchProducts]);
-
-
+  // --- Product APIs ---
+  const fetchProducts = useCallback(async () => {
+    const data = await handleApiCall<{ data: Product[] }>(() =>
+      api.get("/products")
+    );
+    if (data) setProducts(data.data);
+  }, []);
 
   const fetchProductsByCategory = useCallback(async (categoryId: string) => {
-    const data = await handleApiCall<{ products: Product[] }>(
-      () => fetch(`/api/products/category/${categoryId}`, { credentials: 'include' })
+    const data = await handleApiCall<{ data: Product[] }>(() =>
+      api.get(`/products/category/${categoryId}`)
     );
-    if (data) {
-      setProducts(data.products);
-    }
+    if (data) setProducts(data.data);
   }, []);
 
   const fetchFeaturedProducts = useCallback(async () => {
-    const data = await handleApiCall<{ products: Product[] }>(
-      () => api.get('/products/featured')
+    const data = await handleApiCall<{ data: Product[] }>(() =>
+      api.get("/products/featured")
     );
-    if (data) {
-      setFeaturedProducts(data.data);
-    }
+    console.log("featured product",data)
+    if (data) setFeaturedProducts(data.data);
   }, []);
 
   const fetchNewProducts = useCallback(async () => {
-    const data = await handleApiCall<{ products: Product[] }>(
-      () => fetch('/api/products/new', { credentials: 'include' })
+    const data = await handleApiCall<{ data: Product[] }>(() =>
+      api.get("/products/new")
     );
-    if (data) {
-      setNewProducts(data.products);
-    }
+    if (data) setNewProducts(data.data);
   }, []);
 
   const searchProducts = useCallback(async (query: string) => {
-    const data = await handleApiCall<{ products: Product[] }>(
-      () => fetch(`/api/products/search?q=${encodeURIComponent(query)}`, { credentials: 'include' })
+    const data = await handleApiCall<{ data: Product[] }>(() =>
+      api.get(`/products/search?q=${encodeURIComponent(query)}`)
     );
-    if (data) {
-      setProducts(data.products);
-    }
+    if (data) setProducts(data.data);
   }, []);
 
-  const getProductById = useCallback(async (productId: string): Promise<Product | null> => {
-    const data = await handleApiCall<{ product: Product }>(
-      () => fetch(`/api/products/${productId}`, { credentials: 'include' })
-    );
-    return data?.product || null;
-  }, []);
+  const getProductById = useCallback(
+    async (productId: string): Promise<Product | null> => {
+      const data = await handleApiCall<{ data: Product }>(() =>
+        api.get(`/products/${productId}`)
+      );
+      return data?.data || null;
+    },
+    []
+  );
 
-  const createProduct = useCallback(async (productData: Partial<Product>) => {
-    await handleApiCall(
-      () =>   api.post("/products",productData),
-      'Product created successfully',
-      'Failed to create product'
-    );
-    // Refresh products list
-    fetchProducts();
-  }, [fetchProducts]);
+  const createProduct = useCallback(
+    async (productData: Partial<Product>) => {
+      await handleApiCall(
+        () => api.post("/products", productData),
+        "Product created successfully",
+        "Failed to create product"
+      );
+      fetchProducts();
+    },
+    [fetchProducts]
+  );
 
-  const updateProduct = useCallback(async (productId: string, productData: Partial<Product>) => {
-    await handleApiCall(
-      () =>  api.put(`/products/${productId}`),
-      'Product updated successfully',
-      'Failed to update product'
-    );
-    // Refresh products list
-    fetchProducts();
-  }, [fetchProducts]);
+  const updateProduct = useCallback(
+    async (productId: string, productData: Partial<Product>) => {
+      await handleApiCall(
+        () => api.put(`/products/${productId}`, productData),
+        "Product updated successfully",
+        "Failed to update product"
+      );
+      fetchProducts();
+    },
+    [fetchProducts]
+  );
 
-  const deleteProduct = useCallback(async (productId: string) => {
-    await handleApiCall(
-      () => api.delete(`/products/${productId}`),
-      'Product deleted successfully',
-      'Failed to delete product'
-    );
-    // Refresh products list
-    fetchProducts();
-  }, [fetchProducts]);
+  const deleteProduct = useCallback(
+    async (productId: string) => {
+      await handleApiCall(
+        () => api.delete(`/products/${productId}`),
+        "Product deleted successfully",
+        "Failed to delete product"
+      );
+      fetchProducts();
+    },
+    [fetchProducts]
+  );
 
+  // --- Category APIs ---
   const fetchCategories = useCallback(async () => {
-    const data = await handleApiCall<{ categories: string[] }>(
-      () => api.get('/products/categories')
+    const data = await handleApiCall<{ data: string[] }>(() =>
+      api.get("/products/categories")
     );
-    if (data) {
-      setCategories(data.categories);
-    }
+    if (data) setCategories(data.data);
   }, []);
 
-  const addReview = useCallback(async (productId: string, reviewData: { rating: number; title: string; comment: string }) => {
-    await handleApiCall(
-      () => fetch(`/api/products/${productId}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(reviewData)
-      }),
-      'Review added successfully',
-      'Failed to add review'
-    );
-  }, []);
+  // --- Reviews ---
+  const addReview = useCallback(
+    async (
+      productId: string,
+      reviewData: { rating: number; title: string; comment: string }
+    ) => {
+      await handleApiCall(
+        () => api.post(`/products/${productId}/reviews`, reviewData),
+        "Review added successfully",
+        "Failed to add review"
+      );
+    },
+    []
+  );
 
-  const updateReview = useCallback(async (productId: string, reviewId: string, reviewData: { rating: number; title: string; comment: string }) => {
-    await handleApiCall(
-      () => fetch(`/api/products/${productId}/reviews/${reviewId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(reviewData)
-      }),
-      'Review updated successfully',
-      'Failed to update review'
-    );
-  }, []);
+  const updateReview = useCallback(
+    async (
+      productId: string,
+      reviewId: string,
+      reviewData: { rating: number; title: string; comment: string }
+    ) => {
+      await handleApiCall(
+        () => api.put(`/products/${productId}/reviews/${reviewId}`, reviewData),
+        "Review updated successfully",
+        "Failed to update review"
+      );
+    },
+    []
+  );
 
   const deleteReview = useCallback(async (productId: string, reviewId: string) => {
     await handleApiCall(
-      () => fetch(`/api/products/${productId}/reviews/${reviewId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      }),
-      'Review deleted successfully',
-      'Failed to delete review'
+      () => api.delete(`/products/${productId}/reviews/${reviewId}`),
+      "Review deleted successfully",
+      "Failed to delete review"
     );
   }, []);
 
-  const markReviewHelpful = useCallback(async (productId: string, reviewId: string) => {
-    await handleApiCall(
-      () => fetch(`/api/products/${productId}/reviews/${reviewId}/helpful`, {
-        method: 'POST',
-        credentials: 'include'
-      }),
-      'Review marked as helpful',
-      'Failed to mark review as helpful'
-    );
-  }, []);
+  const markReviewHelpful = useCallback(
+    async (productId: string, reviewId: string) => {
+      await handleApiCall(
+        () => api.post(`/products/${productId}/reviews/${reviewId}/helpful`),
+        "Marked as helpful",
+        "Failed to mark as helpful"
+      );
+    },
+    []
+  );
 
-  const getProductReviews = useCallback(async (productId: string, page = 1, sort = 'newest'): Promise<Review[]> => {
-    const data = await handleApiCall<{ reviews: Review[] }>(
-      () => fetch(`/api/products/${productId}/reviews?page=${page}&sort=${sort}`, { credentials: 'include' })
-    );
-    return data?.reviews || [];
-  }, []);
+  const getProductReviews = useCallback(
+    async (productId: string, page = 1, sort = "newest"): Promise<Review[]> => {
+      const data = await handleApiCall<{ data: Review[] }>(() =>
+        api.get(`/products/${productId}/reviews`, { params: { page, sort } })
+      );
+      return data?.data || [];
+    },
+    []
+  );
 
+  // --- Wishlist/Like ---
   const toggleLike = useCallback(async (productId: string) => {
-    const data = await handleApiCall<{ message: string; isLiked: boolean; likeCount: number }>(
-      () => fetch(`/api/products/${productId}/like`, {
-        method: 'POST',
-        credentials: 'include'
-      })
-    );
-    
+    const data = await handleApiCall<{
+      isLiked: boolean;
+      likeCount: number;
+    }>(() => api.post(`/products/${productId}/like`));
+
     if (data) {
-      // Update the product in the current products list
-      setProducts(prev => prev ? prev.map(product => 
-        product._id === productId 
-          ? { ...product, isLiked: data.isLiked }
-          : product
-      ) : null);
+      setProducts((prev) =>
+        prev
+          ? prev.map((p) =>
+              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+            )
+          : null
+      );
+      setFeaturedProducts((prev) =>
+        prev
+          ? prev.map((p) =>
+              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+            )
+          : null
+      );
+      setNewProducts((prev) =>
+        prev
+          ? prev.map((p) =>
+              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+            )
+          : null
+      );
 
-      // Update featured products if they exist
-      setFeaturedProducts(prev => prev ? prev.map(product => 
-        product._id === productId 
-          ? { ...product, isLiked: data.isLiked }
-          : product
-      ) : null);
-
-      // Update new products if they exist
-      setNewProducts(prev => prev ? prev.map(product => 
-        product._id === productId 
-          ? { ...product, isLiked: data.isLiked }
-          : product
-      ) : null);
-
-      toast.success(data.isLiked ? 'Added to wishlist' : 'Removed from wishlist');
+      toast.success(data.isLiked ? "Added to wishlist" : "Removed from wishlist");
     }
   }, []);
 
+  // Auto fetch products on mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   const value: ProductContextType = {
-    // State
     products,
     featuredProducts,
     newProducts,
@@ -294,7 +300,6 @@ useEffect(() => {
     loading,
     error,
 
-    // Product operations
     fetchProducts,
     fetchProductsByCategory,
     fetchFeaturedProducts,
@@ -305,23 +310,18 @@ useEffect(() => {
     updateProduct,
     deleteProduct,
 
-    // Category operations
     fetchCategories,
 
-    // Review operations
     addReview,
     updateReview,
     deleteReview,
     markReviewHelpful,
     getProductReviews,
 
-    // Like operations
     toggleLike,
   };
 
   return (
-    <ProductContext.Provider value={value}>
-      {children}
-    </ProductContext.Provider>
+    <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
   );
 };
