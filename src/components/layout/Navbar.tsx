@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, Heart, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { SearchWithSuggestions } from '@/components/ui/search-with-suggestions';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
 import {
   DropdownMenu,
@@ -17,18 +18,16 @@ import {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const cart = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { wishlistCount } = useProducts();
   const navigate = useNavigate();
 
   const itemCount = cart?.getItemCount() || 0;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -77,21 +76,11 @@ export function Navbar() {
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <form onSubmit={handleSearch} className="flex w-full">
-              <Input
-                type="search"
-                placeholder="Search for curtains, blinds, wallpapers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none focus:ring-primary"
-              />
-              <Button 
-                type="submit" 
-                className="rounded-l-none btn-hero"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
+            <SearchWithSuggestions
+              onSearch={handleSearch}
+              placeholder="Search for curtains, blinds, wallpapers..."
+              className="w-full"
+            />
           </div>
 
           {/* Right Section */}
@@ -145,6 +134,14 @@ export function Navbar() {
             >
               <Heart className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Wishlist</span>
+              {isAuthenticated && wishlistCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                >
+                  {wishlistCount}
+                </Badge>
+              )}
             </Button>
 
             {/* Cart */}
@@ -229,18 +226,13 @@ export function Navbar() {
         <div className="md:hidden border-t bg-background">
           <div className="container-premium py-4">
             {/* Mobile Search */}
-            <form onSubmit={handleSearch} className="flex mb-4">
-              <Input
-                type="search"
+            <div className="mb-4">
+              <SearchWithSuggestions
+                onSearch={handleSearch}
                 placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none"
+                className="w-full"
               />
-              <Button type="submit" className="rounded-l-none btn-hero">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
+            </div>
 
             {/* Mobile Categories */}
             <div className="space-y-2">

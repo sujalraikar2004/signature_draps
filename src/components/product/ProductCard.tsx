@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,13 @@ interface ProductCardProps {
   product: Product;
   className?: string;
 }
-const navigate=useNavigate()
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const { toggleLike } = useProducts();
+  const [isLiking, setIsLiking] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,13 +39,19 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     
     if (!isAuthenticated) {
       toast.error('Please login to add items to wishlist');
+      navigate("/login");
       return;
     }
 
+    if (isLiking) return; // Prevent double clicks
+    
+    setIsLiking(true);
     try {
       await toggleLike(product._id);
     } catch (error) {
       // Error is already handled in the context
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -69,8 +76,15 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.featured && (
-              <Badge className="bg-success text-success-foreground">Featured</Badge>
+            {product.isBestSeller && (
+              <Badge className="bg-amber-500 text-white shadow">
+                Best Seller
+              </Badge>
+            )}
+            {product.isNew && (
+              <Badge className="bg-primary text-primary-foreground shadow">
+                New
+              </Badge>
             )}
             {discountPercentage > 0 && (
               <Badge variant="destructive">{discountPercentage}% OFF</Badge>
@@ -82,12 +96,19 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
             <Button
               size="sm"
               variant="secondary"
-              className={`h-8 w-8 p-0 ${
-                product.isLiked ? 'text-red-500 bg-red-50 hover:bg-red-100' : ''
-              }`}
+              className={`h-8 w-8 p-0 transition-all duration-200 ${
+                product.isLiked 
+                  ? 'text-red-500 bg-red-50 hover:bg-red-100 border-red-200 shadow-md' 
+                  : 'hover:text-red-400 hover:bg-red-50'
+              } ${isLiking ? 'scale-110' : ''}`}
               onClick={handleToggleLike}
+              disabled={isLiking}
             >
-              <Heart className={`h-4 w-4 ${product.isLiked ? 'fill-current' : ''}`} />
+              <Heart 
+                className={`h-4 w-4 transition-all duration-200 ${
+                  product.isLiked ? 'fill-current animate-pulse' : ''
+                } ${isLiking ? 'animate-bounce' : ''}`} 
+              />
             </Button>
             <Button
               size="sm"

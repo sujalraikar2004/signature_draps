@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import api from "@/Api";
 
 
-export default function Checkout({ cart }) {
+export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
     phone: "",
@@ -83,7 +83,7 @@ export default function Checkout({ cart }) {
           {/* Payment Options */}
           <div>
             <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
-            <RadioGroup value={paymentMode} onValueChange={setPaymentMode}>
+            <RadioGroup value={paymentMode} onValueChange={(value) => setPaymentMode(value as "COD" | "ONLINE")}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="COD" id="cod" />
                 <Label htmlFor="cod">Cash on Delivery</Label>

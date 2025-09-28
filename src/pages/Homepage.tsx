@@ -11,28 +11,57 @@ import api from '@/Api';
 import slide1 from '@/assets/slider/slide-1.jpg';
 import slide2 from '@/assets/slider/slide-2.jpg';
 import slide3 from '@/assets/slider/slide-3.jpg';
+import curtainsImg from '@/assets/category-curtains.jpg';
+import beanbagsImg from '@/assets/category-beanbags.jpg';
+import wallpaperImg from '@/assets/category-wallpaper.jpg';
+import blindsImg from '@/assets/category-blinds.jpg';
+
 interface Product {
   count: number;
   category: string;
   image: string;
 }
 
+// Static category data with local images
+const staticCategories = [
+  {
+    category: 'curtains-furnishing',
+    name: 'Curtains & Furnishing',
+    image: curtainsImg,
+    count: 125
+  },
+  {
+    category: 'bean-bags',
+    name: 'Bean Bags & Cushions', 
+    image: beanbagsImg,
+    count: 85
+  },
+  {
+    category: 'wallpaper',
+    name: 'Wallpaper & Wall Coverings',
+    image: wallpaperImg,
+    count: 95
+  },
+  {
+    category: 'blinds',
+    name: 'Blinds & Window Treatments',
+    image: blindsImg,
+    count: 110
+  }
+];
+
 export default function Homepage() {
-  const { featuredProducts, loading, fetchFeaturedProducts } = useProducts();
-const [categories, setCategories] = useState<Product[]>([]);
- 
+  const { featuredProducts, newProducts, bestSellers, loading, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers } = useProducts();
+  const [categories, setCategories] = useState(staticCategories);
+
   useEffect(() => {
-      fetchCategories()
     fetchFeaturedProducts();
-  }, [fetchFeaturedProducts]);
+    fetchNewProducts();
+    fetchBestSellers();
+  }, [fetchFeaturedProducts, fetchNewProducts, fetchBestSellers]);
+
   console.log(featuredProducts);
-  
-  const fetchCategories = async () => {
-    const response = await api.get("/products/categories");
-  
-    if (response) setCategories(response.data.data);
-   
-  };
+
   const sliderData = [
     {
       id: 1,
@@ -80,53 +109,71 @@ const [categories, setCategories] = useState<Product[]>([]);
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-gray-50">
         <div className="container-premium">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-heading font-bold mb-4">Shop by Category</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold mb-6 text-gray-800">
+              Shop by Category
+            </h2>
+            <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
               Explore our comprehensive range of interior furnishing solutions, carefully curated to transform your living spaces.
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {categories.map((category) => (
-              <Link
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
+              <div
                 key={category.category}
-                to={`/category/${category.category}`}
-                className="group card-premium p-6 text-center hover:shadow-lg transition-all duration-300"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: 'fadeInUp 0.6s ease-out forwards'
+                }}
               >
-                <div className="mb-4 flex justify-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <img
-            src={category.image}
-            alt={category.category}
-            className="w-20 h-20"
-          /> 
-                  </div>
+                {/* Image Container */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
-                <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
-                  {category.category}
-                </h3>
-             
-              </Link>
+
+                {/* Content */}
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2 leading-tight">
+                    {category.name}
+                  </h3>
+                  
+                  <p className="text-gray-500 text-sm mb-4">
+                    {category.count} products
+                  </p>
+
+                  <Link
+                    to={`/category/${category.category}`}
+                    className="inline-block w-full text-center bg-gray-100 hover:bg-primary hover:text-white text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-all duration-300"
+                  >
+                    Explore Collection
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Products Section */}
+      {/* Best Sellers Section */}
       <section className="py-16">
         <div className="container-premium">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-heading font-bold mb-4">Featured Products</h2>
+              <h2 className="text-3xl font-heading font-bold mb-4">Best Sellers</h2>
               <p className="text-muted-foreground">
-                Discover our handpicked selection of premium interior furnishing products.
+                Explore our top-selling interior furnishing products.
               </p>
             </div>
             <Button variant="outline" asChild>
-              <Link to="/products">
+              <Link to="/products?isBestSeller=true">
                 View All <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -138,7 +185,38 @@ const [categories, setCategories] = useState<Product[]>([]);
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredProducts?.slice(0, 8).map((product) => (
+              {bestSellers?.slice(0, 8).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* New Arrivals Section */}
+      <section className="py-16">
+        <div className="container-premium">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-heading font-bold mb-4">New Arrivals</h2>
+              <p className="text-muted-foreground">
+                Discover our latest collection of interior furnishing products.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/products?isNew=true">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {newProducts?.slice(0, 8).map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>

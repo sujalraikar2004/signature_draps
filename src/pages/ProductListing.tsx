@@ -18,7 +18,9 @@ export default function ProductListing() {
   const { categoryId } = useParams();
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
-  
+  const isBestSellerParam = searchParams.get('isBestSeller');
+  const isNewParam = searchParams.get('isNew');
+
   const { 
     products, 
     loading, 
@@ -47,10 +49,14 @@ export default function ProductListing() {
       searchProductsAPI(searchQuery);
     } else if (categoryId) {
       fetchProductsByCategory(categoryId);
+    } else if (isBestSellerParam === 'true') {
+      fetchProducts({ isBestSeller: true });
+    } else if (isNewParam === 'true') {
+      fetchProducts({ isNew: true });
     } else {
       fetchProducts();
     }
-  }, [categoryId, searchQuery, fetchProducts, fetchProductsByCategory, searchProductsAPI]);
+  }, [categoryId, searchQuery, isBestSellerParam, isNewParam, fetchProducts, fetchProductsByCategory, searchProductsAPI]);
 
   // Apply filters and sorting
   const filteredProducts = useMemo(() => {
@@ -65,7 +71,7 @@ export default function ProductListing() {
 
     // In stock filter
     if (filters.inStock) {
-      filteredList = filteredList.filter(product => product.stock > 0);
+      filteredList = filteredList.filter(product => product.inStock && product.stockQuantity > 0);
     }
 
     // Rating filter

@@ -13,13 +13,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
 import api from '@/Api';
+import { Product, Review } from '@/types';
 
 export default function ProductDetail() {
   const { productId } = useParams();
   
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { getProductById,products,toggleLike}=useProducts()
+  const { getProductById, products, toggleLike, addReview, getProductReviews, markReviewHelpful, updateReview, getUserReview } = useProducts();
   const { user } = useAuth();
 
   const [selectedImage, setSelectedImage] = useState(0);
@@ -29,10 +30,16 @@ export default function ProductDetail() {
     title: '',
     comment: ''
   });
+  const [userExistingReview, setUserExistingReview] = useState<any>(null);
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
 
  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!productId) return;
@@ -52,35 +59,49 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [productId, getProductById]); 
-
-  
-  if (!product) {
-    return (
-      <main className="min-h-screen bg-background">
-        <div className="container-premium py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-          <p className="text-muted-foreground mb-8">
-            The product you're looking for doesn't exist or has been removed.
-          </p>
-          <Button onClick={() => navigate('/')}>
-            Back to Home
-          </Button>
-        </div>
-      </main>
-    );
-  }
+ 
+  // Fetch reviews for the product
+  useEffect(() => {
+    if (!productId) return;
+    const fetchReviews = async () => {
+      setReviewsLoading(true);
+      setReviewsError(null);
+      try {
+        const list = await getProductReviews(productId, 1, 'newest');
+        setReviews(list);
+        
+        // Check if current user has already reviewed this product
+        if (user) {
+          const existingReview = await getUserReview(productId);
+          if (existingReview) {
+            setUserExistingReview(existingReview);
+            setNewReview({
+              rating: (existingReview as any).rating || 5,
+              title: (existingReview as any).title || '',
+              comment: (existingReview as any).comment || ''
+            });
+          }
+        }
+       } catch (e) {
+         setReviewsError('Failed to load reviews');
+       } finally {
+         setReviewsLoading(false);
+       }
+     };
+     fetchReviews();
+  }, [productId, getProductReviews, getUserReview, user]);
 
   const relatedProducts = products
-    .filter(p => p.category === product.category && p._id !== product._id)
+    .filter(p => p.category === product?.category && p._id !== product?._id)
     .slice(0, 4);
 
-  const discountPercentage = product.originalPrice 
+  const discountPercentage = product?.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   const handleAddToCart = () => {
      if(user){
-      addToCart(product._id,quantity);
+      addToCart(product?._id,quantity);
      }else{
       navigate("/login");
      }
@@ -90,15 +111,20 @@ export default function ProductDetail() {
   };
 
   const handleAddToWishlist = () => {
-       if(user){
-     toggleLike(product._id);
-     }else{
+    if (!user) {
       navigate("/login");
-     }
+      return;
+    }
     
-  };
+    if (isLiking || !product?._id) return; // Prevent double clicks
+    
+    setIsLiking(true);
+    toggleLike(product._id).finally(() => {
+      setIsLiking(false);
+    });
+   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error('Please login to submit a review');
@@ -108,12 +134,89 @@ export default function ProductDetail() {
       toast.error('Please fill in all fields');
       return;
     }
-    toast.success('Review submitted successfully!');
-    setNewReview({ rating: 5, title: '', comment: '' });
+    try {
+      if (!productId) return;
+      
+      if (isEditingReview && userExistingReview) {
+        // Update existing review
+        await updateReview(productId, userExistingReview._id, {
+          rating: newReview.rating,
+          title: newReview.title,
+          comment: newReview.comment,
+        });
+        toast.success('Review updated successfully!');
+        setIsEditingReview(false);
+      } else {
+        // Try to add new review
+        await addReview(productId, {
+          rating: newReview.rating,
+          title: newReview.title,
+          comment: newReview.comment,
+        });
+        setNewReview({ rating: 5, title: '', comment: '' });
+      }
+      
+      // Refresh reviews and product rating/count
+      const list = await getProductReviews(productId, 1, 'newest');
+      setReviews(list);
+      const updated = await getProductById(productId);
+      if (updated) setProduct(updated);
+      
+      // Refresh user's review status
+      const existingReview = await getUserReview(productId);
+      setUserExistingReview(existingReview);
+     } catch (err:any) {
+      if (err?.isExistingReview) {
+        // User already has a review, switch to edit mode
+        setUserExistingReview(err.existingReview);
+        setIsEditingReview(true);
+        setNewReview({
+          rating: err.existingReview.rating,
+          title: err.existingReview.title,
+          comment: err.existingReview.comment
+        });
+      }
+      // Error toasts are already handled in context
+     }
+   };
+
+  const handleEditReview = () => {
+    if (userExistingReview) {
+      setIsEditingReview(true);
+      setNewReview({
+        rating: userExistingReview.rating,
+        title: userExistingReview.title,
+        comment: userExistingReview.comment
+      });
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditingReview(false);
+    if (userExistingReview) {
+      setNewReview({
+        rating: userExistingReview.rating,
+        title: userExistingReview.title,
+        comment: userExistingReview.comment
+      });
+    } else {
+      setNewReview({ rating: 5, title: '', comment: '' });
+    }
   };
 
-  const handleHelpfulClick = (reviewId: string) => {
-    toast.success('Thank you for your feedback!');
+  const handleHelpfulClick = async (reviewId: string) => {
+    try {
+      if (!user) {
+        toast.error('Please login to vote');
+        return;
+      }
+      if (!productId) return;
+      await markReviewHelpful(productId, reviewId);
+      // Optimistically update helpful count locally
+      setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, helpful: (r.helpful || 0) + 1 } as Review : r));
+    } catch (err:any) {
+      toast.error(err?.response?.data?.message || 'Failed to mark as helpful');
+    }
   };
 
   return (
@@ -121,7 +224,7 @@ export default function ProductDetail() {
       <div className="container-premium py-8">
         {/* Breadcrumb */}
         <nav className="mb-8 text-sm text-muted-foreground">
-          <span>Home</span> / <span>Categories</span> / <span className="text-foreground">{product.name}</span>
+          <span>Home</span> / <span>Categories</span> / <span className="text-foreground">{product?.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
@@ -129,15 +232,15 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted">
               <img
-                src={product.images[selectedImage].url}
-                alt={product.name}
+                src={product?.images[selectedImage].url}
+                alt={product?.name}
                 className="w-full h-full object-cover"
               />
             </div>
             
-            {product.images.length > 1 && (
+            {product?.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {product.images.map((image, index) => (
+                {product?.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -147,7 +250,7 @@ export default function ProductDetail() {
                   >
                     <img
                       src={image.url}
-                      alt={`${product.name} ${index + 1}`}
+                      alt={`${product?.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -159,12 +262,12 @@ export default function ProductDetail() {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              {product.brand && (
+              {product?.brand && (
                 <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
                   {product.brand}
                 </p>
               )}
-              <h1 className="text-3xl font-heading font-bold mb-4">{product.name}</h1>
+              <h1 className="text-3xl font-heading font-bold mb-4">{product?.name}</h1>
               
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
@@ -173,7 +276,7 @@ export default function ProductDetail() {
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.rating)
+                        i < Math.floor(product?.rating)
                           ? 'fill-accent text-accent'
                           : 'text-muted-foreground/40'
                       }`}
@@ -181,16 +284,16 @@ export default function ProductDetail() {
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {product.rating} ({product.reviewCount} reviews)
+                  {product?.rating} ({product?.reviewCount} reviews)
                 </span>
               </div>
 
               {/* Badges */}
               <div className="flex gap-2 mb-4">
-                {product.isNew && (
+                {product?.isNew && (
                   <Badge className="bg-success text-success-foreground">New Arrival</Badge>
                 )}
-                {product.isBestSeller && (
+                {product?.isBestSeller && (
                   <Badge className="bg-accent text-accent-foreground">Best Seller</Badge>
                 )}
                 {discountPercentage > 0 && (
@@ -203,9 +306,9 @@ export default function ProductDetail() {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-bold text-primary">
-                  ₹{product.price.toLocaleString()}
+                  ₹{product?.price.toLocaleString()}
                 </span>
-                {product.originalPrice && (
+                {product?.originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
                     ₹{product.originalPrice.toLocaleString()}
                   </span>
@@ -218,7 +321,7 @@ export default function ProductDetail() {
 
             {/* Stock Status */}
             <div>
-              {product.inStock && product.stockQuantity > 0 ? (
+              {product?.inStock && product?.stockQuantity > 0 ? (
                 <Badge variant="outline" className="text-success border-success">
                   ✓ In Stock - Ready to Ship ({product.stockQuantity} available)
                 </Badge>
@@ -259,7 +362,7 @@ export default function ProductDetail() {
                   className="flex-1 btn-hero" 
                   size="lg"
                   onClick={handleAddToCart}
-                  disabled={!product.inStock || product.stockQuantity <= 0}
+                  disabled={!product?.inStock || product?.stockQuantity <= 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
@@ -267,17 +370,27 @@ export default function ProductDetail() {
                 <Button 
                   variant="outline" 
                   size="lg"
+                  className={`transition-all duration-200 ${
+                    product?.isLiked 
+                      ? 'text-red-500 bg-red-50 hover:bg-red-100 border-red-200 shadow-md' 
+                      : 'hover:text-red-400 hover:bg-red-50'
+                  } ${isLiking ? 'scale-105' : ''}`}
                   onClick={handleAddToWishlist}
-                  className="px-3"
+                  disabled={isLiking}
                 >
-                  <Heart className="h-5 w-5" />
+                  <Heart 
+                    className={`mr-2 h-5 w-5 transition-all duration-200 ${
+                      product?.isLiked ? 'fill-current animate-pulse' : ''
+                    } ${isLiking ? 'animate-bounce' : ''}`} 
+                  />
+                  {isLiking ? 'Adding...' : product?.isLiked ? 'Added to Wishlist' : 'Add to Wishlist'}
                 </Button>
               </div>
 
               <Button 
                 className="w-full btn-gold" 
                 size="lg"
-                disabled={!product.inStock || product.stockQuantity <= 0}
+                disabled={!product?.inStock || product?.stockQuantity <= 0}
               >
                 Buy Now
               </Button>
@@ -311,14 +424,14 @@ export default function ProductDetail() {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviewCount})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({product?.reviewCount})</TabsTrigger>
               <TabsTrigger value="write-review">Write Review</TabsTrigger>
             </TabsList>
             
             <TabsContent value="description" className="mt-6">
               <div className="card-premium p-6">
                 <p className="text-muted-foreground leading-relaxed">
-                  {product.description}
+                  {product?.description}
                 </p>
               </div>
             </TabsContent>
@@ -326,7 +439,7 @@ export default function ProductDetail() {
             <TabsContent value="features" className="mt-6">
               <div className="card-premium p-6">
                 <ul className="space-y-2">
-                  {product.features.map((feature, index) => (
+                  {product?.features.map((feature, index) => (
                     <li key={index} className="flex items-start space-x-2">
                       <span className="text-primary mt-1">•</span>
                       <span>{feature}</span>
@@ -348,109 +461,88 @@ export default function ProductDetail() {
                           <Star
                             key={i}
                             className={`h-5 w-5 ${
-                              i < Math.floor(product.rating)
+                              i < Math.floor(product?.rating)
                                 ? 'fill-accent text-accent'
                                 : 'text-muted-foreground/40'
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-lg font-medium">{product.rating} out of 5</span>
-                      <span className="text-muted-foreground">({product.reviewCount} reviews)</span>
+                      <span className="text-lg font-medium">{product?.rating} out of 5</span>
+                      <span className="text-muted-foreground">({product?.reviewCount} reviews)</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Sample Reviews */}
-                <div className="space-y-6">
-                  {[
-                    {
-                      id: '1',
-                      userName: 'Priya Sharma',
-                      rating: 5,
-                      title: 'Excellent Quality!',
-                      comment: 'The curtains are exactly as shown in the pictures. The fabric quality is premium and the colors are vibrant. Installation was smooth and the team was professional. Highly recommended!',
-                      date: '2 weeks ago',
-                      verified: true,
-                      helpful: 12
-                    },
-                    {
-                      id: '2',
-                      userName: 'Rajesh Kumar',
-                      rating: 4,
-                      title: 'Good value for money',
-                      comment: 'Nice product overall. The delivery was on time and packaging was good. The only minor issue was that the color was slightly different from what I expected, but still looks great in my living room.',
-                      date: '1 month ago',
-                      verified: true,
-                      helpful: 8
-                    },
-                    {
-                      id: '3',
-                      userName: 'Anita Desai',
-                      rating: 5,
-                      title: 'Perfect for my bedroom',
-                      comment: 'Love these curtains! They block out light perfectly and the material feels luxurious. The customer service was also very helpful with measurements. Will definitely order again.',
-                      date: '2 months ago',
-                      verified: false,
-                      helpful: 5
-                    }
-                  ].map((review) => (
-                    <div key={review.id} className="border border-border rounded-lg p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-medium">{review.userName}</h4>
-                              {review.verified && (
-                                <Badge variant="outline" className="text-xs text-success border-success">
-                                  Verified Purchase
-                                </Badge>
-                              )}
+                {/* Reviews List */}
+                {reviewsLoading ? (
+                  <div className="py-8 text-center text-muted-foreground">Loading reviews...</div>
+                ) : reviewsError ? (
+                  <div className="py-8 text-center text-destructive">{reviewsError}</div>
+                ) : reviews.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">No reviews yet. Be the first to review!</div>
+                ) : (
+                  <div className="space-y-6">
+                    {reviews.map((review) => (
+                      <div key={review._id} className="border border-border rounded-lg p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              <User className="h-5 w-5 text-primary" />
                             </div>
-                            <p className="text-sm text-muted-foreground">{review.date}</p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">{review.userName}</h4>
+                                {review.verified && (
+                                  <Badge variant="outline" className="text-xs text-success border-success">
+                                    Verified Purchase
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{new Date((review as any).createdAt || '').toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < (review.rating || 0)
+                                    ? 'fill-accent text-accent'
+                                    : 'text-muted-foreground/40'
+                                }`}
+                              />
+                            ))}
                           </div>
                         </div>
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? 'fill-accent text-accent'
-                                  : 'text-muted-foreground/40'
-                              }`}
-                            />
-                          ))}
+                        
+                        <h5 className="font-medium mb-2">{review.title}</h5>
+                        <p className="text-muted-foreground mb-4 leading-relaxed">{review.comment}</p>
+                        
+                        <div className="flex items-center justify-between">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleHelpfulClick(review._id)}
+                            className="text-muted-foreground hover:text-primary"
+                          >
+                            <ThumbsUp className="h-4 w-4 mr-1" />
+                            Helpful ({review.helpful || 0})
+                          </Button>
                         </div>
                       </div>
-                      
-                      <h5 className="font-medium mb-2">{review.title}</h5>
-                      <p className="text-muted-foreground mb-4 leading-relaxed">{review.comment}</p>
-                      
-                      <div className="flex items-center justify-between">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleHelpfulClick(review.id)}
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          Helpful ({review.helpful})
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </TabsContent>
             
             <TabsContent value="write-review" className="mt-6">
               <div className="card-premium p-6">
-                <h3 className="text-2xl font-heading font-semibold mb-6">Write a Review</h3>
-                
+                <h3 className="text-2xl font-heading font-semibold mb-6">
+                  {userExistingReview && !isEditingReview ? 'Your Review' : isEditingReview ? 'Edit Your Review' : 'Write a Review'}
+                </h3>
+                 
                 {!user ? (
                   <div className="text-center py-8">
                     <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -460,6 +552,34 @@ export default function ProductDetail() {
                     <Button onClick={() => navigate('/login')} className="btn-hero">
                       Login to Review
                     </Button>
+                  </div>
+                ) : userExistingReview && !isEditingReview ? (
+                  <div className="space-y-6">
+                    <div className="border border-border rounded-lg p-6 bg-muted/20">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-5 w-5 ${
+                                i < userExistingReview.rating
+                                  ? 'fill-accent text-accent'
+                                  : 'text-muted-foreground/40'
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 font-medium">{userExistingReview.rating} stars</span>
+                        </div>
+                        <Button onClick={handleEditReview} variant="outline" size="sm">
+                          Edit Review
+                        </Button>
+                      </div>
+                      <h4 className="font-semibold mb-2">{userExistingReview.title}</h4>
+                      <p className="text-muted-foreground">{userExistingReview.comment}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground text-center">
+                      You can only submit one review per product, but you can edit it anytime.
+                    </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmitReview} className="space-y-6">
@@ -515,8 +635,17 @@ export default function ProductDetail() {
                     
                     <div className="flex gap-4">
                       <Button type="submit" className="btn-hero">
-                        Submit Review
+                        {isEditingReview ? 'Update Review' : 'Submit Review'}
                       </Button>
+                      {isEditingReview && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                        >
+                          Cancel
+                        </Button>
+                      )}
                       <Button
                         type="button"
                         variant="outline"
@@ -540,7 +669,7 @@ export default function ProductDetail() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                <ProductCard key={relatedProduct._id} product={relatedProduct} />
               ))}
             </div>
           </section>

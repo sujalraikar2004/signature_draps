@@ -8,22 +8,26 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 import { Product, Review } from "@/types";
-import api from "../Api"; // axios instance with baseURL & interceptors
+import api from "@/Api"; // axios instance with baseURL & interceptors
+import { useAuth } from "./AuthContext";
 
 // Types
 interface ProductContextType {
   products: Product[] | null;
   featuredProducts: Product[] | null;
   newProducts: Product[] | null;
+  bestSellers: Product[] | null;
   categories: string[] | null;
+  wishlistCount: number;
   loading: boolean;
   error: string | null;
 
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (params?: Record<string, any>) => Promise<void>;
   fetchProductsByCategory: (categoryId: string) => Promise<void>;
   fetchFeaturedProducts: () => Promise<void>;
   fetchNewProducts: () => Promise<void>;
-  searchProducts: (query: string) => Promise<void>;
+  fetchBestSellers: () => Promise<void>;
+  searchProducts: (query: string, filters?: any) => Promise<Product[]>;
   getProductById: (productId: string) => Promise<Product | null>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
   updateProduct: (
@@ -37,7 +41,7 @@ interface ProductContextType {
   addReview: (
     productId: string,
     reviewData: { rating: number; title: string; comment: string }
-  ) => Promise<void>;
+  ) => Promise<any>;
   updateReview: (
     productId: string,
     reviewId: string,
@@ -50,8 +54,10 @@ interface ProductContextType {
     page?: number,
     sort?: string
   ) => Promise<Review[]>;
+  getUserReview: (productId: string) => Promise<Review | null>;
 
   toggleLike: (productId: string) => Promise<void>;
+  getSearchSuggestions: (query: string) => Promise<any>;
 }
 
 // Context
@@ -68,12 +74,16 @@ interface Props {
 }
 
 export const ProductProvider: React.FC<Props> = ({ children }) => {
+  const { user } = useAuth();
+
   const [products, setProducts] = useState<Product[] | null>(null);
   const [featuredProducts, setFeaturedProducts] = useState<Product[] | null>(
     null
   );
   const [newProducts, setNewProducts] = useState<Product[] | null>(null);
+  const [bestSellers, setBestSellers] = useState<Product[] | null>(null);
   const [categories, setCategories] = useState<string[] | null>(null);
+  const [wishlistCount, setWishlistCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,9 +114,9 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   };
 
   // --- Product APIs ---
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (params?: Record<string, any>) => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
-      api.get("/products")
+      api.get("/products", { params })
     );
     if (data) setProducts(data.data);
   }, []);
@@ -122,7 +132,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
       api.get("/products/featured")
     );
-    console.log("featured product",data)
+    console.log("featured product", data);
     if (data) setFeaturedProducts(data.data);
   }, []);
 
@@ -133,19 +143,33 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     if (data) setNewProducts(data.data);
   }, []);
 
-  const searchProducts = useCallback(async (query: string) => {
+  const fetchBestSellers = useCallback(async () => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
-      api.get(`/products/search?q=${encodeURIComponent(query)}`)
+      api.get("/products/best-sellers")
     );
-    if (data) setProducts(data.data);
+    if (data) setBestSellers(data.data);
   }, []);
+
+  const searchProducts = useCallback(
+    async (query: string, filters: any = {}) => {
+      try {
+        const params = { q: query, ...filters };
+        const response = await api.get("/products/search", { params });
+        return response.data.data || [];
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || "Search failed");
+        return [];
+      }
+    },
+    []
+  );
 
   const getProductById = useCallback(
     async (productId: string): Promise<Product | null> => {
       const data = await handleApiCall<{ data: Product }>(() =>
         api.get(`/products/${productId}`)
       );
-      console.log(data)
+      console.log(data);
       return data?.data || null;
     },
     []
@@ -187,27 +211,38 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     [fetchProducts]
   );
 
-  
   const fetchCategories = useCallback(async () => {
     const response = await handleApiCall<{ data: string[] }>(() =>
       api.get("/products/categories")
     );
-    console.log("this is categories api responce ",response)
-    if (response) setCategories(response.data.data);
-    console.log(categories)
+    console.log("this is categories api response", response);
+    if (response) setCategories(response.data);
+    console.log(categories);
   }, []);
 
-  
   const addReview = useCallback(
     async (
       productId: string,
       reviewData: { rating: number; title: string; comment: string }
     ) => {
-      await handleApiCall(
-        () => api.post(`/products/${productId}/reviews`, reviewData),
-        "Review added successfully",
-        "Failed to add review"
-      );
+      try {
+        const response = await api.post(`/products/${productId}/reviews`, reviewData);
+        toast.success("Review submitted successfully!");
+        return response.data;
+      } catch (error: any) {
+        if (error.response?.status === 400 && error.response?.data?.data?.existingReview) {
+          // User already has a review, return the existing review data
+          const existingReview = error.response.data.data.existingReview;
+          toast.error(error.response.data.message);
+          throw { 
+            isExistingReview: true, 
+            existingReview,
+            message: error.response.data.message 
+          };
+        }
+        toast.error(error.response?.data?.message || "Failed to submit review");
+        throw error;
+      }
     },
     []
   );
@@ -248,47 +283,98 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   const getProductReviews = useCallback(
     async (productId: string, page = 1, sort = "newest"): Promise<Review[]> => {
-      const data = await handleApiCall<{ data: Review[] }>(() =>
+      const data = await handleApiCall<{ data: { reviews: Review[] } }>(() =>
         api.get(`/products/${productId}/reviews`, { params: { page, sort } })
       );
-      return data?.data || [];
+      return data?.data?.reviews || [];
     },
     []
   );
 
+  const getUserReview = useCallback(
+    async (productId: string): Promise<Review | null> => {
+      try {
+        if (!user) return null;
+        
+        const reviews = await getProductReviews(productId, 1, 'newest');
+        // Find the current user's review
+        const userReview = reviews.find(review => 
+          (review as any).userId === user._id || 
+          (review as any).userName === user.username
+        );
+        return userReview || null;
+      } catch (error) {
+        return null;
+      }
+    },
+    [getProductReviews, user]
+  );
+
+  const getSearchSuggestions = useCallback(async (query: string) => {
+    try {
+      if (!query || query.length < 2) {
+        return { suggestions: [], categories: [], brands: [], products: [] };
+      }
+      
+      const response = await api.get("/products/search/suggestions", {
+        params: { q: query, limit: 10 }
+      });
+      return response.data.data;
+    } catch (error: any) {
+      console.error("Search suggestions failed:", error);
+      return { suggestions: [], categories: [], brands: [], products: [] };
+    }
+  }, []);
+
   // --- Wishlist/Like ---
   const toggleLike = useCallback(async (productId: string) => {
-    const data = await handleApiCall<{
-      isLiked: boolean;
-      likeCount: number;
-    }>(() => api.post(`/products/${productId}/like`));
-
-    if (data) {
+    try {
+      const response = await api.post(`/products/${productId}/like`);
+      const { data, message } = response.data;
+      const { isLiked } = data;
+      
       setProducts((prev) =>
         prev
           ? prev.map((p) =>
-              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+              p._id === productId ? { ...p, isLiked } : p
             )
           : null
       );
       setFeaturedProducts((prev) =>
         prev
           ? prev.map((p) =>
-              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+              p._id === productId ? { ...p, isLiked } : p
             )
           : null
       );
       setNewProducts((prev) =>
         prev
           ? prev.map((p) =>
-              p._id === productId ? { ...p, isLiked: data.isLiked } : p
+              p._id === productId ? { ...p, isLiked } : p
+            )
+          : null
+      );
+      setBestSellers((prev) =>
+        prev
+          ? prev.map((p) =>
+              p._id === productId ? { ...p, isLiked } : p
             )
           : null
       );
 
-      toast.success(data.isLiked ? "Added to wishlist" : "Removed from wishlist");
+      toast.success(message);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update wishlist");
     }
   }, []);
+
+  // Calculate wishlist count whenever products change
+  useEffect(() => {
+    if (products) {
+      const count = products.filter((product) => product.isLiked).length;
+      setWishlistCount(count);
+    }
+  }, [products]);
 
   // Auto fetch products on mount
   useEffect(() => {
@@ -299,7 +385,9 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     products,
     featuredProducts,
     newProducts,
+    bestSellers,
     categories,
+    wishlistCount,
     loading,
     error,
 
@@ -307,6 +395,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     fetchProductsByCategory,
     fetchFeaturedProducts,
     fetchNewProducts,
+    fetchBestSellers,
     searchProducts,
     getProductById,
     createProduct,
@@ -320,8 +409,10 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     deleteReview,
     markReviewHelpful,
     getProductReviews,
+    getUserReview,
 
     toggleLike,
+    getSearchSuggestions,
   };
 
   return (
