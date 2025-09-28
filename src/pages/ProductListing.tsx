@@ -1,18 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Filter, Grid, List, SlidersHorizontal } from 'lucide-react';
+import { Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ProductCard } from '@/components/product/ProductCard';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { AdvancedFilter, FilterState } from '@/components/ui/advanced-filter';
 import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
-import { FilterOptions } from '@/types';
 
 export default function ProductListing() {
   const { categoryId } = useParams();
@@ -31,14 +27,18 @@ export default function ProductListing() {
   } = useProducts();
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [filters, setFilters] = useState<FilterState>({
+    category: categoryId || '',
     priceRange: [0, 50000],
-    categories: [],
-    ratings: [],
     inStock: false,
+    rating: 0,
+    colors: [],
+    materials: [],
     brands: [],
+    features: [],
     sortBy: 'relevance'
   });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Get current category info
   const currentCategory = categoryId ? categories.find(cat => cat.id === categoryId) : null;
@@ -64,6 +64,13 @@ export default function ProductListing() {
     
     let filteredList = [...products];
 
+    // Category filter
+    if (filters.category && !categoryId) {
+      filteredList = filteredList.filter(product => 
+        product.category === filters.category
+      );
+    }
+
     // Price filter
     filteredList = filteredList.filter(product => 
       product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
@@ -75,9 +82,9 @@ export default function ProductListing() {
     }
 
     // Rating filter
-    if (filters.ratings.length > 0) {
+    if (filters.rating > 0) {
       filteredList = filteredList.filter(product => 
-        filters.ratings.some(rating => product.rating >= rating)
+        product.rating >= filters.rating
       );
     }
 
@@ -88,12 +95,46 @@ export default function ProductListing() {
       );
     }
 
+    // Color filter
+    if (filters.colors.length > 0) {
+      filteredList = filteredList.filter(product => 
+        filters.colors.some(color => 
+          product.name.toLowerCase().includes(color.toLowerCase()) ||
+          product.description.toLowerCase().includes(color.toLowerCase())
+        )
+      );
+    }
+
+    // Material filter
+    if (filters.materials.length > 0) {
+      filteredList = filteredList.filter(product => 
+        filters.materials.some(material => 
+          product.name.toLowerCase().includes(material.toLowerCase()) ||
+          product.description.toLowerCase().includes(material.toLowerCase()) ||
+          product.features.some(feature => 
+            feature.toLowerCase().includes(material.toLowerCase())
+          )
+        )
+      );
+    }
+
+    // Features filter
+    if (filters.features.length > 0) {
+      filteredList = filteredList.filter(product => 
+        product.features && filters.features.some(feature => 
+          product.features.some(pFeature => 
+            pFeature.toLowerCase().includes(feature.toLowerCase())
+          )
+        )
+      );
+    }
+
     // Sorting
     switch (filters.sortBy) {
-      case 'price-low':
+      case 'price_low':
         filteredList.sort((a, b) => a.price - b.price);
         break;
-      case 'price-high':
+      case 'price_high':
         filteredList.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
@@ -102,83 +143,34 @@ export default function ProductListing() {
       case 'newest':
         filteredList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
+      case 'name':
+        filteredList.sort((a, b) => a.name.localeCompare(b.name));
+        break;
       default:
         // Keep original order for relevance
         break;
     }
 
     return filteredList;
-  }, [products, filters]);
+  }, [products, filters, categoryId]);
 
-  const handlePriceRangeChange = (value: number[]) => {
-    setFilters(prev => ({ ...prev, priceRange: value as [number, number] }));
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
   };
 
-  const handleInStockToggle = (checked: boolean) => {
-    setFilters(prev => ({ ...prev, inStock: checked }));
+  const clearFilters = () => {
+    setFilters({
+      category: categoryId || '',
+      priceRange: [0, 50000],
+      inStock: false,
+      rating: 0,
+      colors: [],
+      materials: [],
+      brands: [],
+      features: [],
+      sortBy: 'relevance'
+    });
   };
-
-  const handleSortChange = (value: string) => {
-    setFilters(prev => ({ ...prev, sortBy: value as FilterOptions['sortBy'] }));
-  };
-
-  const FilterSidebar = () => (
-    <div className="space-y-6">
-      <div>
-        <Label className="text-base font-semibold mb-3 block">Price Range</Label>
-        <div className="px-2">
-          <Slider
-            value={filters.priceRange}
-            onValueChange={handlePriceRangeChange}
-            max={50000}
-            min={0}
-            step={500}
-            className="mb-2"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>₹{filters.priceRange[0].toLocaleString()}</span>
-            <span>₹{filters.priceRange[1].toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <Label className="text-base font-semibold mb-3 block">Availability</Label>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="inStock"
-            checked={filters.inStock}
-            onCheckedChange={handleInStockToggle}
-          />
-          <Label htmlFor="inStock">In Stock Only</Label>
-        </div>
-      </div>
-
-      <div>
-        <Label className="text-base font-semibold mb-3 block">Customer Rating</Label>
-        <div className="space-y-2">
-          {[4, 3, 2, 1].map(rating => (
-            <div key={rating} className="flex items-center space-x-2">
-              <Checkbox
-                id={`rating-${rating}`}
-                checked={filters.ratings.includes(rating)}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setFilters(prev => ({ ...prev, ratings: [...prev.ratings, rating] }));
-                  } else {
-                    setFilters(prev => ({ ...prev, ratings: prev.ratings.filter(r => r !== rating) }));
-                  }
-                }}
-              />
-              <Label htmlFor={`rating-${rating}`}>
-                {rating}+ Stars
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 
   if (loading) {
     return (
@@ -255,19 +247,21 @@ export default function ProductListing() {
                 </Button>
               </div>
               
-              <Sheet>
+              <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="sm" className="md:hidden">
-                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
+                    Smart Filters
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent side="left" className="w-96 overflow-y-auto">
                   <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
+                    <SheetTitle>Smart Filters</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
-                    <FilterSidebar />
+                    <AdvancedFilter 
+                      onFiltersChange={handleFiltersChange}
+                      initialFilters={filters}
+                    />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -277,14 +271,17 @@ export default function ProductListing() {
           {/* Sort and Filter Bar */}
           <div className="flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-4">
-              <Select value={filters.sortBy} onValueChange={handleSortChange}>
+              <Select value={filters.sortBy} onValueChange={(value) => 
+                setFilters(prev => ({ ...prev, sortBy: value }))
+              }>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="name">Name A-Z</SelectItem>
+                  <SelectItem value="price_low">Price: Low to High</SelectItem>
+                  <SelectItem value="price_high">Price: High to Low</SelectItem>
                   <SelectItem value="rating">Customer Rating</SelectItem>
                   <SelectItem value="newest">Newest First</SelectItem>
                 </SelectContent>
@@ -295,15 +292,12 @@ export default function ProductListing() {
 
         <div className="flex gap-8">
           {/* Sidebar Filters - Desktop */}
-          <aside className="hidden md:block w-64 flex-shrink-0">
+          <aside className="hidden md:block w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <div className="card-premium p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <Filter className="h-5 w-5 mr-2" />
-                  Filters
-                </h2>
-                <FilterSidebar />
-              </div>
+              <AdvancedFilter 
+                onFiltersChange={handleFiltersChange}
+                initialFilters={filters}
+              />
             </div>
           </aside>
 
@@ -316,14 +310,7 @@ export default function ProductListing() {
                 </p>
                 <Button 
                   variant="outline"
-                  onClick={() => setFilters({
-                    priceRange: [0, 50000],
-                    categories: [],
-                    ratings: [],
-                    inStock: false,
-                    brands: [],
-                    sortBy: 'relevance'
-                  })}
+                  onClick={clearFilters}
                 >
                   Clear Filters
                 </Button>

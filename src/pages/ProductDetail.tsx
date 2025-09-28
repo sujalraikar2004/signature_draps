@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ProductCard } from '@/components/product/ProductCard'; 
+import { ImageZoomModal } from '@/components/ui/image-zoom-modal';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
@@ -40,6 +41,8 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+
+  const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
 
   useEffect(() => {
     if (!productId) return;
@@ -219,6 +222,11 @@ export default function ProductDetail() {
     }
   };
 
+  const handleImageClick = (index: number) => {
+    setSelectedImage(index);
+    setIsZoomModalOpen(true);
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <div className="container-premium py-8">
@@ -234,7 +242,8 @@ export default function ProductDetail() {
               <img
                 src={product?.images[selectedImage].url}
                 alt={product?.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover cursor-pointer"
+                onClick={() => handleImageClick(selectedImage)}
               />
             </div>
             
@@ -243,7 +252,7 @@ export default function ProductDetail() {
                 {product?.images.map((image, index) => (
                   <button
                     key={index}
-                    onClick={() => setSelectedImage(index)}
+                    onClick={() => handleImageClick(index)}
                     className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
                       selectedImage === index ? 'border-primary' : 'border-transparent'
                     }`}
@@ -251,7 +260,7 @@ export default function ProductDetail() {
                     <img
                       src={image.url}
                       alt={`${product?.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover cursor-pointer"
                     />
                   </button>
                 ))}
@@ -675,6 +684,12 @@ export default function ProductDetail() {
           </section>
         )}
       </div>
+      <ImageZoomModal
+        isOpen={isZoomModalOpen}
+        onClose={() => setIsZoomModalOpen(false)}
+        images={product?.images.map(image => ({ url: image.url, alt: image.alt || product?.name || 'Product image' })) || []}
+        initialIndex={selectedImage}
+      />
     </main>
   );
 }

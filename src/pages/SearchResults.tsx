@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Filter, Grid, List, ArrowUpDown, Search, X } from 'lucide-react';
+import { Grid, List, ArrowUpDown, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/product/ProductCard';
 import { SearchWithSuggestions } from '@/components/ui/search-with-suggestions';
+import { AdvancedFilter, FilterState } from '@/components/ui/advanced-filter';
 import { useProducts } from '@/contexts/ProductContext';
 import { Product } from '@/types';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -25,14 +21,6 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First' },
 ];
 
-const CATEGORIES = [
-  'curtains-furnishing',
-  'blinds',
-  'bean-bags',
-  'wallpaper',
-  'carpets-rugs'
-];
-
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -45,10 +33,20 @@ export default function SearchResults() {
 
   // Search and filter states
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
-  const [priceRange, setPriceRange] = useState([0, 50000]);
-  const [inStockOnly, setInStockOnly] = useState(searchParams.get('inStock') === 'true');
-  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'relevance');
+  const [filters, setFilters] = useState<FilterState>({
+    category: searchParams.get('category') || '',
+    priceRange: [
+      parseInt(searchParams.get('minPrice') || '0'),
+      parseInt(searchParams.get('maxPrice') || '50000')
+    ],
+    inStock: searchParams.get('inStock') === 'true',
+    rating: parseInt(searchParams.get('rating') || '0'),
+    colors: searchParams.get('colors')?.split(',').filter(Boolean) || [],
+    materials: searchParams.get('materials')?.split(',').filter(Boolean) || [],
+    brands: searchParams.get('brands')?.split(',').filter(Boolean) || [],
+    features: searchParams.get('features')?.split(',').filter(Boolean) || [],
+    sortBy: searchParams.get('sortBy') || 'relevance'
+  });
   const [totalResults, setTotalResults] = useState(0);
 
   // Perform search
@@ -57,26 +55,36 @@ export default function SearchResults() {
 
     setLoading(true);
     try {
-      const filters = {
-        category: selectedCategory || undefined,
-        minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
-        maxPrice: priceRange[1] < 50000 ? priceRange[1] : undefined,
-        inStock: inStockOnly || undefined,
-        sortBy,
+      const searchFilters = {
+        category: filters.category || undefined,
+        minPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+        maxPrice: filters.priceRange[1] < 50000 ? filters.priceRange[1] : undefined,
+        inStock: filters.inStock || undefined,
+        rating: filters.rating > 0 ? filters.rating : undefined,
+        colors: filters.colors.length > 0 ? filters.colors : undefined,
+        materials: filters.materials.length > 0 ? filters.materials : undefined,
+        brands: filters.brands.length > 0 ? filters.brands : undefined,
+        features: filters.features.length > 0 ? filters.features : undefined,
+        sortBy: filters.sortBy,
       };
 
-      const results = await searchProducts(query, filters);
+      const results = await searchProducts(query, searchFilters);
       setProducts(results);
       setTotalResults(results.length);
 
       // Update URL params
       const params = new URLSearchParams();
       params.set('q', query);
-      if (selectedCategory) params.set('category', selectedCategory);
-      if (priceRange[0] > 0) params.set('minPrice', priceRange[0].toString());
-      if (priceRange[1] < 50000) params.set('maxPrice', priceRange[1].toString());
-      if (inStockOnly) params.set('inStock', 'true');
-      if (sortBy !== 'relevance') params.set('sortBy', sortBy);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.priceRange[0] > 0) params.set('minPrice', filters.priceRange[0].toString());
+      if (filters.priceRange[1] < 50000) params.set('maxPrice', filters.priceRange[1].toString());
+      if (filters.inStock) params.set('inStock', 'true');
+      if (filters.rating > 0) params.set('rating', filters.rating.toString());
+      if (filters.colors.length > 0) params.set('colors', filters.colors.join(','));
+      if (filters.materials.length > 0) params.set('materials', filters.materials.join(','));
+      if (filters.brands.length > 0) params.set('brands', filters.brands.join(','));
+      if (filters.features.length > 0) params.set('features', filters.features.join(','));
+      if (filters.sortBy !== 'relevance') params.set('sortBy', filters.sortBy);
       
       setSearchParams(params);
     } catch (error) {
@@ -93,7 +101,7 @@ export default function SearchResults() {
     if (query) {
       performSearch();
     }
-  }, [query, selectedCategory, priceRange, inStockOnly, sortBy]);
+  }, [query, filters]);
 
   // Update query from URL params
   useEffect(() => {
@@ -107,83 +115,36 @@ export default function SearchResults() {
     setQuery(newQuery);
   };
 
-  const clearFilters = () => {
-    setSelectedCategory('');
-    setPriceRange([0, 50000]);
-    setInStockOnly(false);
-    setSortBy('relevance');
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
   };
 
-  const activeFiltersCount = [
-    selectedCategory,
-    priceRange[0] > 0 || priceRange[1] < 50000,
-    inStockOnly,
-  ].filter(Boolean).length;
+  const clearFilters = () => {
+    setFilters({
+      category: '',
+      priceRange: [0, 50000],
+      inStock: false,
+      rating: 0,
+      colors: [],
+      materials: [],
+      brands: [],
+      features: [],
+      sortBy: 'relevance'
+    });
+  };
 
-  const FilterContent = () => (
-    <div className="space-y-6">
-      {/* Category Filter */}
-      <div>
-        <Label className="text-base font-semibold mb-3 block">Category</Label>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="all-categories"
-              checked={!selectedCategory}
-              onCheckedChange={() => setSelectedCategory('')}
-            />
-            <Label htmlFor="all-categories" className="text-sm">All Categories</Label>
-          </div>
-          {CATEGORIES.map((category) => (
-            <div key={category} className="flex items-center space-x-2">
-              <Checkbox
-                id={category}
-                checked={selectedCategory === category}
-                onCheckedChange={() => setSelectedCategory(category === selectedCategory ? '' : category)}
-              />
-              <Label htmlFor={category} className="text-sm capitalize">
-                {category.replace('-', ' ')}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Price Range Filter */}
-      <div>
-        <Label className="text-base font-semibold mb-3 block">
-          Price Range: ₹{priceRange[0].toLocaleString()} - ₹{priceRange[1].toLocaleString()}
-        </Label>
-        <Slider
-          value={priceRange}
-          onValueChange={setPriceRange}
-          max={50000}
-          min={0}
-          step={500}
-          className="w-full"
-        />
-      </div>
-
-      {/* Stock Filter */}
-      <div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="in-stock"
-            checked={inStockOnly}
-            onCheckedChange={(checked) => setInStockOnly(checked === true)}
-          />
-          <Label htmlFor="in-stock" className="text-sm">In Stock Only</Label>
-        </div>
-      </div>
-
-      {/* Clear Filters */}
-      {activeFiltersCount > 0 && (
-        <Button variant="outline" onClick={clearFilters} className="w-full">
-          Clear All Filters
-        </Button>
-      )}
-    </div>
-  );
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 50000) count++;
+    if (filters.inStock) count++;
+    if (filters.rating > 0) count++;
+    if (filters.colors.length > 0) count++;
+    if (filters.materials.length > 0) count++;
+    if (filters.brands.length > 0) count++;
+    if (filters.features.length > 0) count++;
+    return count;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -213,34 +174,47 @@ export default function SearchResults() {
           </div>
 
           {/* Active Filters */}
-          {activeFiltersCount > 0 && (
+          {getActiveFiltersCount() > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {selectedCategory && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {selectedCategory.replace('-', ' ')}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => setSelectedCategory('')}
-                  />
-                </Badge>
+              {filters.category && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  {filters.category}
+                </span>
               )}
-              {(priceRange[0] > 0 || priceRange[1] < 50000) && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  ₹{priceRange[0].toLocaleString()} - ₹{priceRange[1].toLocaleString()}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => setPriceRange([0, 50000])}
-                  />
-                </Badge>
+              {(filters.priceRange[0] > 0 || filters.priceRange[1] < 50000) && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  ₹{filters.priceRange[0].toLocaleString()} - ₹{filters.priceRange[1].toLocaleString()}
+                </span>
               )}
-              {inStockOnly && (
-                <Badge variant="secondary" className="flex items-center gap-1">
+              {filters.inStock && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
                   In Stock Only
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => setInStockOnly(false)}
-                  />
-                </Badge>
+                </span>
+              )}
+              {filters.rating > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  Rating: {filters.rating}
+                </span>
+              )}
+              {filters.colors.length > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  Colors: {filters.colors.join(', ')}
+                </span>
+              )}
+              {filters.materials.length > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  Materials: {filters.materials.join(', ')}
+                </span>
+              )}
+              {filters.brands.length > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  Brands: {filters.brands.join(', ')}
+                </span>
+              )}
+              {filters.features.length > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  Features: {filters.features.join(', ')}
+                </span>
               )}
             </div>
           )}
@@ -248,15 +222,12 @@ export default function SearchResults() {
 
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block w-64 flex-shrink-0">
-            <div className="card-premium p-6 sticky top-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold text-lg">Filters</h3>
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary">{activeFiltersCount}</Badge>
-                )}
-              </div>
-              <FilterContent />
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-8">
+              <AdvancedFilter 
+                onFiltersChange={handleFiltersChange}
+                initialFilters={filters}
+              />
             </div>
           </div>
 
@@ -269,27 +240,32 @@ export default function SearchResults() {
                 <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="lg:hidden">
-                      <Filter className="h-4 w-4 mr-2" />
+                      <Search className="h-4 w-4 mr-2" />
                       Filters
-                      {activeFiltersCount > 0 && (
-                        <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                          {activeFiltersCount}
-                        </Badge>
+                      {getActiveFiltersCount() > 0 && (
+                        <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                          {getActiveFiltersCount()}
+                        </span>
                       )}
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80">
+                  <SheetContent side="left" className="w-96 overflow-y-auto">
                     <SheetHeader>
-                      <SheetTitle>Filters</SheetTitle>
+                      <SheetTitle>Smart Filters</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
-                      <FilterContent />
+                      <AdvancedFilter 
+                        onFiltersChange={handleFiltersChange}
+                        initialFilters={filters}
+                      />
                     </div>
                   </SheetContent>
                 </Sheet>
 
                 {/* Sort */}
-                <Select value={sortBy} onValueChange={setSortBy}>
+                <Select value={filters.sortBy} onValueChange={(value) => 
+                  setFilters(prev => ({ ...prev, sortBy: value }))
+                }>
                   <SelectTrigger className="w-48">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue />

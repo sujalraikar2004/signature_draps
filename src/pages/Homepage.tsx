@@ -51,14 +51,15 @@ const staticCategories = [
 ];
 
 export default function Homepage() {
-  const { featuredProducts, newProducts, bestSellers, loading, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers } = useProducts();
+  const { products, featuredProducts, newProducts, bestSellers, loading, fetchProducts, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers } = useProducts();
   const [categories, setCategories] = useState(staticCategories);
 
   useEffect(() => {
+    fetchProducts();
     fetchFeaturedProducts();
     fetchNewProducts();
     fetchBestSellers();
-  }, [fetchFeaturedProducts, fetchNewProducts, fetchBestSellers]);
+  }, [fetchProducts, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers]);
 
   console.log(featuredProducts);
 
@@ -217,6 +218,37 @@ export default function Homepage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {newProducts?.slice(0, 8).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Our Products Section */}
+      <section className="py-16">
+        <div className="container-premium">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-heading font-bold mb-4">Our Products</h2>
+              <p className="text-muted-foreground">
+                Explore our comprehensive range of interior furnishing products.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/products">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {products?.slice(0, 8).map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
