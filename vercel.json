@@ -9,6 +9,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://signature-drapes-backend.vercel.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
