@@ -101,7 +101,7 @@ export function Navbar() {
                     <DropdownMenuItem onClick={() => navigate('/account')}>
                       My Account
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/account/orders')}>
+                    <DropdownMenuItem onClick={() => navigate('/my-orders')}>
                       My Orders
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/wishlist')}>

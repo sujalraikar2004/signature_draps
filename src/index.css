@@ -319,6 +319,10 @@
     animation: scaleIn var(--transition-normal) ease-out;
   }
 }
+html {
+  scroll-behavior: smooth;
+}
+
 
 /* Keyframe Animations */
 @keyframes fadeIn {

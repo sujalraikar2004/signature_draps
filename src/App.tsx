@@ -26,11 +26,14 @@ import FAQ from "./pages/FAQ";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import NotFound from "./pages/NotFound";
+import Orders from "./pages/Orders"
 import RazorpayPayment from "./components/payment/RazorpayPayment"
+import ScrollToTop from "./components/ui/ScrollToTop.jsx"
 // import order
 const queryClient = new QueryClient();
 
 const App = () => (
+  
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
@@ -40,6 +43,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+              <ScrollToTop/>
                 <div className="flex flex-col min-h-screen">
                   <Navbar />
                   <div className="flex-1">
@@ -62,6 +66,7 @@ const App = () => (
                       <Route path="payment" element={<RazorpayPayment/>}/>
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsConditions />} />
+                      <Route path="/my-orders" element={<Orders />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
@@ -75,6 +80,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
+
 );
 
 export default App;

@@ -1,19 +1,19 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, CheckCircle, XCircle, Package, ArrowRight } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useOrders } from '@/contexts/OrderContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function OrdersPage() {
+export default function Orders() {
   const { isAuthenticated } = useAuth();
   const { orders, getUserOrders, isLoading } = useOrders();
 
   useEffect(() => {
     if (isAuthenticated) getUserOrders();
-  }, [isAuthenticated, getUserOrders]);
+  }, []);
 
   if (!isAuthenticated) {
     return (
@@ -64,62 +64,91 @@ export default function OrdersPage() {
       <div className="container-premium py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-bold mb-2">My Orders</h1>
-          <p className="text-muted-foreground">{orders.length} {orders.length === 1 ? 'order' : 'orders'} placed</p>
+          <p className="text-muted-foreground">
+            {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Orders List */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-6">
             {orders.map((order) => (
-              <div key={order._id} className="card-premium p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="font-semibold">Order #{order.orderId}</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Placed on {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Payment Mode: {order.paymentMode} • Status: {order.paymentStatus}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          order.orderStatus === 'DELIVERED'
-                            ? 'success'
-                            : order.orderStatus === 'CANCELLED'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                      >
-                        {order.orderStatus}
-                      </Badge>
-                      {order.orderStatus === 'DELIVERED' && <CheckCircle className="h-5 w-5 text-success" />}
-                      {order.orderStatus === 'CANCELLED' && <XCircle className="h-5 w-5 text-destructive" />}
-                      {order.orderStatus === 'SHIPPED' && <Truck className="h-5 w-5 text-primary" />}
-                    </div>
+              <div key={order._id} className="card-premium p-6 space-y-4">
+                {/* Order Header */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="font-semibold">Order #{order.orderId}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Placed on {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Payment Mode: {order.paymentMode} • Status: {order.paymentStatus}
+                    </p>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        order.orderStatus === 'DELIVERED'
+                          ? 'success'
+                          : order.orderStatus === 'CANCELLED'
+                          ? 'destructive'
+                          : 'secondary'
+                      }
+                    >
+                      {order.orderStatus}
+                    </Badge>
+                    {order.orderStatus === 'DELIVERED' && (
+                      <CheckCircle className="h-5 w-5 text-success" />
+                    )}
+                    {order.orderStatus === 'CANCELLED' && (
+                      <XCircle className="h-5 w-5 text-destructive" />
+                    )}
+                    {order.orderStatus === 'SHIPPED' && (
+                      <Truck className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                </div>
 
-                  <Separator />
+                <Separator />
 
-                  {/* Products */}
-                  <div className="divide-y">
-                    {order.products.map((item) => (
-                      <div key={item.productId} className="flex items-center gap-4 py-4">
-                        <img
-                          src={item.productId.image}
-                          alt={item.productId.name}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.productId.name}</p>
-                          <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                        </div>
-                        <div className="font-semibold">₹{(item.priceAtPurchase * item.quantity).toLocaleString()}</div>
+                {/* Products */}
+                <div className="divide-y">
+                  {order.products.map((item) => (
+                    <div key={item._id} className="flex items-center gap-4 py-4">
+                      <img
+                        src={item.images?.[0]?.url}
+                        alt={item.name}
+                        className="w-20 h-20 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Qty: {item.quantity}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Brand: {item.brand}
+                        </p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="font-semibold">
+                        ₹{(item.priceAtPurchase * item.quantity).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator />
+
+                {/* Shipping Address */}
+                <div className="text-sm">
+                  <p className="font-medium mb-1">Delivery Address</p>
+                  <p>{order.shippingAddress.fullName}</p>
+                  <p>{order.shippingAddress.street}</p>
+                  <p>
+                    {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+                    - {order.shippingAddress.postalCode}
+                  </p>
+                  <p>{order.shippingAddress.country}</p>
+                  <p>Phone: {order.shippingAddress.phone}</p>
                 </div>
               </div>
             ))}
@@ -141,7 +170,9 @@ export default function OrdersPage() {
               <div className="space-y-2">
                 <h3 className="font-medium">Total Orders Amount</h3>
                 <p className="text-lg font-semibold">
-                  ₹{orders.reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()}
+                  ₹{orders
+                    .reduce((sum, o) => sum + o.totalAmount, 0)
+                    .toLocaleString()}
                 </p>
               </div>
 
