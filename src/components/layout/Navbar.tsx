@@ -49,12 +49,12 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                <span>Free Delivery in Mumbai & Delhi</span>
+                <span>Shree Siddhi Decor - curtain and furnishings website</span>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-4">
-              <span>📞 +91 98765 43210</span>
-              <span>✉️ info@signaturedraps.com</span>
+              <span>📞 +919036587169</span>
+              <span>✉️ signaturedrapes31@gmail.com</span>
             </div>
           </div>
         </div>

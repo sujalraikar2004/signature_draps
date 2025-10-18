@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -169,6 +169,50 @@ export default function ContactUs() {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Instagram className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Instagram</h3>
+                    <a 
+                      href="https://www.instagram.com/shreesiddhidecor?igsh=MTNua2M1Z3J1MTh6" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      @shreesiddhidecor
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Google Maps */}
+            <div className="card-premium p-8">
+              <h3 className="text-xl font-heading font-semibold mb-4">Find Us on Map</h3>
+              <div className="aspect-video w-full rounded-lg overflow-hidden">
+                <iframe
+                  src="https://maps.app.goo.gl/ysSzo27SnUpvks2AA"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Shree Siddhi Decor Location"
+                ></iframe>
+              </div>
+              <div className="mt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.open('https://maps.app.goo.gl/ysSzo27SnUpvks2AA?g_st=aw', '_blank')}
+                >
+                  <MapPin className="mr-2 h-4 w-4" />
+                  Open in Google Maps
+                </Button>
               </div>
             </div>
 

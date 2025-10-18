@@ -1,18 +1,20 @@
 import React from 'react';
-import { Users, Award, Clock, MapPin } from 'lucide-react';
+import { Users, Award, Clock, MapPin, Scissors, Palette, Shield, Settings, Heart, CheckCircle } from 'lucide-react';
 
 export default function AboutUs() {
   return (
     <main className="min-h-screen bg-background">
       <div className="container-premium py-16">
-        {/* Hero Section */}
+        {/* Hero Section - Our Mission */}
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-heading font-bold mb-6">
-            About Signature Draps
+            About Signature Drapes
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Transforming homes with premium curtains, blinds, and interior solutions since 2015. 
-            We believe every space deserves to be beautiful, functional, and uniquely yours.
+          <h2 className="text-2xl lg:text-3xl font-heading font-semibold mb-8 text-primary">
+            Our Mission: Elevating Your Home
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            At Signature Drapes, we believe that curtains and furnishings are more than just functional necessities—they are the soul of your home. Our mission is to transform your living spaces with high-quality, beautifully crafted products that reflect your personal style, enhance comfort, and provide essential functionality like privacy and light control.
           </p>
         </div>
 
@@ -30,13 +32,13 @@ export default function AboutUs() {
               <Award className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-3xl font-bold text-primary mb-2">15+</h3>
-            <p className="text-muted-foreground">Categories</p>
+            <p className="text-muted-foreground">Product Categories</p>
           </div>
           <div className="text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="text-3xl font-bold text-primary mb-2">9</h3>
+            <h3 className="text-3xl font-bold text-primary mb-2">9+</h3>
             <p className="text-muted-foreground">Years Experience</p>
           </div>
           <div className="text-center">
@@ -48,91 +50,143 @@ export default function AboutUs() {
           </div>
         </div>
 
-        {/* Story Section */}
-        <div className="card-premium p-8 lg:p-12 mb-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-heading font-semibold mb-6">
-                Our Story
-              </h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
-                <p>
-                  Founded in 2015 with a vision to transform ordinary spaces into extraordinary homes, 
-                  Signature Draps has grown from a small family business to one of India's most trusted 
-                  names in home furnishing.
-                </p>
-                <p>
-                  We started with a simple belief: every home deserves beautiful, functional, and 
-                  affordable window treatments. Today, we offer a comprehensive range of curtains, 
-                  blinds, wallpapers, and interior accessories.
-                </p>
-                <p>
-                  Our commitment to quality, innovation, and customer satisfaction has earned us the 
-                  trust of over 50,000 happy customers across 100+ cities in India.
-                </p>
+        {/* What We Offer Section */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-heading font-semibold text-center mb-12">What We Offer</h2>
+          <p className="text-xl text-muted-foreground text-center max-w-3xl mx-auto mb-12">
+            We are a full-service destination for all your home décor needs, specializing in:
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="card-premium p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                  <Scissors className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Custom & Ready-Made Curtains</h3>
               </div>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg p-8 h-80 flex items-center justify-center">
-              <div className="text-center text-primary">
-                <Users className="h-24 w-24 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Building Beautiful Homes</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mission & Vision */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-16">
-          <div className="card-premium p-8">
-            <h3 className="text-2xl font-heading font-semibold mb-4">Our Mission</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              To provide premium quality home furnishing solutions that combine style, 
-              functionality, and affordability. We strive to make beautiful homes accessible 
-              to everyone through innovative products and exceptional service.
-            </p>
-          </div>
-          <div className="card-premium p-8">
-            <h3 className="text-2xl font-heading font-semibold mb-4">Our Vision</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              To become the leading destination for home furnishing in India, known for our 
-              commitment to quality, design innovation, and customer satisfaction. We envision 
-              a future where every home reflects the unique personality of its owners.
-            </p>
-          </div>
-        </div>
-
-        {/* Values */}
-        <div className="text-center">
-          <h2 className="text-3xl font-heading font-semibold mb-12">Our Values</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card-premium p-6">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <h4 className="text-lg font-semibold mb-3">Quality First</h4>
-              <p className="text-muted-foreground">
-                We never compromise on quality. Every product is carefully selected and tested 
-                to meet our high standards.
+              <p className="text-muted-foreground leading-relaxed">
+                From light-filtering sheers and decorative drapes to thermal and complete blackout options. We offer a variety of heading styles (grommet, rod pocket, pleated) and lengths to fit any window.
               </p>
             </div>
-            <div className="card-premium p-6">
+
+            <div className="card-premium p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                  <Settings className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Blinds & Shades</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                A curated collection of roller, roman, vertical, and Venetian blinds for modern light management and privacy control.
+              </p>
+            </div>
+
+            <div className="card-premium p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                  <Palette className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Premium Fabrics & Upholstery</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                A vast selection of materials—including linen, cotton, velvet, and performance fabrics—perfect for curtains, cushions, and upholstery projects.
+              </p>
+            </div>
+
+            <div className="card-premium p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                  <Heart className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Complementary Furnishings</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                A handpicked range of accessories, hardware, and décor to complete your look and tie your entire space together.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quality & Craftsmanship Section */}
+        <div className="card-premium p-8 lg:p-12 mb-16">
+          <h2 className="text-3xl font-heading font-semibold text-center mb-8">
+            Our Commitment to Quality and Craftsmanship
+          </h2>
+          <p className="text-xl text-center text-muted-foreground mb-12">
+            Quality is the foundation of everything we do.
+          </p>
+          
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Award className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Skilled Craftsmanship</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Our products are crafted by experienced tailors and artisans using meticulous fabrication processes to ensure durability and a flawless finish.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Finest Materials</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                We source only the best materials from around the world, focusing on textiles that are beautiful, long-lasting, and meet various needs for insulation, privacy, or aesthetics.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Focus on Detail</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                We obsess over the details, from the perfect pleat to the smooth function of our hardware, ensuring your furnishings look exceptional and perform reliably for years to come.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Personalized Experience Section */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-heading font-semibold text-center mb-8">
+            A Personalized Experience
+          </h2>
+          <p className="text-xl text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+            We understand that every home is unique, which is why we offer services designed for a perfect fit:
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="card-premium p-6 text-center">
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <Settings className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h4 className="text-lg font-semibold mb-3">Customization</h4>
+              <p className="text-muted-foreground">
+                We provide complete customization options for size, length, and fabric to perfectly match your windows and design vision.
+              </p>
+            </div>
+            
+            <div className="card-premium p-6 text-center">
+              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h4 className="text-lg font-semibold mb-3">Transparent Pricing</h4>
+              <p className="text-muted-foreground">
+                We are committed to straightforward, honest pricing with no hidden costs, so you know exactly what you're paying for.
+              </p>
+            </div>
+            
+            <div className="card-premium p-6 text-center">
               <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-6 w-6 text-primary-foreground" />
               </div>
-              <h4 className="text-lg font-semibold mb-3">Customer Centric</h4>
+              <h4 className="text-lg font-semibold mb-3">Dedicated Support</h4>
               <p className="text-muted-foreground">
-                Your satisfaction is our priority. We listen, understand, and deliver solutions 
-                that exceed expectations.
-              </p>
-            </div>
-            <div className="card-premium p-6">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <h4 className="text-lg font-semibold mb-3">Innovation</h4>
-              <p className="text-muted-foreground">
-                We continuously evolve our products and services to bring you the latest 
-                trends and technologies.
+                Our expert team is here to guide you through measurements, product selection, and design choices to make your experience seamless and enjoyable.
               </p>
             </div>
           </div>
