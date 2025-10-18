@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'https://signature-drapes-backend.vercel.app',
+        target: 'https://www.signaturedrapes.in',
         changeOrigin: true,
         secure: false,
       },

@@ -17,6 +17,10 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyOtp from "./pages/VerifyOtp";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResendVerification from "./pages/ResendVerification";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import Wishlist from "./pages/Wishlist";
@@ -57,6 +61,10 @@ const App = () => (
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/verify-otp" element={<VerifyOtp />} />
+                      <Route path="/verify-email/:token" element={<VerifyEmail />} />
+                      <Route path="/resend-verification" element={<ResendVerification />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password/:token" element={<ResetPassword />} />
                       <Route path="/checkout" element={<Checkout />} />
                       <Route path="/account" element={<Account />} />
                       <Route path="/wishlist" element={<Wishlist />} />
