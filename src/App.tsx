@@ -33,6 +33,7 @@ import NotFound from "./pages/NotFound";
 import Orders from "./pages/Orders"
 import RazorpayPayment from "./components/payment/RazorpayPayment"
 import ScrollToTop from "./components/ui/ScrollToTop.jsx"
+import { Analytics } from "@vercel/analytics/next"
 // import order
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
                   <Navbar />
                   <div className="flex-1">
                     <Routes>
+                      <Analytics/>
                       <Route path="/" element={<Homepage />} />
                       <Route path="/category/:categoryId" element={<ProductListing />} />
                       <Route path="/products" element={<ProductListing />} />
