@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle2, XCircle, Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import api from "@/Api";
 
 const VerifyEmail = () => {
   const { token } = useParams<{ token: string }>();
@@ -17,8 +18,7 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const response = await axios.get(`/api/v1/user/verify-email/${token}`);
-        
+        const response = await api.get(`/user/verify-email/${token}`);
         if (response.data.success) {
           setVerificationStatus("success");
           setMessage(response.data.message);
