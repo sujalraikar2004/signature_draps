@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+
 import api from "@/Api";
 
 const VerifyEmail = () => {
