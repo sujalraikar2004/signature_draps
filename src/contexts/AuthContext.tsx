@@ -3,7 +3,6 @@ import { User, Product } from '@/types';
 import { toast } from 'sonner';
 import api from '../Api'
 
-
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -11,10 +10,13 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, phoneNo: string) => Promise<void>;
-  verifyOtp: (phoneNo: string, otp: string) => Promise<void>;
-  resendOtp: (phoneNo: string) => Promise<void>;
+  login: (phoneNo: string, otp: string) => Promise<void>;
+  register: (username: string, email: string, phoneNo: string) => Promise<void>;
+  verifyPhoneOtp: (phoneNo: string, otp: string, email: string) => Promise<{ email: string } | undefined>;
+  resendPhoneOtp: (phoneNo: string) => Promise<void>;
+  verifyEmailOtp: (email: string, otp: string) => Promise<void>;
+  resendEmailOtp: (email: string) => Promise<void>;
+  sendLoginOtp: (phoneNo: string) => Promise<void>;
   logout: () => Promise<void>;
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (productId: string) => void;
@@ -31,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: false
   });
 
-
   useEffect(() => {
     getCurrentUser();
   }, []);
@@ -40,9 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.get('/user/current-user');
 
-
       if (response) {
-      
         setAuthState({
           user: response.data.data,
           isAuthenticated: true,
@@ -50,51 +49,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error) {
-      // User not logged in, which is fine
       setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
-  const login = async (email: string, password: string) => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    try {
-      const response = await api.post('/user/login', { email, password });
-  
-
-    
-
-      if (!response) {
-        throw new Error(response.data.message || 'Login failed');
-      }
-
-      setAuthState({
-        user: response.data.user,
-        isAuthenticated: true,
-        isLoading: false
-      });
-
-      toast.success(response.data.message || 'Login successful!');
-    } catch (error: any) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      toast.error(error.message || 'An error occurred during login.');
-      throw error;
-    }
-  };
-
-  const register = async (username: string, email: string, password: string, phoneNo: string) => {
-    console.log(username,email,password,phoneNo);
+  const register = async (username: string, email: string, phoneNo: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await api.post('/user/register', { username, email, password, phoneNo });
+      const response = await api.post('/user/register', { username, email, phoneNo });
 
       if (!response.data.success) {
         throw new Error(response.data.message || 'Registration failed');
       }
 
-      toast.success(response.data.message || 'Registration successful! Please verify your OTP.');
+      toast.success(response.data.message || 'Registration successful! Please verify your phone.');
     
       localStorage.setItem('pendingVerificationPhone', phoneNo);
+      localStorage.setItem('pendingVerificationEmail', email);
 
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message || 'An error occurred during registration.');
@@ -104,37 +75,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verifyOtp = async (phoneNo: string, otp: string) => {
+  const verifyPhoneOtp = async (phoneNo: string, otp: string, email: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await api.post('/user/verify',{ phoneNo, otp });
+      const response = await api.post('/user/verify-phone-otp', { phoneNo, otp, email });
 
-    
-
-      if (!response) {
+      if (!response.data.success) {
         throw new Error(response.data.message || 'OTP verification failed');
       }
-
-  
-      localStorage.removeItem('pendingVerificationPhone');
       
-      toast.success(response.data.message || 'Account verified successfully!');
+      toast.success(response.data.message || 'Phone verified! Please verify your email.');
       
-     
+      return { email: response.data.email };
     } catch (error: any) {
-      toast.error(error.message || 'Invalid OTP. Please try again.');
+      toast.error(error.response?.data?.message || error.message || 'Invalid OTP. Please try again.');
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
-  const resendOtp = async (phoneNo: string) => {
+  const resendPhoneOtp = async (phoneNo: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await api.post('/user/resend-otp', { phoneNo });
+      const response = await api.post('/user/resend-phone-otp', { phoneNo });
 
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to resend OTP');
@@ -146,6 +112,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const verifyEmailOtp = async (email: string, otp: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await api.post('/user/verify-email-otp', { email, otp });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Email verification failed');
+      }
+
+      setAuthState({
+        user: response.data.user,
+        isAuthenticated: true,
+        isLoading: false
+      });
+      
+      toast.success(response.data.message || 'Email verified! Account activated successfully.');
+    } catch (error: any) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      toast.error(error.response?.data?.message || error.message || 'Invalid OTP. Please try again.');
+      throw error;
+    }
+  };
+
+  const resendEmailOtp = async (email: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await api.post('/user/resend-email-otp', { email });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to resend email OTP')
+      }
+
+      toast.success(response.data.message || 'Email OTP resent successfully!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || 'Failed to resend email OTP.');
+      throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const sendLoginOtp = async (phoneNo: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await api.post('/user/send-login-otp', { phoneNo });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to send OTP')
+      }
+
+      toast.success(response.data.message || 'OTP sent to your phone!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || 'Failed to send OTP.');
+      throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const login = async (phoneNo: string, otp: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const response = await api.post('/user/login', { phoneNo, otp });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Login failed')
+      }
+
+      setAuthState({
+        user: response.data.user,
+        isAuthenticated: true,
+        isLoading: false
+      });
+
+      toast.success(response.data.message || 'Login successful!');
+    } catch (error: any) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      toast.error(error.response?.data?.message || error.message || 'An error occurred during login.');
+      throw error;
     }
   };
 
@@ -216,8 +268,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...authState,
       login,
       register,
-      verifyOtp,
-      resendOtp,
+      verifyPhoneOtp,
+      resendPhoneOtp,
+      verifyEmailOtp,
+      resendEmailOtp,
+      sendLoginOtp,
       logout,
       addToWishlist,
       removeFromWishlist,

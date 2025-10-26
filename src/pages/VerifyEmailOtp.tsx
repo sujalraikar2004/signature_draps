@@ -7,30 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
+import { Mail } from 'lucide-react';
 
-export default function VerifyOtp() {
+export default function VerifyEmailOtp() {
   const [otp, setOtp] = useState('');
-  const [phoneNo, setPhoneNo] = useState('');
   const [email, setEmail] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [errors, setErrors] = useState<{ otp?: string; phoneNo?: string }>({});
+  const [errors, setErrors] = useState<{ otp?: string; email?: string }>({});
   
-  const { verifyPhoneOtp, resendPhoneOtp, isLoading } = useAuth();
+  const { verifyEmailOtp, resendEmailOtp, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const phoneFromParams = searchParams.get('phone');
-    const phoneFromStorage = localStorage.getItem('pendingVerificationPhone');
-    const emailFromStorage = localStorage.getItem('pendingVerificationEmail');
+    const emailFromParams = searchParams.get('email');
+    const emailFromStorage = localStorage.getItem('pendingEmailVerification');
     
-    if (phoneFromParams) {
-      setPhoneNo(phoneFromParams);
-    } else if (phoneFromStorage) {
-      setPhoneNo(phoneFromStorage);
-    }
-    
-    if (emailFromStorage) {
+    if (emailFromParams) {
+      setEmail(emailFromParams);
+    } else if (emailFromStorage) {
       setEmail(emailFromStorage);
     }
   }, [searchParams]);
@@ -44,12 +39,12 @@ export default function VerifyOtp() {
   }, [countdown]);
 
   const validateForm = () => {
-    const newErrors: { otp?: string; phoneNo?: string } = {};
+    const newErrors: { otp?: string; email?: string } = {};
     
-    if (!phoneNo.trim()) {
-      newErrors.phoneNo = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(phoneNo)) {
-      newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
     }
    
     if (!otp.trim()) {
@@ -67,31 +62,24 @@ export default function VerifyOtp() {
     
     if (!validateForm()) return;
     
-    if (!email) {
-      toast.error('Email not found. Please register again.');
-      navigate('/register');
-      return;
-    }
-    
     try {
-      const result = await verifyPhoneOtp(phoneNo, otp, email);
-      if (result && result.email) {
-        localStorage.setItem('pendingEmailVerification', result.email);
-        navigate(`/verify-email-otp?email=${result.email}`);
-      }
+      await verifyEmailOtp(email, otp);
+      localStorage.removeItem('pendingEmailVerification');
+      localStorage.removeItem('pendingVerificationPhone');
+      navigate('/');
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleResendOtp = async () => {
-    if (!phoneNo.trim()) {
-      toast.error('Please enter your phone number');
+    if (!email.trim()) {
+      toast.error('Please enter your email');
       return;
     }
 
     try {
-      await resendPhoneOtp(phoneNo);
+      await resendEmailOtp(email);
       setCountdown(60);
       setOtp('');
     } catch (error) {
@@ -104,9 +92,8 @@ export default function VerifyOtp() {
     setOtp(value);
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-    setPhoneNo(value);
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
   return (
@@ -123,26 +110,31 @@ export default function VerifyOtp() {
                 <span className="text-xl font-heading font-bold text-accent ml-1">Draps</span>
               </div>
             </div>
-            <CardTitle className="text-2xl font-heading">Verify Phone Number</CardTitle>
+            <div className="flex items-center justify-center mb-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-heading">Verify Email Address</CardTitle>
             <CardDescription>
-              Enter the 6-digit OTP sent to your phone number
+              Enter the 6-digit OTP sent to your email
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="phoneNo">Phone Number</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
-                  id="phoneNo"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={phoneNo}
-                  onChange={handlePhoneChange}
-                  className={errors.phoneNo ? 'border-destructive' : ''}
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={errors.email ? 'border-destructive' : ''}
                 />
-                {errors.phoneNo && (
-                  <p className="text-sm text-destructive">{errors.phoneNo}</p>
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
                 )}
               </div>
 
@@ -185,19 +177,19 @@ export default function VerifyOtp() {
                     Verifying...
                   </>
                 ) : (
-                  'Verify Phone Number'
+                  'Verify Email & Complete Registration'
                 )}
               </Button>
             </form>
             
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Already verified?{' '}
+                Need help?{' '}
                 <Link
-                  to="/login"
+                  to="/contact"
                   className="text-primary hover:text-primary-hover font-medium transition-colors"
                 >
-                  Sign in
+                  Contact Support
                 </Link>
               </p>
             </div>

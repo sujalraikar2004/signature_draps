@@ -17,6 +17,7 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyOtp from "./pages/VerifyOtp";
+import VerifyEmailOtp from "./pages/VerifyEmailOtp";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResendVerification from "./pages/ResendVerification";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -33,7 +34,8 @@ import NotFound from "./pages/NotFound";
 import Orders from "./pages/Orders"
 import RazorpayPayment from "./components/payment/RazorpayPayment"
 import ScrollToTop from "./components/ui/ScrollToTop.jsx"
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
+
 // import order
 const queryClient = new QueryClient();
 
@@ -47,13 +49,13 @@ const App = () => (
             <CartProvider>
               <Toaster />
               <Sonner />
+              <Analytics />
               <BrowserRouter>
               <ScrollToTop/>
                 <div className="flex flex-col min-h-screen">
                   <Navbar />
                   <div className="flex-1">
                     <Routes>
-                      <Analytics/>
                       <Route path="/" element={<Homepage />} />
                       <Route path="/category/:categoryId" element={<ProductListing />} />
                       <Route path="/products" element={<ProductListing />} />
@@ -63,6 +65,7 @@ const App = () => (
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/verify-otp" element={<VerifyOtp />} />
+                      <Route path="/verify-email-otp" element={<VerifyEmailOtp />} />
                       <Route path="/verify-email/:token" element={<VerifyEmail />} />
                       <Route path="/resend-verification" element={<ResendVerification />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
