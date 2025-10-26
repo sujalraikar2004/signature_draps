@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
       if (!response) {
-        throw new Error(response.data.message || 'Registration failed');
+        throw new Error(response || 'Registration failed');
       }
 
       toast.success(response.data.message || 'Registration successful! Please verify your OTP.');
