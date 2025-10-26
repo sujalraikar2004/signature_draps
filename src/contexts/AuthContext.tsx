@@ -86,13 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log(username,email,password,phoneNo);
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await api.post('/user/register', { username, email, password, phoneNo },
-      );
+      const response = await api.post('/user/register', { username, email, password, phoneNo });
 
-
-
-      if (!response) {
-        throw new Error(response || 'Registration failed');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Registration failed');
       }
 
       toast.success(response.data.message || 'Registration successful! Please verify your OTP.');
@@ -100,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('pendingVerificationPhone', phoneNo);
 
     } catch (error: any) {
-      toast.error(error.message || 'An error occurred during registration.');
+      toast.error(error.response?.data?.message || error.message || 'An error occurred during registration.');
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
