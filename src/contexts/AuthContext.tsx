@@ -137,23 +137,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const response = await fetch('/api/users/resend-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNo }),
-      });
+      const response = await api.post('/user/resend-otp', { phoneNo });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to resend OTP');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to resend OTP');
       }
 
-      toast.success(data.message || 'OTP resent successfully!');
+      toast.success(response.data.message || 'OTP resent successfully!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to resend OTP.');
+      toast.error(error.response?.data?.message || error.message || 'Failed to resend OTP.');
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
