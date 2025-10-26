@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://signaturedrapes.in',
         changeOrigin: true,
         secure: false,
       },
