@@ -231,9 +231,9 @@ export default function ProductDetail() {
     <main className="min-h-screen bg-background">
       <div className="container-premium py-8">
         {/* Breadcrumb */}
-        <nav className="mb-8 text-sm text-muted-foreground">
+        {/* <nav className="mb-8 text-sm text-muted-foreground">
           <span>Home</span> / <span>Categories</span> / <span className="text-foreground">{product?.name}</span>
-        </nav>
+        </nav> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Product Images */}
