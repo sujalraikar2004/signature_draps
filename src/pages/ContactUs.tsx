@@ -127,8 +127,8 @@ export default function ContactUs() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Phone</h3>
-                    <p className="text-muted-foreground">+91 98765 43210</p>
-                    <p className="text-muted-foreground">+91 87654 32109</p>
+                    <p className="text-muted-foreground">+91 9036587169</p>
+                    <p className="text-muted-foreground">+91 8310100837</p>
                   </div>
                 </div>
 
@@ -138,8 +138,7 @@ export default function ContactUs() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Email</h3>
-                    <p className="text-muted-foreground">info@signaturedraps.com</p>
-                    <p className="text-muted-foreground">support@signaturedraps.com</p>
+                    <p className="text-muted-foreground">signaturedraps31@gmail.com</p>
                   </div>
                 </div>
 
@@ -150,8 +149,10 @@ export default function ContactUs() {
                   <div>
                     <h3 className="font-semibold mb-1">Address</h3>
                     <p className="text-muted-foreground">
-                      123 Design Street, Interior Plaza<br />
-                      Mumbai, Maharashtra 400001<br />
+                      Shree Siddhi Decor<br />
+                      831/1, Opposite 2nd Railway Gate Besides MedPlus<br />
+                      Congress Road, Tilakwadi, Belgaum<br />
+                      Karnataka 590006<br />
                       India
                     </p>
                   </div>
@@ -186,6 +187,16 @@ export default function ContactUs() {
                     </a>
                   </div>
                 </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="text-primary font-bold text-sm">GST</div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">GST Number</h3>
+                    <p className="text-muted-foreground">29ACKFS9402L1ZH</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -194,7 +205,7 @@ export default function ContactUs() {
               <h3 className="text-xl font-heading font-semibold mb-4">Find Us on Map</h3>
               <div className="aspect-video w-full rounded-lg overflow-hidden">
                 <iframe
-                  src="https://maps.app.goo.gl/ysSzo27SnUpvks2AA"
+                  src="https://maps.app.goo.gl/3L1WAA2iywzbMX3C9"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -208,7 +219,7 @@ export default function ContactUs() {
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => window.open('https://maps.app.goo.gl/ysSzo27SnUpvks2AA?g_st=aw', '_blank')}
+                  onClick={() => window.open('https://maps.app.goo.gl/3L1WAA2iywzbMX3C9?g_st=aw', '_blank')}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   Open in Google Maps
