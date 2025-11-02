@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, Shield, Headphones, RefreshCw } from 'lucide-react';
+import { ArrowRight, Truck, Shield, Headphones, RefreshCw, Construction } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/product/ProductCard';
@@ -134,6 +134,19 @@ export default function Homepage() {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* Development Notice Banner */}
+      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white py-4 px-4 shadow-lg">
+        <div className="container-premium">
+          <div className="flex items-center justify-center gap-3 text-center">
+            <Construction className="w-6 h-6 animate-pulse" />
+            <p className="text-lg font-semibold">
+              🚧 Website Under Development - Some features may be in progress 🚧
+            </p>
+            <Construction className="w-6 h-6 animate-pulse" />
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="relative">
         <HeroSlider slides={sliderData} />
@@ -152,7 +165,7 @@ export default function Homepage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
+            {categories.slice(0, 8).map((category, index) => (
               <div
                 key={category.category}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
