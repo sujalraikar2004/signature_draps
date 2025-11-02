@@ -1,12 +1,15 @@
 import React, { useState,useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ProductCard } from '@/components/product/ProductCard'; 
 import { ImageZoomModal } from '@/components/ui/image-zoom-modal';
 import { useCart } from '@/contexts/CartContext';
@@ -14,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
 import api from '@/Api';
-import { Product, Review } from '@/types';
+import { Product, Review, SizeVariant, CustomSize } from '@/types';
 
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -35,6 +38,16 @@ export default function ProductDetail() {
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
 
+  // New states for customizable products
+  const [sizeOption, setSizeOption] = useState<'ready-made' | 'custom'>('ready-made');
+  const [selectedSizeVariant, setSelectedSizeVariant] = useState<SizeVariant | null>(null);
+  const [customSize, setCustomSize] = useState<CustomSize>({
+    isCustom: false,
+    measurements: {
+      unit: 'ft'
+    }
+  });
+
  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +66,22 @@ export default function ProductDetail() {
       try {
         const data = await getProductById(productId); 
         setProduct(data);
+        
+        // Set default size variant if available
+        if (data.isCustomizable && data.sizeVariants && data.sizeVariants.length > 0) {
+          setSelectedSizeVariant(data.sizeVariants[0]);
+        }
+        
+        // Set custom size unit from config
+        if (data.customSizeConfig?.enabled) {
+          setCustomSize(prev => ({
+            ...prev,
+            measurements: {
+              ...prev.measurements,
+              unit: data.customSizeConfig?.unit || 'ft'
+            }
+          }));
+        }
       } catch (err) {
         setError("Failed to load product");
       } finally {
@@ -102,15 +131,86 @@ export default function ProductDetail() {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
+  // Calculate custom size price
+  const calculateCustomPrice = () => {
+    if (!product?.customSizeConfig || !customSize.measurements) return 0;
+    
+    const { length, width, height, area, diameter } = customSize.measurements;
+    const { pricePerUnit, minimumCharge } = product.customSizeConfig;
+    
+    let calculatedArea = 0;
+    
+    if (area) {
+      calculatedArea = area;
+    } else if (length && width) {
+      calculatedArea = length * width;
+    } else if (diameter) {
+      calculatedArea = Math.PI * Math.pow(diameter / 2, 2);
+    }
+    
+    const calculatedPrice = calculatedArea * (pricePerUnit || 0);
+    return Math.max(calculatedPrice, minimumCharge || 0);
+  };
+
   const handleAddToCart = () => {
-     if(user){
-      addToCart(product?._id,quantity);
-     }else{
+    if (!user) {
       navigate("/login");
-     }
-    
+      return;
+    }
+
+    // Validate size selection for customizable products
+    if (product?.isCustomizable) {
+      if (sizeOption === 'ready-made' && !selectedSizeVariant) {
+        toast.error('Please select a size');
+        return;
+      }
       
+      if (sizeOption === 'custom') {
+        const requiredFields = product.customSizeConfig?.fields || [];
+        const hasAllFields = requiredFields.every(field => {
+          const value = customSize.measurements[field];
+          return value && value > 0;
+        });
+        
+        if (!hasAllFields) {
+          toast.error('Please fill in all required measurements');
+          return;
+        }
+      }
+    }
+
+    // Prepare size data for cart
+    let sizeVariantData = null;
+    let customSizeData = null;
+
+    if (product?.isCustomizable) {
+      if (sizeOption === 'ready-made' && selectedSizeVariant) {
+        sizeVariantData = {
+          variantId: selectedSizeVariant._id,
+          name: selectedSizeVariant.name,
+          dimensions: selectedSizeVariant.dimensions,
+          price: selectedSizeVariant.price
+        };
+      } else if (sizeOption === 'custom') {
+        const calculatedPrice = calculateCustomPrice();
+        customSizeData = {
+          isCustom: true,
+          measurements: customSize.measurements,
+          calculatedPrice: calculatedPrice,
+          notes: customSize.notes || ''
+        };
+      }
+    }
+
+    // Add to cart with size information
+    addToCart(product?._id || '', quantity, sizeVariantData, customSizeData);
     
+    // Show toast with size info
+    if (sizeVariantData) {
+      toast.success(`Added ${sizeVariantData.name} to cart`);
+    } else if (customSizeData?.isCustom) {
+      toast.success('Added custom size product to cart');
+    }
   };
 
   const handleAddToWishlist = () => {
@@ -308,6 +408,12 @@ export default function ProductDetail() {
                 {discountPercentage > 0 && (
                   <Badge variant="destructive">{discountPercentage}% OFF</Badge>
                 )}
+                {product?.isCustomizable && (
+                  <Badge variant="outline" className="border-primary text-primary">
+                    <Ruler className="h-3 w-3 mr-1" />
+                    Customizable
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -315,11 +421,17 @@ export default function ProductDetail() {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-bold text-primary">
-                  ₹{product?.price.toLocaleString()}
+                  ₹{(sizeOption === 'ready-made' && selectedSizeVariant 
+                    ? selectedSizeVariant.price 
+                    : sizeOption === 'custom' 
+                    ? calculateCustomPrice() 
+                    : product?.price || 0).toLocaleString()}
                 </span>
-                {product?.originalPrice && (
+                {((sizeOption === 'ready-made' && selectedSizeVariant?.originalPrice) || product?.originalPrice) && (
                   <span className="text-xl text-muted-foreground line-through">
-                    ₹{product.originalPrice.toLocaleString()}
+                    ₹{(sizeOption === 'ready-made' && selectedSizeVariant?.originalPrice 
+                      ? selectedSizeVariant.originalPrice 
+                      : product?.originalPrice || 0).toLocaleString()}
                   </span>
                 )}
               </div>
@@ -327,6 +439,266 @@ export default function ProductDetail() {
                 Inclusive of all taxes • Free shipping available
               </p>
             </div>
+
+            {/* Disclaimer */}
+            {product?.disclaimer && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {product.disclaimer}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Size Selection for Customizable Products */}
+            {product?.isCustomizable && (
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Ruler className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Select Size Option</h3>
+                </div>
+
+                <RadioGroup value={sizeOption} onValueChange={(value: any) => setSizeOption(value)}>
+                  {product.sizeVariants && product.sizeVariants.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ready-made" id="ready-made" />
+                        <Label htmlFor="ready-made" className="font-medium cursor-pointer">
+                          Ready-Made Sizes
+                        </Label>
+                      </div>
+                      
+                      {sizeOption === 'ready-made' && (
+                        <div className="ml-6 space-y-2">
+                          {product.sizeVariants.map((variant) => (
+                            <div
+                              key={variant._id}
+                              onClick={() => setSelectedSizeVariant(variant)}
+                              className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                                selectedSizeVariant?._id === variant._id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border hover:border-primary/50'
+                              } ${!variant.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">{variant.name}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {variant.dimensions.length && variant.dimensions.width
+                                      ? `${variant.dimensions.length} x ${variant.dimensions.width} ${variant.dimensions.unit}`
+                                      : 'Standard size'}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-primary">₹{variant.price.toLocaleString()}</p>
+                                  {variant.originalPrice && variant.originalPrice > variant.price && (
+                                    <p className="text-sm text-muted-foreground line-through">
+                                      ₹{variant.originalPrice.toLocaleString()}
+                                    </p>
+                                  )}
+                                  {!variant.inStock && (
+                                    <Badge variant="destructive" className="text-xs mt-1">Out of Stock</Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {product.allowCustomSize && product.customSizeConfig?.enabled && (
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="custom" id="custom" />
+                        <Label htmlFor="custom" className="font-medium cursor-pointer">
+                          Custom Size (Made to Order)
+                        </Label>
+                      </div>
+
+                      {sizeOption === 'custom' && (
+                        <div className="ml-6 space-y-3 p-4 bg-background rounded-lg border border-border">
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Enter your custom measurements below:
+                          </p>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            {product.customSizeConfig.fields.includes('length') && (
+                              <div>
+                                <Label htmlFor="length" className="text-sm">Length *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="length"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={customSize.measurements.length || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        length: parseFloat(e.target.value) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    {product.customSizeConfig.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {product.customSizeConfig.fields.includes('width') && (
+                              <div>
+                                <Label htmlFor="width" className="text-sm">Width *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="width"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={customSize.measurements.width || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        width: parseFloat(e.target.value) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    {product.customSizeConfig.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {product.customSizeConfig.fields.includes('height') && (
+                              <div>
+                                <Label htmlFor="height" className="text-sm">Height *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="height"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={customSize.measurements.height || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        height: parseFloat(e.target.value) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    {product.customSizeConfig.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {product.customSizeConfig.fields.includes('area') && (
+                              <div>
+                                <Label htmlFor="area" className="text-sm">Area *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="area"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={customSize.measurements.area || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        area: parseFloat(e.target.value) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    {product.customSizeConfig.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {product.customSizeConfig.fields.includes('diameter') && (
+                              <div>
+                                <Label htmlFor="diameter" className="text-sm">Diameter *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="diameter"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={customSize.measurements.diameter || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        diameter: parseFloat(e.target.value) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    {product.customSizeConfig.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <Label htmlFor="notes" className="text-sm">Additional Notes (Optional)</Label>
+                            <Textarea
+                              id="notes"
+                              placeholder="Any special instructions or requirements..."
+                              value={customSize.notes || ''}
+                              onChange={(e) => setCustomSize(prev => ({
+                                ...prev,
+                                notes: e.target.value
+                              }))}
+                              className="mt-1"
+                              rows={3}
+                            />
+                          </div>
+
+                          {product.customSizeConfig.pricePerUnit && (
+                            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                              <p className="text-sm font-medium">
+                                Price: ₹{product.customSizeConfig.pricePerUnit} per {product.customSizeConfig.unit}
+                              </p>
+                              {product.customSizeConfig.minimumCharge && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Minimum charge: ₹{product.customSizeConfig.minimumCharge.toLocaleString()}
+                                </p>
+                              )}
+                              {calculateCustomPrice() > 0 && (
+                                <p className="text-lg font-bold text-primary mt-2">
+                                  Estimated Total: ₹{calculateCustomPrice().toLocaleString()}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </RadioGroup>
+              </div>
+            )}
 
             {/* Stock Status */}
             <div>

@@ -21,6 +21,12 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   reviews?: Review[];
+  // Customizable product fields
+  isCustomizable?: boolean;
+  sizeVariants?: SizeVariant[];
+  allowCustomSize?: boolean;
+  customSizeConfig?: CustomSizeConfig;
+  disclaimer?: string;
 }
 
 export interface Review {
@@ -54,9 +60,58 @@ export interface Subcategory {
   productCount: number;
 }
 
+export interface SizeVariant {
+  _id?: string;
+  name: string;
+  dimensions: {
+    length?: number;
+    width?: number;
+    height?: number;
+    unit: 'cm' | 'inch' | 'ft' | 'm';
+  };
+  price: number;
+  originalPrice?: number;
+  stockQuantity: number;
+  inStock: boolean;
+}
+
+export interface CustomSizeConfig {
+  enabled: boolean;
+  fields: ('length' | 'width' | 'height' | 'area' | 'diameter')[];
+  unit: 'cm' | 'inch' | 'ft' | 'm' | 'sqft' | 'sqm';
+  pricePerUnit?: number;
+  minimumCharge?: number;
+}
+
+export interface CustomSize {
+  isCustom: boolean;
+  measurements: {
+    length?: number;
+    width?: number;
+    height?: number;
+    area?: number;
+    diameter?: number;
+    unit: string;
+  };
+  calculatedPrice?: number;
+  notes?: string;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedSizeVariant?: {
+    variantId: string;
+    name: string;
+    dimensions: {
+      length?: number;
+      width?: number;
+      height?: number;
+      unit: string;
+    };
+    price: number;
+  };
+  customSize?: CustomSize;
 }
 
 export interface User {

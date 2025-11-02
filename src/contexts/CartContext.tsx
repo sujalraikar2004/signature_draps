@@ -8,6 +8,30 @@ export interface CartItem {
   quantity: number;
   priceAtAddition: number;
   product?: Product;
+  selectedSizeVariant?: {
+    variantId: string;
+    name: string;
+    dimensions: {
+      length?: number;
+      width?: number;
+      height?: number;
+      unit: string;
+    };
+    price: number;
+  };
+  customSize?: {
+    isCustom: boolean;
+    measurements: {
+      length?: number;
+      width?: number;
+      height?: number;
+      area?: number;
+      diameter?: number;
+      unit: string;
+    };
+    calculatedPrice?: number;
+    notes?: string;
+  };
 }
 
 interface CartState {
@@ -17,7 +41,7 @@ interface CartState {
 }
 
 interface CartContextType extends CartState {
-  addToCart: (productId: string, quantity: number) => Promise<void>;
+  addToCart: (productId: string, quantity: number, selectedSizeVariant?: any, customSize?: any) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   getCartTotal: () => Promise<void>;
@@ -45,10 +69,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCartState(prev => ({ ...prev, isLoading: loading }));
   };
 
-  const addToCart = async (productId: string, quantity: number) => {
+  const addToCart = async (productId: string, quantity: number, selectedSizeVariant?: any, customSize?: any) => {
     setLoading(true);
     try {
-      const response = await api.post('cart/add', { productId, quantity });
+      const requestBody: any = { productId, quantity };
+      
+      // Add size data if provided
+      if (selectedSizeVariant) {
+        requestBody.selectedSizeVariant = selectedSizeVariant;
+      }
+      if (customSize) {
+        requestBody.customSize = customSize;
+      }
+      
+      const response = await api.post('cart/add', requestBody);
 
    
       if (!response) throw new Error(response.data.message || response.data.messege);
@@ -160,7 +194,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/cart/clear');
+      const response = await api.delete('/cart/clear');
 
 
       if (!response) throw new Error(response.data.message);

@@ -42,11 +42,15 @@ export interface FilterState {
 }
 
 const CATEGORIES = [
-  { id: 'curtains-furnishing', name: 'Curtains & Furnishing', icon: '🪟', color: 'bg-blue-100 text-blue-700' },
-  { id: 'blinds', name: 'Blinds', icon: '🎭', color: 'bg-green-100 text-green-700' },
-  { id: 'bean-bags', name: 'Bean Bags', icon: '🪑', color: 'bg-purple-100 text-purple-700' },
-  { id: 'wallpaper', name: 'Wallpaper', icon: '🎨', color: 'bg-pink-100 text-pink-700' },
-  { id: 'carpets-rugs', name: 'Carpets & Rugs', icon: '🏠', color: 'bg-orange-100 text-orange-700' },
+  { id: 'curtains-and-accessories', name: 'Curtains And Accessories', icon: '🪟', color: 'bg-blue-100 text-blue-700' },
+  { id: 'sofa-recliner-chairs-corner-sofa', name: 'Sofa, Recliner, Chairs and Corner Sofa', icon: '🛋️', color: 'bg-green-100 text-green-700' },
+  { id: 'home-decor-wallpaper-stickers', name: 'Home Decor Wallpaper and Stickers', icon: '🎨', color: 'bg-pink-100 text-pink-700' },
+  { id: 'window-blinds', name: 'Window Blinds', icon: '🎭', color: 'bg-purple-100 text-purple-700' },
+  { id: 'bedsheet-and-comforters', name: 'Bedsheet and Comforters', icon: '🛏️', color: 'bg-indigo-100 text-indigo-700' },
+  { id: 'institutional-project-window-blinds', name: 'Institutional Project Window Blinds', icon: '🏢', color: 'bg-cyan-100 text-cyan-700' },
+  { id: 'bean-bags-and-beans', name: 'Bean Bags and Beans', icon: '🪑', color: 'bg-orange-100 text-orange-700' },
+  { id: 'carpet-rugs-door-mats', name: 'Carpet, Rugs and Door Mats', icon: '🏠', color: 'bg-red-100 text-red-700' },
+  { id: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', icon: '🌿', color: 'bg-emerald-100 text-emerald-700' },
 ];
 
 const COLORS = [

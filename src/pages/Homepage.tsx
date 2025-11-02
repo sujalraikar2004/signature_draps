@@ -25,28 +25,58 @@ interface Product {
 // Static category data with local images
 const staticCategories = [
   {
-    category: 'curtains-furnishing',
-    name: 'Curtains & Furnishing',
+    category: 'curtains-and-accessories',
+    name: 'Curtains And Accessories',
     image: curtainsImg,
     count: 125
   },
   {
-    category: 'bean-bags',
-    name: 'Bean Bags & Cushions', 
+    category: 'sofa-recliner-chairs-corner-sofa',
+    name: 'Sofa, Recliner, Chairs and Corner Sofa', 
     image: beanbagsImg,
-    count: 85
+    count: 150
   },
   {
-    category: 'wallpaper',
-    name: 'Wallpaper & Wall Coverings',
+    category: 'home-decor-wallpaper-stickers',
+    name: 'Home Decor Wallpaper and Stickers',
     image: wallpaperImg,
     count: 95
   },
   {
-    category: 'blinds',
-    name: 'Blinds & Window Treatments',
+    category: 'window-blinds',
+    name: 'Window Blinds',
     image: blindsImg,
     count: 110
+  },
+  {
+    category: 'bedsheet-and-comforters',
+    name: 'Bedsheet and Comforters',
+    image: curtainsImg,
+    count: 80
+  },
+  {
+    category: 'institutional-project-window-blinds',
+    name: 'Institutional Project Window Blinds',
+    image: blindsImg,
+    count: 60
+  },
+  {
+    category: 'bean-bags-and-beans',
+    name: 'Bean Bags and Beans',
+    image: beanbagsImg,
+    count: 85
+  },
+  {
+    category: 'carpet-rugs-door-mats',
+    name: 'Carpet, Rugs and Door Mats',
+    image: wallpaperImg,
+    count: 90
+  },
+  {
+    category: 'artificial-grass-plant-vertical-garden',
+    name: 'Artificial Grass, Plant and Vertical Garden',
+    image: curtainsImg,
+    count: 70
   }
 ];
 

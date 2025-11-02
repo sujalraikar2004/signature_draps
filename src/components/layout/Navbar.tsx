@@ -70,7 +70,7 @@ export function Navbar() {
             </div>
             <div className="hidden sm:block">
               <span className="text-xl font-heading font-bold text-primary">Signature</span>
-              <span className="text-xl font-heading font-bold text-accent ml-1">Draps</span>
+              <span className="text-xl font-heading font-bold text-accent ml-1">Drapes</span>
             </div>
           </Link>
 
@@ -208,7 +208,7 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {categories.slice(0, 4).map((category) => (
+            {categories.slice(0, 5).map((category) => (
               <Link
                 key={category.id}
                 to={`/category/${category.id}`}
