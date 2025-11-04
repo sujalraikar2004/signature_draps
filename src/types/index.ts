@@ -7,6 +7,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   images: { url: string; publicId: string; alt: string; }[];
+  videos?: { url: string; publicId: string; thumbnail: string; duration: number; format: string; alt: string; }[];
   category: string;
   subcategory?: string;
   description: string;

@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,6 +28,7 @@ export default function ProductDetail() {
   const { user } = useAuth();
 
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedMediaType, setSelectedMediaType] = useState<'image' | 'video'>('image');
   const [quantity, setQuantity] = useState(1);
   const [newReview, setNewReview] = useState({
     rating: 5,
@@ -336,25 +337,42 @@ export default function ProductDetail() {
         </nav> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          {/* Product Images */}
+          {/* Product Images & Videos */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-              <img
-                src={product?.images[selectedImage].url}
-                alt={product?.name}
-                className="w-full h-full object-cover cursor-pointer"
-                onClick={() => handleImageClick(selectedImage)}
-              />
+            <div className="aspect-square overflow-hidden rounded-lg bg-muted relative">
+              {selectedMediaType === 'image' ? (
+                <img
+                  src={product?.images[selectedImage]?.url}
+                  alt={product?.name}
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => handleImageClick(selectedImage)}
+                />
+              ) : (
+                <video
+                  key={product?.videos?.[selectedImage - (product?.images?.length || 0)]?.url}
+                  controls
+                  className="w-full h-full object-contain bg-black"
+                  poster={product?.videos?.[selectedImage - (product?.images?.length || 0)]?.thumbnail}
+                >
+                  <source src={product?.videos?.[selectedImage - (product?.images?.length || 0)]?.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              )}
             </div>
             
-            {product?.images.length > 1 && (
+            {/* Media Thumbnails (Images first, then Videos) */}
+            {(((product?.images?.length || 0) + (product?.videos?.length || 0)) > 1 || (product?.videos?.length || 0) > 0) && (
               <div className="grid grid-cols-4 gap-2">
-                {product?.images.map((image, index) => (
+                {/* Image Thumbnails */}
+                {product?.images?.map((image, index) => (
                   <button
-                    key={index}
-                    onClick={() => handleImageClick(index)}
+                    key={`img-${index}`}
+                    onClick={() => {
+                      setSelectedImage(index);
+                      setSelectedMediaType('image');
+                    }}
                     className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                      selectedImage === index ? 'border-primary' : 'border-transparent'
+                      selectedImage === index && selectedMediaType === 'image' ? 'border-primary' : 'border-transparent'
                     }`}
                   >
                     <img
@@ -362,6 +380,31 @@ export default function ProductDetail() {
                       alt={`${product?.name} ${index + 1}`}
                       className="w-full h-full object-cover cursor-pointer"
                     />
+                  </button>
+                ))}
+                
+                {/* Video Thumbnails */}
+                {product?.videos?.map((video, index) => (
+                  <button
+                    key={`vid-${index}`}
+                    onClick={() => {
+                      setSelectedImage((product?.images?.length || 0) + index);
+                      setSelectedMediaType('video');
+                    }}
+                    className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors relative ${
+                      selectedImage === (product?.images?.length || 0) + index && selectedMediaType === 'video' 
+                        ? 'border-primary' 
+                        : 'border-transparent'
+                    }`}
+                  >
+                    <img
+                      src={video.thumbnail || video.url}
+                      alt={`${product?.name} video ${index + 1}`}
+                      className="w-full h-full object-cover cursor-pointer"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Play className="h-8 w-8 text-white" fill="white" />
+                    </div>
                   </button>
                 ))}
               </div>
