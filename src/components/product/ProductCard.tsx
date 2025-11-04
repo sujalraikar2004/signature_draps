@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Eye, Truck, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types';
@@ -186,6 +186,28 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
             ) : (
               <Badge variant="outline" className="text-destructive border-destructive">
                 Out of Stock
+              </Badge>
+            )}
+          </div>
+
+          {/* Delivery & Policy Badges */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {product.deliveryInfo?.cashOnDelivery && (
+              <Badge variant="outline" className="text-xs bg-success/5 border-success/30 text-success">
+                <Truck className="h-3 w-3 mr-1" />
+                COD
+              </Badge>
+            )}
+            {product.deliveryInfo?.freeDelivery && (
+              <Badge variant="outline" className="text-xs bg-primary/5 border-primary/30 text-primary">
+                <Truck className="h-3 w-3 mr-1" />
+                Free Delivery
+              </Badge>
+            )}
+            {product.returnPolicy?.returnable && product.returnPolicy.returnDays > 0 && (
+              <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-600">
+                <RotateCcw className="h-3 w-3 mr-1" />
+                {product.returnPolicy.returnDays}D Returns
               </Badge>
             )}
           </div>

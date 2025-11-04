@@ -820,24 +820,112 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Truck className="h-4 w-4 text-primary" />
-                <span className="text-sm">Free Delivery</span>
+            {/* Delivery & Policy Information */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Delivery & Returns</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Cash on Delivery */}
+                {product?.deliveryInfo?.cashOnDelivery && (
+                  <div className="flex items-center space-x-2 p-3 bg-success/10 rounded-lg border border-success/20">
+                    <div className="h-8 w-8 rounded-full bg-success/20 flex items-center justify-center">
+                      <Truck className="h-4 w-4 text-success" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Cash on Delivery</p>
+                      <p className="text-xs text-muted-foreground">Available</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Free Delivery or Delivery Charges */}
+                <div className="flex items-center space-x-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Truck className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {product?.deliveryInfo?.freeDelivery ? 'Free Delivery' : 'Delivery Charges'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {product?.deliveryInfo?.freeDelivery 
+                        ? 'No shipping cost' 
+                        : `₹${product?.deliveryInfo?.deliveryCharges || 0}`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Return Policy */}
+                {product?.returnPolicy?.returnable ? (
+                  <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <RotateCcw className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{product.returnPolicy.returnDays}-Day Returns</p>
+                      <p className="text-xs text-muted-foreground">Easy returns available</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                      <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">No Returns</p>
+                      <p className="text-xs text-muted-foreground">Non-returnable item</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Secure Transaction */}
+                {product?.secureTransaction && (
+                  <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <Shield className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Secure Transaction</p>
+                      <p className="text-xs text-muted-foreground">SSL encrypted payment</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="h-4 w-4 text-primary" />
-                <span className="text-sm">Quality Guarantee</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RotateCcw className="h-4 w-4 text-primary" />
-                <span className="text-sm">30-Day Returns</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Headphones className="h-4 w-4 text-primary" />
-                <span className="text-sm">Expert Support</span>
-              </div>
+
+              {/* Delivery Information */}
+              {product?.deliveryInfo && (
+                <div className="p-4 bg-muted/20 rounded-lg border border-border">
+                  <div className="flex items-start space-x-3">
+                    <Truck className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-1">Delivery Information</p>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p>
+                          Estimated delivery: {product.deliveryInfo.estimatedDays?.min || 3}-
+                          {product.deliveryInfo.estimatedDays?.max || 7} business days
+                        </p>
+                        {product.deliveryInfo.deliveryPartner && (
+                          <p>Delivered by: {product.deliveryInfo.deliveryPartner}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Return Conditions */}
+              {product?.returnPolicy?.returnable && product?.returnPolicy?.returnConditions && (
+                <div className="p-4 bg-blue-50/50 rounded-lg border border-blue-200/50">
+                  <div className="flex items-start space-x-3">
+                    <RotateCcw className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-1">Return Conditions</p>
+                      <p className="text-xs text-muted-foreground">
+                        {product.returnPolicy.returnConditions}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

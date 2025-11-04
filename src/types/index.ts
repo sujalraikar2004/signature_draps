@@ -28,6 +28,23 @@ export interface Product {
   allowCustomSize?: boolean;
   customSizeConfig?: CustomSizeConfig;
   disclaimer?: string;
+  // Delivery and Policy fields
+  deliveryInfo?: {
+    cashOnDelivery: boolean;
+    freeDelivery: boolean;
+    deliveryCharges: number;
+    estimatedDays: {
+      min: number;
+      max: number;
+    };
+    deliveryPartner: string;
+  };
+  returnPolicy?: {
+    returnable: boolean;
+    returnDays: number;
+    returnConditions?: string;
+  };
+  secureTransaction?: boolean;
 }
 
 export interface Review {
