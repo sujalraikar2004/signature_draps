@@ -89,11 +89,12 @@ export default function Orders() {
                     <Badge
                       variant={
                         order.orderStatus === 'DELIVERED'
-                          ? 'success'
+                          ? 'default'
                           : order.orderStatus === 'CANCELLED'
                           ? 'destructive'
                           : 'secondary'
                       }
+                      className={order.orderStatus === 'DELIVERED' ? 'bg-green-500 hover:bg-green-600' : ''}
                     >
                       {order.orderStatus}
                     </Badge>
@@ -114,9 +115,9 @@ export default function Orders() {
                 {/* Products */}
                 <div className="divide-y">
                   {order.products.map((item) => (
-                    <div key={item._id} className="flex items-center gap-4 py-4">
+                    <div key={item.productId} className="flex items-center gap-4 py-4">
                       <img
-                        src={item.images?.[0]?.url}
+                        src={item.image || '/placeholder.png'}
                         alt={item.name}
                         className="w-20 h-20 object-cover rounded-lg"
                       />
@@ -125,9 +126,11 @@ export default function Orders() {
                         <p className="text-sm text-muted-foreground">
                           Qty: {item.quantity}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          Brand: {item.brand}
-                        </p>
+                        {item.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {item.description}
+                          </p>
+                        )}
                       </div>
                       <div className="font-semibold">
                         ₹{(item.priceAtPurchase * item.quantity).toLocaleString()}

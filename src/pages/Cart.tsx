@@ -70,7 +70,7 @@ export default function Cart() {
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     <img
-                      src={item.productId.image }
+                      src={item.productId.images?.[0]?.url || '/placeholder.png'}
                       alt={item.productId.name}
                       className="w-full sm:w-24 h-48 sm:h-24 object-cover rounded-lg"
                     />
@@ -141,7 +141,7 @@ export default function Cart() {
                       </div>
                     </div>
 
-                    {item.productId.stock <= 0 && (
+                    {(!item.productId.inStock || item.productId.stockQuantity <= 0) && (
                       <Badge variant="destructive" className="w-fit">
                         Out of Stock
                       </Badge>

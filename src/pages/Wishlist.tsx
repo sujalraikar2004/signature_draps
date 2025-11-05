@@ -12,20 +12,18 @@ import { Product } from '@/types';
 export default function Wishlist() {
   const { user, isAuthenticated } = useAuth();
   const { addToCart } = useCart();
-  const { products, toggleLike } = useProducts();
-  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
+  const { wishlistProducts, toggleLike, fetchWishlist } = useProducts();
   const [loading, setLoading] = useState(true);
 
-  // Filter liked products from all products
+  // Fetch wishlist when component mounts or user changes
   useEffect(() => {
-    if (products && isAuthenticated) {
-      const likedProducts = products.filter(product => product.isLiked);
-      setWishlistProducts(likedProducts);
+    if (isAuthenticated) {
+      setLoading(true);
+      fetchWishlist().finally(() => setLoading(false));
     } else {
-      setWishlistProducts([]);
+      setLoading(false);
     }
-    setLoading(false);
-  }, [products, isAuthenticated]);
+  }, [isAuthenticated, fetchWishlist]);
 
   const handleAddToCart = (product: any) => {
     addToCart(product._id, 1);
@@ -35,8 +33,7 @@ export default function Wishlist() {
   const handleRemoveFromWishlist = async (productId: string) => {
     try {
       await toggleLike(productId);
-      // Update local state immediately
-      setWishlistProducts(prev => prev.filter(p => p._id !== productId));
+      // Wishlist will be automatically refreshed by toggleLike in context
     } catch (error) {
       // Error is handled in context
     }
@@ -63,14 +60,13 @@ export default function Wishlist() {
     return (
       <main className="min-h-screen bg-background">
         <div className="container-premium py-16 text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-6"></div>
-          <p className="text-muted-foreground">Loading your wishlist...</p>
+          <p>Loading wishlist...</p>
         </div>
       </main>
     );
   }
 
-  if (wishlistProducts.length === 0) {
+  if (!wishlistProducts || wishlistProducts.length === 0) {
     return (
       <main className="min-h-screen bg-background">
         <div className="container-premium py-16 text-center">

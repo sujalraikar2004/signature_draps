@@ -3,19 +3,46 @@ import { toast } from 'sonner';
 import api from '@/Api';
 
 interface ShippingAddress {
-  name: string;
+  fullName: string;
   phone: string;
-  addressLine1: string;
-  addressLine2?: string;
+  street: string;
   city: string;
   state: string;
-  pincode: string;
+  postalCode: string;
+  country: string;
 }
 
 interface OrderProduct {
   productId: string;
+  name: string;
+  image: string | null;
+  description?: string;
   quantity: number;
   priceAtPurchase: number;
+  selectedSizeVariant?: {
+    variantId: string;
+    name: string;
+    dimensions: {
+      length?: number;
+      width?: number;
+      height?: number;
+      unit: string;
+    };
+    price: number;
+  };
+  customSize?: {
+    isCustom: boolean;
+    measurements: {
+      length?: number;
+      width?: number;
+      height?: number;
+      area?: number;
+      diameter?: number;
+      unit?: string;
+    };
+    calculatedPrice?: number;
+    notes?: string;
+  };
 }
 
 interface Order {
@@ -152,7 +179,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       const response = await api.get('orders/my-orders');
 
       
-      if (!response) throw new Error(data.message);
+      if (!response.data.success) throw new Error(response.data.message || 'Failed to fetch orders');
 
       setOrderState(prev => ({
         ...prev,

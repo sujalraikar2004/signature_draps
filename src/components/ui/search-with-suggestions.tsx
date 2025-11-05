@@ -38,7 +38,7 @@ const SUGGESTION_COLORS = {
 
 export function SearchWithSuggestions({
   onSearch,
-  placeholder = "Search for curtains, blinds, wallpapers...",
+  placeholder = "Search by product code, name, price, category...",
   className,
   showRecentSearches = true
 }: SearchWithSuggestionsProps) {

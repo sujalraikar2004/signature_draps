@@ -7,7 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { Product, Review } from "@/types";
+import { Product, Review, Category } from "@/types";
 import api from "@/Api"; // axios instance with baseURL & interceptors
 import { useAuth } from "./AuthContext";
 
@@ -17,7 +17,8 @@ interface ProductContextType {
   featuredProducts: Product[] | null;
   newProducts: Product[] | null;
   bestSellers: Product[] | null;
-  categories: string[] | null;
+  wishlistProducts: Product[] | null;
+  categories: Category[] | null;
   wishlistCount: number;
   loading: boolean;
   error: string | null;
@@ -27,6 +28,7 @@ interface ProductContextType {
   fetchFeaturedProducts: () => Promise<void>;
   fetchNewProducts: () => Promise<void>;
   fetchBestSellers: () => Promise<void>;
+  fetchWishlist: () => Promise<void>;
   searchProducts: (query: string, filters?: any) => Promise<Product[]>;
   getProductById: (productId: string) => Promise<Product | null>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
@@ -82,7 +84,10 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   );
   const [newProducts, setNewProducts] = useState<Product[] | null>(null);
   const [bestSellers, setBestSellers] = useState<Product[] | null>(null);
-  const [categories, setCategories] = useState<string[] | null>(null);
+  const [wishlistProducts, setWishlistProducts] = useState<Product[] | null>(
+    null
+  );
+  const [categories, setCategories] = useState<Category[] | null>(null);
   const [wishlistCount, setWishlistCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +155,24 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     if (data) setBestSellers(data.data);
   }, []);
 
+  const fetchWishlist = useCallback(async () => {
+    try {
+      const response = await api.get("/user/wishlist");
+      if (response.data.success) {
+        // Extract products from wishlist items
+        const wishlistItems = response.data.data.wishlist || [];
+        const products = wishlistItems
+          .map((item: any) => item.productId)
+          .filter((product: any) => product); // Filter out null products
+        setWishlistProducts(products);
+        setWishlistCount(products.length);
+      }
+    } catch (error: any) {
+      console.error('Error fetching wishlist:', error);
+      setWishlistProducts([]);
+    }
+  }, []);
+
   const searchProducts = useCallback(
     async (query: string, filters: any = {}) => {
       try {
@@ -212,7 +235,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   );
 
   const fetchCategories = useCallback(async () => {
-    const response = await handleApiCall<{ data: string[] }>(() =>
+    const response = await handleApiCall<{ data: Category[] }>(() =>
       api.get("/products/categories")
     );
     console.log("this is categories api response", response);
@@ -362,11 +385,14 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
           : null
       );
 
+      // Refresh wishlist to keep it in sync
+      fetchWishlist();
+
       toast.success(message);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to update wishlist");
     }
-  }, []);
+  }, [fetchWishlist]);
 
   // Calculate wishlist count whenever products change
   useEffect(() => {
@@ -386,6 +412,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     featuredProducts,
     newProducts,
     bestSellers,
+    wishlistProducts,
     categories,
     wishlistCount,
     loading,
@@ -396,6 +423,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     fetchFeaturedProducts,
     fetchNewProducts,
     fetchBestSellers,
+    fetchWishlist,
     searchProducts,
     getProductById,
     createProduct,

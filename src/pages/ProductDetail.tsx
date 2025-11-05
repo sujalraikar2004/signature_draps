@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle, Play } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle, Play, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ProductCard } from '@/components/product/ProductCard'; 
 import { ImageZoomModal } from '@/components/ui/image-zoom-modal';
 import { useCart } from '@/contexts/CartContext';
@@ -18,6 +19,71 @@ import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
 import api from '@/Api';
 import { Product, Review, SizeVariant, CustomSize } from '@/types';
+
+// Helper function to format size display based on category and variant data
+const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
+  // Bean bags - prioritize sizeLabel
+  if (variant.sizeLabel) {
+    return variant.sizeLabel;
+  }
+  
+  // Area-based products (wallpaper, grass)
+  if (variant.area && variant.area > 0) {
+    return `${variant.area} sq ft`;
+  }
+  
+  // Round items (carpets with diameter)
+  if (variant.diameter && variant.diameter > 0) {
+    return `⌀ ${variant.diameter} ${variant.dimensions?.unit || 'ft'}`;
+  }
+  
+  // Dimension-based products (curtains, blinds, etc.)
+  if (variant.dimensions?.length && variant.dimensions?.width) {
+    const parts = [variant.dimensions.length, variant.dimensions.width];
+    if (variant.dimensions.height && variant.dimensions.height > 0) {
+      parts.push(variant.dimensions.height);
+    }
+    return `${parts.join(' × ')} ${variant.dimensions.unit || 'ft'}`;
+  }
+  
+  // Fallback
+  return 'Standard size';
+};
+
+// Helper function to generate detailed size information for tooltip
+const getDetailedSizeInfo = (variant: SizeVariant): string[] => {
+  const details: string[] = [];
+  
+  // Add size label if available
+  if (variant.sizeLabel) {
+    details.push(`Size: ${variant.sizeLabel}`);
+  }
+  
+  // Add dimensions if available
+  if (variant.dimensions) {
+    const { length, width, height, unit } = variant.dimensions;
+    if (length) details.push(`Length: ${length} ${unit}`);
+    if (width) details.push(`Width: ${width} ${unit}`);
+    if (height && height > 0) details.push(`Height: ${height} ${unit}`);
+  }
+  
+  // Add area if available
+  if (variant.area && variant.area > 0) {
+    details.push(`Area: ${variant.area} sq ft`);
+  }
+  
+  // Add diameter if available
+  if (variant.diameter && variant.diameter > 0) {
+    details.push(`Diameter: ${variant.diameter} ${variant.dimensions?.unit || 'ft'}`);
+  }
+  
+  // Add stock information
+  if (variant.stockQuantity !== undefined) {
+    details.push(`Stock: ${variant.stockQuantity} units`);
+  }
+  
+  return details;
+};
 
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -40,7 +106,7 @@ export default function ProductDetail() {
   const [isLiking, setIsLiking] = useState(false);
 
   // New states for customizable products
-  const [sizeOption, setSizeOption] = useState<'ready-made' | 'custom'>('ready-made');
+  const [sizeOption, setSizeOption] = useState<'ready-made' | 'custom' | ''>('');
   const [selectedSizeVariant, setSelectedSizeVariant] = useState<SizeVariant | null>(null);
   const [customSize, setCustomSize] = useState<CustomSize>({
     isCustom: false,
@@ -214,7 +280,64 @@ export default function ProductDetail() {
     }
   };
 
-  const handleAddToWishlist = () => {
+  const handleBuyNow = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    // Validate size selection for customizable products
+    if (product?.isCustomizable) {
+      if (sizeOption === 'ready-made' && !selectedSizeVariant) {
+        toast.error('Please select a size');
+        return;
+      }
+      
+      if (sizeOption === 'custom') {
+        const requiredFields = product.customSizeConfig?.fields || [];
+        const hasAllFields = requiredFields.every(field => {
+          const value = customSize.measurements[field];
+          return value && value > 0;
+        });
+        
+        if (!hasAllFields) {
+          toast.error('Please fill in all required measurements');
+          return;
+        }
+      }
+    }
+
+    // Prepare size data for cart
+    let sizeVariantData = null;
+    let customSizeData = null;
+
+    if (product?.isCustomizable) {
+      if (sizeOption === 'ready-made' && selectedSizeVariant) {
+        sizeVariantData = {
+          variantId: selectedSizeVariant._id,
+          name: selectedSizeVariant.name,
+          dimensions: selectedSizeVariant.dimensions,
+          price: selectedSizeVariant.price
+        };
+      } else if (sizeOption === 'custom') {
+        const calculatedPrice = calculateCustomPrice();
+        customSizeData = {
+          isCustom: true,
+          measurements: customSize.measurements,
+          calculatedPrice: calculatedPrice,
+          notes: customSize.notes || ''
+        };
+      }
+    }
+
+    // Add to cart with size information
+    addToCart(product?._id || '', quantity, sizeVariantData, customSizeData);
+    
+    // Navigate to cart page
+    navigate('/cart');
+  };
+
+  const handleAddToWishlist = async () => {
     if (!user) {
       navigate("/login");
       return;
@@ -223,9 +346,22 @@ export default function ProductDetail() {
     if (isLiking || !product?._id) return; // Prevent double clicks
     
     setIsLiking(true);
-    toggleLike(product._id).finally(() => {
+    try {
+      await toggleLike(product._id);
+      
+      // Update local product state to reflect the change immediately
+      setProduct(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          isLiked: !prev.isLiked
+        };
+      });
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    } finally {
       setIsLiking(false);
-    });
+    }
    };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
@@ -496,15 +632,55 @@ export default function ProductDetail() {
             {/* Size Selection for Customizable Products */}
             {product?.isCustomizable && (
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
-                <div className="flex items-center gap-2 mb-3">
-                  <Ruler className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">Select Size Option</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Ruler className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-lg">Select Size Option</h3>
+                  </div>
+                  {sizeOption && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSizeOption('');
+                        setSelectedSizeVariant(null);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear Selection
+                    </Button>
+                  )}
                 </div>
 
-                <RadioGroup value={sizeOption} onValueChange={(value: any) => setSizeOption(value)}>
+                <RadioGroup 
+                  value={sizeOption} 
+                  onValueChange={(value: any) => {
+                    // If clicking on already selected option, deselect it
+                    if (sizeOption === value) {
+                      setSizeOption('');
+                      setSelectedSizeVariant(null);
+                    } else {
+                      setSizeOption(value);
+                      if (value === 'custom') {
+                        setSelectedSizeVariant(null);
+                      }
+                    }
+                  }}
+                >
                   {product.sizeVariants && product.sizeVariants.length > 0 && (
                     <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
+                      <div 
+                        className="flex items-center space-x-2 cursor-pointer"
+                        onClick={() => {
+                          if (sizeOption === 'ready-made') {
+                            setSizeOption('');
+                            setSelectedSizeVariant(null);
+                          } else {
+                            setSizeOption('ready-made');
+                          }
+                        }}
+                      >
                         <RadioGroupItem value="ready-made" id="ready-made" />
                         <Label htmlFor="ready-made" className="font-medium cursor-pointer">
                           Ready-Made Sizes
@@ -512,48 +688,142 @@ export default function ProductDetail() {
                       </div>
                       
                       {sizeOption === 'ready-made' && (
-                        <div className="ml-6 space-y-2">
-                          {product.sizeVariants.map((variant) => (
-                            <div
-                              key={variant._id}
-                              onClick={() => setSelectedSizeVariant(variant)}
-                              className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                                selectedSizeVariant?._id === variant._id
-                                  ? 'border-primary bg-primary/5'
-                                  : 'border-border hover:border-primary/50'
-                              } ${!variant.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="font-medium">{variant.name}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {variant.dimensions.length && variant.dimensions.width
-                                      ? `${variant.dimensions.length} x ${variant.dimensions.width} ${variant.dimensions.unit}`
-                                      : 'Standard size'}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-bold text-primary">₹{variant.price.toLocaleString()}</p>
-                                  {variant.originalPrice && variant.originalPrice > variant.price && (
-                                    <p className="text-sm text-muted-foreground line-through">
-                                      ₹{variant.originalPrice.toLocaleString()}
-                                    </p>
-                                  )}
-                                  {!variant.inStock && (
-                                    <Badge variant="destructive" className="text-xs mt-1">Out of Stock</Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        <TooltipProvider>
+                          <div className="ml-6 space-y-2">
+                            {product.sizeVariants.map((variant) => {
+                              const sizeDetails = getDetailedSizeInfo(variant);
+                              
+                              return (
+                                <Tooltip key={variant._id} delayDuration={200}>
+                                  <TooltipTrigger asChild>
+                                    <div
+                                      onClick={() => {
+                                        if (!variant.inStock) return;
+                                        // Toggle selection: if already selected, deselect it
+                                        if (selectedSizeVariant?._id === variant._id) {
+                                          setSelectedSizeVariant(null);
+                                        } else {
+                                          setSelectedSizeVariant(variant);
+                                        }
+                                      }}
+                                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all relative ${
+                                        selectedSizeVariant?._id === variant._id
+                                          ? 'border-primary bg-primary/5'
+                                          : 'border-border hover:border-primary/50'
+                                      } ${!variant.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                      {selectedSizeVariant?._id === variant._id && (
+                                        <div className="absolute top-2 right-2">
+                                          <div className="bg-primary text-primary-foreground rounded-full p-1">
+                                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </div>
+                                        </div>
+                                      )}
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <p className="font-medium">{variant.name}</p>
+                                          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                                            {/* Display all available dimensions */}
+                                            {variant.sizeLabel && (
+                                              <p className="font-medium text-primary">Size: {variant.sizeLabel}</p>
+                                            )}
+                                            {variant.dimensions && (
+                                              <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                {variant.dimensions.length && (
+                                                  <span>• Length: {variant.dimensions.length} {variant.dimensions.unit}</span>
+                                                )}
+                                                {variant.dimensions.width && (
+                                                  <span>• Width: {variant.dimensions.width} {variant.dimensions.unit}</span>
+                                                )}
+                                                {variant.dimensions.height && variant.dimensions.height > 0 && (
+                                                  <span>• Height: {variant.dimensions.height} {variant.dimensions.unit}</span>
+                                                )}
+                                              </div>
+                                            )}
+                                            {variant.area && variant.area > 0 && (
+                                              <p>• Area: {variant.area} sq ft</p>
+                                            )}
+                                            {variant.diameter && variant.diameter > 0 && (
+                                              <p>• Diameter: {variant.diameter} {variant.dimensions?.unit || 'ft'}</p>
+                                            )}
+                                            {variant.stockQuantity !== undefined && (
+                                              <p className="text-success">• Available: {variant.stockQuantity} units</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="font-bold text-primary">₹{variant.price.toLocaleString()}</p>
+                                          {variant.originalPrice && variant.originalPrice > variant.price && (
+                                            <p className="text-sm text-muted-foreground line-through">
+                                              ₹{variant.originalPrice.toLocaleString()}
+                                            </p>
+                                          )}
+                                          {!variant.inStock && (
+                                            <Badge variant="destructive" className="text-xs mt-1">Out of Stock</Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent 
+                                    side="right" 
+                                    className="max-w-xs p-4 bg-popover border-2 border-primary/20 shadow-lg"
+                                  >
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
+                                        <Ruler className="h-4 w-4 text-primary" />
+                                        <p className="font-semibold text-sm">Complete Size Details</p>
+                                      </div>
+                                      {sizeDetails.length > 0 ? (
+                                        <div className="space-y-1">
+                                          {sizeDetails.map((detail, index) => (
+                                            <p key={index} className="text-xs text-muted-foreground">
+                                              • {detail}
+                                            </p>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <p className="text-xs text-muted-foreground">No detailed size information available</p>
+                                      )}
+                                      {variant.inStock ? (
+                                        <div className="mt-2 pt-2 border-t border-border">
+                                          <Badge variant="outline" className="text-xs text-success border-success">
+                                            ✓ Available
+                                          </Badge>
+                                        </div>
+                                      ) : (
+                                        <div className="mt-2 pt-2 border-t border-border">
+                                          <Badge variant="destructive" className="text-xs">
+                                            Out of Stock
+                                          </Badge>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        </TooltipProvider>
                       )}
                     </div>
                   )}
 
                   {product.allowCustomSize && product.customSizeConfig?.enabled && (
                     <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
+                      <div 
+                        className="flex items-center space-x-2 cursor-pointer"
+                        onClick={() => {
+                          if (sizeOption === 'custom') {
+                            setSizeOption('');
+                          } else {
+                            setSizeOption('custom');
+                            setSelectedSizeVariant(null);
+                          }
+                        }}
+                      >
                         <RadioGroupItem value="custom" id="custom" />
                         <Label htmlFor="custom" className="font-medium cursor-pointer">
                           Custom Size (Made to Order)
@@ -814,6 +1084,7 @@ export default function ProductDetail() {
               <Button 
                 className="w-full btn-gold" 
                 size="lg"
+                onClick={handleBuyNow}
                 disabled={!product?.inStock || product?.stockQuantity <= 0}
               >
                 Buy Now

@@ -87,6 +87,9 @@ export interface SizeVariant {
     height?: number;
     unit: 'cm' | 'inch' | 'ft' | 'm';
   };
+  area?: number; // For area-based products (wallpaper, grass)
+  diameter?: number; // For round items (carpets)
+  sizeLabel?: string; // For bean bags (S, M, L, XL, XXL, XXXL)
   price: number;
   originalPrice?: number;
   stockQuantity: number;

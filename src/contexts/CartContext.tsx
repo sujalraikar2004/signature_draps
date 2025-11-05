@@ -4,10 +4,9 @@ import { toast } from 'sonner';
 import api from '../Api';
 
 export interface CartItem {
-  productId: string;
+  productId: Product; // Populated from backend
   quantity: number;
   priceAtAddition: number;
-  product?: Product;
   selectedSizeVariant?: {
     variantId: string;
     name: string;
@@ -217,12 +216,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getItemQuantity = (productId: string): number => {
-    const item = cartState.items.find(item => item.productId === productId);
+    const item = cartState.items.find(item => item.productId._id === productId);
     return item ? item.quantity : 0;
   };
 
   const isInCart = (productId: string): boolean => {
-    return cartState.items.some(item => item.productId === productId);
+    return cartState.items.some(item => item.productId._id === productId);
   };
 
   return (

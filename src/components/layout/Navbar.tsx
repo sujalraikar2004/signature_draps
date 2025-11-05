@@ -78,7 +78,7 @@ export function Navbar() {
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
             <SearchWithSuggestions
               onSearch={handleSearch}
-              placeholder="Search for curtains, blinds, wallpapers..."
+              placeholder="Search by product code, name, price, category..."
               className="w-full"
             />
           </div>
@@ -229,7 +229,7 @@ export function Navbar() {
             <div className="mb-4">
               <SearchWithSuggestions
                 onSearch={handleSearch}
-                placeholder="Search products..."
+                placeholder="Search by product code, name, price..."
                 className="w-full"
               />
             </div>
