@@ -29,7 +29,10 @@ export default function Cart() {
     }
   };
 
-  if (items.length === 0) {
+  // Filter out items with null or undefined productId (deleted products)
+  const validItems = items.filter(item => item.productId && item.productId._id);
+
+  if (validItems.length === 0) {
     return (
       <main className="min-h-screen bg-background">
         <div className="container-premium py-16">
@@ -57,15 +60,15 @@ export default function Cart() {
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-bold mb-2">Shopping Cart</h1>
           <p className="text-muted-foreground">
-            {items.length} {items.length === 1 ? 'item' : 'items'} in your cart
+            {validItems.length} {validItems.length === 1 ? 'item' : 'items'} in your cart
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <div key={item.productId._id} className="card-premium p-6">
+            {validItems.map((item, index) => (
+              <div key={item._id || `${item.productId._id}-${index}`} className="card-premium p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Product Image */}
                   <div className="flex-shrink-0">

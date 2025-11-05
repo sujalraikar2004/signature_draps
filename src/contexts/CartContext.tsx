@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import api from '../Api';
 
 export interface CartItem {
+  _id?: string; // MongoDB subdocument ID
   productId: Product; // Populated from backend
   quantity: number;
   priceAtAddition: number;
