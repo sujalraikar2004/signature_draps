@@ -39,17 +39,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getCurrentUser = async () => {
     try {
+      setAuthState(prev => ({ ...prev, isLoading: true }));
       const response = await api.get('/user/current-user');
 
-      if (response) {
+      if (response && response.data.success) {
         setAuthState({
           user: response.data.data,
           isAuthenticated: true,
           isLoading: false
         });
+      } else {
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
       }
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+    } catch (error: any) {
+      // If it's a 401 error, the axios interceptor will try to refresh
+      // If refresh fails, user will be logged out
+      console.log('Auth check error:', error.response?.status);
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false
+      });
     }
   };
 
