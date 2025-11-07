@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ProductCard } from '@/components/product/ProductCard'; 
 import { ImageZoomModal } from '@/components/ui/image-zoom-modal';
 import { useCart } from '@/contexts/CartContext';
@@ -108,6 +109,8 @@ export default function ProductDetail() {
   // New states for customizable products
   const [sizeOption, setSizeOption] = useState<'ready-made' | 'custom' | ''>('');
   const [selectedSizeVariant, setSelectedSizeVariant] = useState<SizeVariant | null>(null);
+  const [variantDialogOpen, setVariantDialogOpen] = useState(false);
+  const [selectedVariantForDialog, setSelectedVariantForDialog] = useState<SizeVariant | null>(null);
   const [customSize, setCustomSize] = useState<CustomSize>({
     isCustom: false,
     measurements: {
@@ -134,9 +137,10 @@ export default function ProductDetail() {
         const data = await getProductById(productId); 
         setProduct(data);
         
-        // Set default size variant if available
+        // Set default size variant and ready-made option if available
         if (data.isCustomizable && data.sizeVariants && data.sizeVariants.length > 0) {
           setSelectedSizeVariant(data.sizeVariants[0]);
+          setSizeOption('ready-made'); // Always default to ready-made for better UX
         }
         
         // Set custom size unit from config
@@ -681,13 +685,14 @@ export default function ProductDetail() {
                           }
                         }}
                       >
-                        <RadioGroupItem value="ready-made" id="ready-made" />
+                        <RadioGroupItem value="ready-made" id="ready-made" checked={sizeOption === 'ready-made'} />
                         <Label htmlFor="ready-made" className="font-medium cursor-pointer">
                           Ready-Made Sizes
                         </Label>
                       </div>
                       
-                      {sizeOption === 'ready-made' && (
+                      {/* Always show size variants for better UX */}
+                      {(
                         <TooltipProvider>
                           <div className="ml-6 space-y-2">
                             {product.sizeVariants.map((variant) => {
@@ -699,6 +704,10 @@ export default function ProductDetail() {
                                     <div
                                       onClick={() => {
                                         if (!variant.inStock) return;
+                                        // Auto-select ready-made option when clicking variant
+                                        if (sizeOption !== 'ready-made') {
+                                          setSizeOption('ready-made');
+                                        }
                                         // Toggle selection: if already selected, deselect it
                                         if (selectedSizeVariant?._id === variant._id) {
                                           setSelectedSizeVariant(null);
@@ -723,9 +732,25 @@ export default function ProductDetail() {
                                       )}
                                       <div className="flex items-center justify-between">
                                         <div className="flex-1">
-                                          <p className="font-medium">{variant.name}</p>
-                                          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                                            {/* Display all available dimensions */}
+                                          <div className="flex items-center justify-between mb-1">
+                                            <p className="font-medium">{variant.name}</p>
+                                            {/* Mobile: Show detailed info button */}
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="md:hidden h-7 px-2 text-xs"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedVariantForDialog(variant);
+                                                setVariantDialogOpen(true);
+                                              }}
+                                            >
+                                              <Ruler className="h-3 w-3 mr-1" />
+                                              Details
+                                            </Button>
+                                          </div>
+                                          {/* Desktop: Show inline details */}
+                                          <div className="hidden md:block text-xs text-muted-foreground mt-1 space-y-0.5">
                                             {variant.sizeLabel && (
                                               <p className="font-medium text-primary">Size: {variant.sizeLabel}</p>
                                             )}
@@ -750,6 +775,13 @@ export default function ProductDetail() {
                                             )}
                                             {variant.stockQuantity !== undefined && (
                                               <p className="text-success">• Available: {variant.stockQuantity} units</p>
+                                            )}
+                                          </div>
+                                          {/* Mobile: Show compact info */}
+                                          <div className="md:hidden text-xs text-muted-foreground mt-1">
+                                            <p className="truncate">{formatSizeDisplay(variant, product?.category)}</p>
+                                            {variant.stockQuantity !== undefined && (
+                                              <p className="text-success">Stock: {variant.stockQuantity} units</p>
                                             )}
                                           </div>
                                         </div>
