@@ -189,11 +189,28 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   const getProductById = useCallback(
     async (productId: string): Promise<Product | null> => {
-      const data = await handleApiCall<{ data: Product }>(() =>
-        api.get(`/products/${productId}`)
-      );
-      console.log(data);
-      return data?.data || null;
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await api.get(`/products/${productId}`);
+        console.log('Product data:', response.data);
+        
+        if (response.data?.success && response.data?.data) {
+          return response.data.data;
+        }
+        
+        throw new Error('Product not found');
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || 
+                        err?.response?.status === 404 ? 'Product not found' :
+                        'Failed to load product';
+        console.error('Error fetching product:', err);
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      } finally {
+        setLoading(false);
+      }
     },
     []
   );

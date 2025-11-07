@@ -94,6 +94,9 @@ export default function ProductDetail() {
   const { getProductById, products, toggleLike, addReview, getProductReviews, markReviewHelpful, updateReview, getUserReview } = useProducts();
   const { user } = useAuth();
 
+  // Log productId for debugging
+  console.log('ProductDetail - productId from URL:', productId);
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedMediaType, setSelectedMediaType] = useState<'image' | 'video'>('image');
   const [quantity, setQuantity] = useState(1);
@@ -135,6 +138,12 @@ export default function ProductDetail() {
       setError(null);
       try {
         const data = await getProductById(productId); 
+        
+        if (!data) {
+          setError("Product not found");
+          return;
+        }
+        
         setProduct(data);
         
         // Set default size variant and ready-made option if available
@@ -153,8 +162,9 @@ export default function ProductDetail() {
             }
           }));
         }
-      } catch (err) {
-        setError("Failed to load product");
+      } catch (err: any) {
+        console.error('Error loading product:', err);
+        setError(err?.message || "Failed to load product. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -194,7 +204,7 @@ export default function ProductDetail() {
      fetchReviews();
   }, [productId, getProductReviews, getUserReview, user]);
 
-  const relatedProducts = products
+  const relatedProducts = (products || [])
     .filter(p => p.category === product?.category && p._id !== product?._id)
     .slice(0, 4);
 
@@ -467,6 +477,76 @@ export default function ProductDetail() {
     setSelectedImage(index);
     setIsZoomModalOpen(true);
   };
+
+  // Handle missing productId
+  if (!productId) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container-premium py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="text-6xl">😕</div>
+              <h2 className="text-2xl font-bold">Invalid Product URL</h2>
+              <p className="text-muted-foreground">
+                The product URL is missing or invalid.
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Button onClick={() => navigate(-1)} variant="outline">
+                  Go Back
+                </Button>
+                <Button onClick={() => navigate('/')}>
+                  Go to Homepage
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container-premium py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground">Loading product details...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Error state or product not found
+  if (error || !product) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container-premium py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="text-6xl">😕</div>
+              <h2 className="text-2xl font-bold">Product Not Found</h2>
+              <p className="text-muted-foreground">
+                {error || "The product you're looking for doesn't exist or has been removed."}
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Button onClick={() => navigate(-1)} variant="outline">
+                  Go Back
+                </Button>
+                <Button onClick={() => navigate('/')}>
+                  Go to Homepage
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">

@@ -10,11 +10,13 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'https://signature-drapes-backend.vercel.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
     },
+    // Enable SPA fallback for client-side routing
+    historyApiFallback: true,
   },
   plugins: [
     react(),
