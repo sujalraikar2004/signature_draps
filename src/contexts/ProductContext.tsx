@@ -158,18 +158,33 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   const fetchWishlist = useCallback(async () => {
     try {
       const response = await api.get("/user/wishlist");
-      if (response.data.success) {
-        // Extract products from wishlist items
+      console.log('Wishlist response:', response.data);
+      
+      if (response.data.success && response.data.data) {
+        // Backend returns { success: true, data: { wishlist: [...], count: N } }
         const wishlistItems = response.data.data.wishlist || [];
-        const products = wishlistItems
-          .map((item: any) => item.productId)
-          .filter((product: any) => product); // Filter out null products
-        setWishlistProducts(products);
-        setWishlistCount(products.length);
+        
+        // Filter out any null or inactive products
+        const validProducts = wishlistItems.filter((product: any) => 
+          product && product._id && product.isActive !== false
+        );
+        
+        setWishlistProducts(validProducts);
+        setWishlistCount(validProducts.length);
+        
+        console.log('Wishlist loaded:', validProducts.length, 'products');
+      } else {
+        setWishlistProducts([]);
+        setWishlistCount(0);
       }
     } catch (error: any) {
       console.error('Error fetching wishlist:', error);
-      setWishlistProducts([]);
+      // Don't clear wishlist on error - keep existing data
+      if (error.response?.status === 401) {
+        // Only clear if unauthorized
+        setWishlistProducts([]);
+        setWishlistCount(0);
+      }
     }
   }, []);
 
@@ -411,18 +426,25 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
     }
   }, [fetchWishlist]);
 
-  // Calculate wishlist count whenever products change
-  useEffect(() => {
-    if (products) {
-      const count = products.filter((product) => product.isLiked).length;
-      setWishlistCount(count);
-    }
-  }, [products]);
-
-  // Auto fetch products on mount
+  // Auto fetch products on mount (only once)
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto fetch wishlist when user is authenticated
+  useEffect(() => {
+    if (user) {
+      console.log('User authenticated, fetching wishlist...');
+      fetchWishlist();
+    } else {
+      // Clear wishlist when user logs out
+      console.log('User logged out, clearing wishlist');
+      setWishlistProducts([]);
+      setWishlistCount(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const value: ProductContextType = {
     products,

@@ -33,9 +33,12 @@ export default function Wishlist() {
   const handleRemoveFromWishlist = async (productId: string) => {
     try {
       await toggleLike(productId);
-      // Wishlist will be automatically refreshed by toggleLike in context
+      // Explicitly refresh wishlist to ensure UI is updated
+      await fetchWishlist();
+      toast.success('Removed from wishlist');
     } catch (error) {
-      // Error is handled in context
+      console.error('Error removing from wishlist:', error);
+      toast.error('Failed to remove from wishlist');
     }
   };
 
