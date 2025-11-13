@@ -205,8 +205,7 @@ export default function ProductDetail() {
   }, [productId, getProductReviews, getUserReview, user]);
 
   const relatedProducts = (products || [])
-    .filter(p => p.category === product?.category && p._id !== product?._id)
-    .slice(0, 4);
+    .filter(p => p.category === product?.category && p._id !== product?._id);
 
   const discountPercentage = product?.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
