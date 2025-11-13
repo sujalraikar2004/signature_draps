@@ -165,7 +165,7 @@ export default function Homepage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
+            {categories.slice(0, 8).map((category, index) => (
               <div
                 key={category.category}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
