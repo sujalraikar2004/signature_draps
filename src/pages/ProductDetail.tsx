@@ -88,34 +88,11 @@ const getDetailedSizeInfo = (variant: SizeVariant): string[] => {
 
 const renderDescription = (text: string): React.ReactNode => {
   if (!text) return null;
-
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-  if (lines.length <= 1) {
-    return <p className="text-muted-foreground leading-relaxed">{text}</p>;
-  }
-
-  const bulletPattern = /^(-|\*|•|\u2022|\d+[.)]|\(\d+\))\s+/;
-  const bulletCount = lines.filter(l => bulletPattern.test(l)).length;
-
-  if (bulletCount >= Math.max(2, Math.ceil(lines.length / 2))) {
-    return (
-      <ul className="space-y-2">
-        {lines.map((l, idx) => {
-          const content = l.replace(bulletPattern, '').trim();
-          if (!content) return null;
-          return (
-            <li key={idx} className="flex items-start gap-2">
-              <span className="text-primary mt-1">•</span>
-              <span>{content}</span>
-            </li>
-          );
-        })}
-      </ul>
-    );
-  }
-
-  return <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{text}</p>;
+  return (
+    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+      {text}
+    </p>
+  );
 };
 
 export default function ProductDetail() {
