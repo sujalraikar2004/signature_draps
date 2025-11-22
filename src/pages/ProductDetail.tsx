@@ -647,7 +647,8 @@ export default function ProductDetail() {
                   {product.brand}
                 </p>
               )}
-              <h1 className="text-3xl font-heading font-bold mb-4">{product?.name}</h1>
+              <h1 className="text-3xl font-heading font-bold mb-1">{product?.name}</h1>
+              <p className="text-sm text-muted-foreground mb-3">Code: {product?.productCode}</p>
               
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">

@@ -144,6 +144,9 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
             <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
               {product.name}
             </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Code: {product.productCode}
+            </p>
           </div>
 
           {/* Rating */}
