@@ -100,18 +100,18 @@ export function Footer() {
                   <MapPin className="h-4 w-4 mt-0.5 text-accent" />
                   <div>
                     <p className="text-primary-foreground/80">
-                      123 Design Street, Andheri West,<br />
-                      Mumbai, Maharashtra 400053
+                      831/1, Desai Building shop No 8 2nd Rly Gate, Hindu nagar,<br />
+                      Belgaum, Karnataka 590006
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Phone className="h-4 w-4 text-accent" />
-                  <p className="text-primary-foreground/80">+91 98765 43210</p>
+                  <p className="text-primary-foreground/80">+91 9036587169</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Mail className="h-4 w-4 text-accent" />
-                  <p className="text-primary-foreground/80">info@signaturedraps.com</p>
+                  <p className="text-primary-foreground/80">signaturedrapes31@gmail.com</p>
                 </div>
               </div>
               
