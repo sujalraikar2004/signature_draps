@@ -4,6 +4,7 @@ import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_16K.jpg';
 
 export function Footer() {
   return (
@@ -36,14 +37,12 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="bg-gradient-gold px-3 py-1 rounded-lg">
-                  <span className="text-xl font-heading font-bold text-primary">SD</span>
-                </div>
-                <div>
-                  <span className="text-xl font-heading font-bold">Signature</span>
-                  <span className="text-xl font-heading font-bold text-accent ml-1">Draps</span>
-                </div>
+              <div className="flex items-center">
+                <img
+                  src={LogoImage}
+                  alt="Signature Drapes - Luxury Window Fashions"
+                  className="h-14 w-auto object-contain drop-shadow-sm"
+                />
               </div>
               <p className="text-primary-foreground/80 text-sm leading-relaxed">
                 Premium interior solutions for your home and office. We specialize in 
