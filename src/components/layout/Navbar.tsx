@@ -8,7 +8,6 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
-import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_8K.jpg';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +66,7 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
-              src={LogoImage}
+              src="https://res.cloudinary.com/dfoybcsqz/image/upload/v1764495954/site_assets/site_assets/signature_drapes_logo.jpg"
               alt="Signature Drapes - Luxury Window Fashions"
               className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm"
             />

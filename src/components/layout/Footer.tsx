@@ -4,7 +4,6 @@ import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_8K.jpg';
 
 export function Footer() {
   return (
@@ -39,7 +38,7 @@ export function Footer() {
             <div className="space-y-4">
               <div className="flex items-center">
                 <img
-                  src={LogoImage}
+                  src="https://res.cloudinary.com/dfoybcsqz/image/upload/v1764495954/site_assets/site_assets/signature_drapes_logo.jpg"
                   alt="Signature Drapes - Luxury Window Fashions"
                   className="h-14 w-auto object-contain drop-shadow-sm"
                 />
