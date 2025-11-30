@@ -4,7 +4,7 @@ import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_16K.jpg';
+import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_8K.jpg';
 
 export function Footer() {
   return (

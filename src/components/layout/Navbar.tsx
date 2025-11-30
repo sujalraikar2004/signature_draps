@@ -8,7 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
-import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_16K.jpg';
+import LogoImage from '@/assets/WhatsApp Image 2025-11-30 at 2_imgupscaler.ai_General_8K.jpg';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,7 +63,7 @@ export function Navbar() {
 
       {/* Main Navigation */}
       <div className="container-premium">
-        <div className="flex h-30 items-center justify-between">
+        <div className="flex h-31 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
