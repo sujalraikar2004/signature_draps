@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Smartphone } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { WhatsappIcon } from '@/components/icons/whatsappIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -173,7 +175,13 @@ export default function Login() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="otp">OTP Code</Label>
+                  <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
+                    <WhatsappIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <AlertTitle className="font-semibold text-green-800 dark:text-green-300">Check your WhatsApp!</AlertTitle>
+                    <AlertDescription className="text-green-700 dark:text-green-400">
+                      An OTP has been sent to your number. Please check your WhatsApp messages to continue.
+                    </AlertDescription>
+                  </Alert>
                   <Input
                     id="otp"
                     type="text"

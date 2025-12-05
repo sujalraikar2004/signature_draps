@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { WhatsappIcon } from '@/components/icons/whatsappIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -124,12 +126,15 @@ export default function VerifyOtp() {
               </div>
             </div>
             <CardTitle className="text-2xl font-heading">Verify Phone Number</CardTitle>
-            <CardDescription>
-              Enter the 6-digit OTP sent to your phone number
-            </CardDescription>
           </CardHeader>
-          
           <CardContent>
+            <Alert className="mb-6 bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
+              <WhatsappIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <AlertTitle className="font-semibold text-green-800 dark:text-green-300">Check your WhatsApp!</AlertTitle>
+              <AlertDescription className="text-green-700 dark:text-green-400">
+                An OTP has been sent to your number. Please enter the 6-digit code to verify your phone.
+              </AlertDescription>
+            </Alert>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phoneNo">Phone Number</Label>
