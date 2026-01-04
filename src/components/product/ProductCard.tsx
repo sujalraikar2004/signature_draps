@@ -26,17 +26,17 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     e.stopPropagation();
     if (!isAuthenticated) {
       toast.error('Please login to add items to Cart');
-       navigate("/login")
-    }else{
-        addToCart(product._id, 1);
+      navigate("/login")
+    } else {
+      addToCart(product._id, 1);
+      toast.success('Added to cart');
     }
-  
   };
 
   const handleToggleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       toast.error('Please login to add items to wishlist');
       navigate("/login");
@@ -44,7 +44,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     }
 
     if (isLiking) return; // Prevent double clicks
-    
+
     setIsLiking(true);
     try {
       await toggleLike(product._id);
@@ -55,7 +55,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     }
   };
 
-  const discountPercentage = product.originalPrice 
+  const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
@@ -63,169 +63,90 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
   const primaryImage = product.images[0];
 
   return (
-    
-    <div className={`card-product group ${className}`}>
-      <Link to={`/product/${product._id}`} className="block">
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-muted">
+    <div className={`card-product group relative bg-transparent hover:shadow-lg md:transition-all md:duration-300 border-r border-b border-gray-100/50 md:border-none ${className}`}>
+      <Link to={`/product/${product._id}`} className="block relative">
+        {/* Image Container - Adjusted Aspect Ratio */}
+        <div className="relative aspect-[6/7] overflow-hidden bg-gray-100">
           <img
             src={primaryImage.url}
             alt={product.name}
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
           />
-          
-          {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isBestSeller && (
-              <Badge className="bg-amber-500 text-white shadow">
-                Best Seller
-              </Badge>
-            )}
-            {product.isNew && (
-              <Badge className="bg-primary text-primary-foreground shadow">
-                New
-              </Badge>
-            )}
-            {discountPercentage > 0 && (
-              <Badge variant="destructive">{discountPercentage}% OFF</Badge>
-            )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              size="sm"
-              variant="secondary"
-              className={`h-8 w-8 p-0 transition-all duration-200 ${
-                product.isLiked 
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100 border-red-200 shadow-md' 
-                  : 'hover:text-red-400 hover:bg-red-50'
-              } ${isLiking ? 'scale-110' : ''}`}
-              onClick={handleToggleLike}
-              disabled={isLiking}
-            >
-              <Heart 
-                className={`h-4 w-4 transition-all duration-200 ${
-                  product.isLiked ? 'fill-current animate-pulse' : ''
-                } ${isLiking ? 'animate-bounce' : ''}`} 
-              />
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 p-0"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          </div>
+          {/* Rating Badge - Bottom Left Overlay */}
+          {product.rating > 0 && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-[2px] px-1.5 py-0.5 rounded shadow-sm text-[10px] font-bold z-10">
+              <span>{product.rating.toFixed(1)}</span>
+              <Star className="h-2.5 w-2.5 fill-teal-500 text-teal-500" />
+              <span className="text-gray-400 font-normal border-l border-gray-300 pl-1 ml-0.5">
+                {product.reviewCount || 0}
+              </span>
+            </div>
+          )}
 
-          {/* Quick Add to Cart - Mobile */}
-          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 md:hidden">
+          {/* Wishlist Button - Always visible on mobile, hover on desktop */}
+          <button
+            className={`absolute top-2 right-2 p-2 rounded-full bg-transparent hover:bg-white/90 transition-all duration-300 z-10 
+              ${product.isLiked ? 'text-red-500' : 'text-transparent group-hover:text-gray-400 group-hover:bg-white/90'}
+              ${isLiking ? 'scale-110' : ''}
+            `}
+            onClick={handleToggleLike}
+            disabled={isLiking}
+          >
+            {/* Show outline by default on hover, filled if liked */}
+            <Heart
+              className={`h-4 w-4 ${product.isLiked ? 'fill-current' : ''} ${isLiking ? 'animate-bounce' : ''}`}
+            />
+          </button>
+
+          {/* Add to Bag Button Overlay */}
+          <div className="absolute z-20 transition-all duration-300 
+            md:bottom-0 md:left-0 md:right-0 md:p-2 md:translate-y-full md:group-hover:translate-y-0
+            max-md:bottom-2 max-md:right-2">
             <Button
-              size="sm"
-              className="w-full btn-hero"
+              className="bg-white text-gray-900 hover:bg-gray-50 border border-gray-100/50 shadow-sm
+                md:w-full md:h-9 md:text-xs md:font-semibold
+                max-md:h-7 max-md:w-7 max-md:rounded-full max-md:p-0 flex items-center justify-center"
               onClick={handleAddToCart}
               disabled={!isInStock}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+              {isInStock ? (
+                <>
+                  <ShoppingCart className="h-3.5 w-3.5 md:mr-2" />
+                  <span className="hidden md:inline">ADD TO BAG</span>
+                </>
+              ) : (
+                <span className="text-[9px] md:text-xs">OUT</span>
+              )}
             </Button>
           </div>
         </div>
 
-        {/* Product Info */}
-        <div className="p-4">
-          <div className="mb-2">
-            {product.brand && (
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                {product.brand}
-              </p>
-            )}
-            <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-              {product.name}
-            </h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Code: {product.productCode}
-            </p>
-          </div>
+        {/* Product Info - Myntra Style */}
+        <div className="pt-2 pb-1 px-1">
+          {/* Brand & Name */}
+          <h3 className="font-bold text-[15px] text-gray-900 truncate leading-tight">
+            {product.brand || 'Brand Name'}
+          </h3>
+          <p className="text-[13px] text-gray-500 font-normal truncate mt-0.5">
+            {product.name}
+          </p>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex items-center">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-3 w-3 ${
-                    i < Math.floor(product.rating)
-                      ? 'fill-accent text-accent'
-                      : 'text-muted-foreground/40'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              ({product.reviewCount || 0})
+          {/* Price Block */}
+          <div className="flex items-center flex-wrap gap-2 mt-1.5">
+            <span className="text-[14px] font-bold text-gray-900">
+              Rs. {product.price.toLocaleString()}
             </span>
-          </div>
-
-          {/* Price */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg font-semibold text-primary">
-              ₹{product.price.toLocaleString()}
-            </span>
-            {product.originalPrice && (
-              <span className="text-sm text-muted-foreground line-through">
-                ₹{product.originalPrice.toLocaleString()}
-              </span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <>
+                <span className="text-[11px] text-gray-400 line-through decoration-gray-400">
+                  Rs. {product.originalPrice.toLocaleString()}
+                </span>
+                <span className="text-[11px] text-green-600 font-semibold">
+                  ({discountPercentage}% OFF)
+                </span>
+              </>
             )}
-          </div>
-
-          {/* Stock Status */}
-          <div className="mb-3">
-            {isInStock ? (
-              <Badge variant="outline" className="text-success border-success">
-                In Stock ({product.stockQuantity})
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-destructive border-destructive">
-                Out of Stock
-              </Badge>
-            )}
-          </div>
-
-          {/* Delivery & Policy Badges */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {product.deliveryInfo?.cashOnDelivery && (
-              <Badge variant="outline" className="text-xs bg-success/5 border-success/30 text-success">
-                <Truck className="h-3 w-3 mr-1" />
-                COD
-              </Badge>
-            )}
-            {product.deliveryInfo?.freeDelivery && (
-              <Badge variant="outline" className="text-xs bg-primary/5 border-primary/30 text-primary">
-                <Truck className="h-3 w-3 mr-1" />
-                Free Delivery
-              </Badge>
-            )}
-            {product.returnPolicy?.returnable && product.returnPolicy.returnDays > 0 && (
-              <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-600">
-                <RotateCcw className="h-3 w-3 mr-1" />
-                {product.returnPolicy.returnDays}D Returns
-              </Badge>
-            )}
-          </div>
-
-          {/* Add to Cart Button - Desktop */}
-          <div className="hidden md:block">
-            <Button
-              size="sm"
-              className="w-full btn-hero"
-              onClick={handleAddToCart}
-              disabled={!isInStock}
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
-            </Button>
           </div>
         </div>
       </Link>

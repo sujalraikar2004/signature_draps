@@ -35,12 +35,13 @@ import Orders from "./pages/Orders"
 import RazorpayPayment from "./components/payment/RazorpayPayment"
 import ScrollToTop from "./components/ui/ScrollToTop.jsx"
 import { Analytics } from "@vercel/analytics/react"
+import Gallery from "./pages/Gallery"
 
 // import order
 const queryClient = new QueryClient();
 
 const App = () => (
-  
+
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
@@ -51,7 +52,7 @@ const App = () => (
               <Sonner />
               <Analytics />
               <BrowserRouter>
-              <ScrollToTop/>
+                <ScrollToTop />
                 <div className="flex flex-col min-h-screen">
                   <Navbar />
                   <div className="flex-1">
@@ -62,6 +63,7 @@ const App = () => (
                       <Route path="/search" element={<SearchResults />} />
                       <Route path="/product/:productId" element={<ProductDetail />} />
                       <Route path="/cart" element={<Cart />} />
+                      <Route path="/gallery" element={<Gallery />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/verify-otp" element={<VerifyOtp />} />
@@ -76,7 +78,7 @@ const App = () => (
                       <Route path="/about" element={<AboutUs />} />
                       <Route path="/contact" element={<ContactUs />} />
                       <Route path="/faq" element={<FAQ />} />
-                      <Route path="payment" element={<RazorpayPayment/>}/>
+                      <Route path="payment" element={<RazorpayPayment />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsConditions />} />
                       <Route path="/my-orders" element={<Orders />} />

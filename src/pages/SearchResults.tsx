@@ -6,11 +6,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ProductCard } from '@/components/product/ProductCard';
 import { SearchWithSuggestions } from '@/components/ui/search-with-suggestions';
-import { AdvancedFilter, FilterState } from '@/components/ui/advanced-filter';
+import { SidebarFilters, FilterOption } from '@/components/product/SidebarFilters';
 import { useProducts } from '@/contexts/ProductContext';
 import { Product } from '@/types';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ProductCardSkeleton } from '@/components/ui/skeletons/ProductCardSkeleton';
 import { cn } from '@/lib/utils';
+
+const brandOptions: FilterOption[] = [
+  { label: 'KALINI', value: 'KALINI', count: 10 },
+  { label: 'BAESD', value: 'BAESD', count: 5 },
+  { label: 'StyleCast', value: 'StyleCast', count: 454 },
+  { label: 'LULU & SKY', value: 'LULU & SKY', count: 45 },
+];
+
+const colorOptions: FilterOption[] = [
+  { label: 'Black', value: 'black', count: 41777 },
+  { label: 'White', value: 'white', count: 30152 },
+  { label: 'Pink', value: 'pink', count: 27195 },
+  { label: 'Green', value: 'green', count: 27003 },
+];
+
+const discountOptions: FilterOption[] = [
+  { label: '10% and above', value: '10' },
+  { label: '20% and above', value: '20' },
+  { label: '30% and above', value: '30' },
+  { label: '40% and above', value: '40' },
+  { label: '50% and above', value: '50' },
+];
 
 const SORT_OPTIONS = [
   { value: 'relevance', label: 'Relevance' },
@@ -33,7 +56,7 @@ export default function SearchResults() {
 
   // Search and filter states
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState({
     category: searchParams.get('category') || '',
     priceRange: [
       parseInt(searchParams.get('minPrice') || '0'),
@@ -45,6 +68,7 @@ export default function SearchResults() {
     materials: searchParams.get('materials')?.split(',').filter(Boolean) || [],
     brands: searchParams.get('brands')?.split(',').filter(Boolean) || [],
     features: searchParams.get('features')?.split(',').filter(Boolean) || [],
+    discountRange: [] as string[],
     sortBy: searchParams.get('sortBy') || 'relevance'
   });
   const [totalResults, setTotalResults] = useState(0);
@@ -85,7 +109,7 @@ export default function SearchResults() {
       if (filters.brands.length > 0) params.set('brands', filters.brands.join(','));
       if (filters.features.length > 0) params.set('features', filters.features.join(','));
       if (filters.sortBy !== 'relevance') params.set('sortBy', filters.sortBy);
-      
+
       setSearchParams(params);
     } catch (error) {
       console.error('Search failed:', error);
@@ -115,8 +139,18 @@ export default function SearchResults() {
     setQuery(newQuery);
   };
 
-  const handleFiltersChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
+  const handleCheckboxChange = (type: 'brands' | 'colors' | 'discountRange', value: string) => {
+    setFilters(prev => {
+      const current = prev[type] as string[];
+      const newValues = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [type]: newValues };
+    });
+  };
+
+  const handlePriceChange = (value: number[]) => {
+    setFilters(prev => ({ ...prev, priceRange: value }));
   };
 
   const clearFilters = () => {
@@ -148,7 +182,7 @@ export default function SearchResults() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container-premium py-8">
+      <div className="w-full px-4 py-8">
         {/* Search Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
@@ -162,7 +196,7 @@ export default function SearchResults() {
                 </p>
               )}
             </div>
-            
+
             {/* New Search */}
             <div className="w-full md:w-96">
               <SearchWithSuggestions
@@ -222,13 +256,16 @@ export default function SearchResults() {
 
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="sticky top-8">
-              <AdvancedFilter 
-                onFiltersChange={handleFiltersChange}
-                initialFilters={filters}
-              />
-            </div>
+          <div className="hidden lg:block w-56 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar py-4 pr-4 pl-0 bg-background border-t border-r border-b border-gray-100">
+            <SidebarFilters
+              filters={filters}
+              handlePriceChange={handlePriceChange}
+              handleCheckboxChange={handleCheckboxChange}
+              clearFilters={clearFilters}
+              brandOptions={brandOptions}
+              colorOptions={colorOptions}
+              discountOptions={discountOptions}
+            />
           </div>
 
           {/* Main Content */}
@@ -254,16 +291,21 @@ export default function SearchResults() {
                       <SheetTitle>Smart Filters</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
-                      <AdvancedFilter 
-                        onFiltersChange={handleFiltersChange}
-                        initialFilters={filters}
+                      <SidebarFilters
+                        filters={filters}
+                        handlePriceChange={handlePriceChange}
+                        handleCheckboxChange={handleCheckboxChange}
+                        clearFilters={clearFilters}
+                        brandOptions={brandOptions}
+                        colorOptions={colorOptions}
+                        discountOptions={discountOptions}
                       />
                     </div>
                   </SheetContent>
                 </Sheet>
 
                 {/* Sort */}
-                <Select value={filters.sortBy} onValueChange={(value) => 
+                <Select value={filters.sortBy} onValueChange={(value) =>
                   setFilters(prev => ({ ...prev, sortBy: value }))
                 }>
                   <SelectTrigger className="w-48">
@@ -301,18 +343,18 @@ export default function SearchResults() {
 
             {/* Results */}
             {loading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner />
+              <div className="grid gap-x-0 sm:gap-x-6 gap-y-0 sm:gap-y-10 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 border-t border-l border-gray-100/50 md:border-none">
+                {Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)}
               </div>
             ) : products.length > 0 ? (
               <div className={cn(
-                viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                viewMode === 'grid'
+                  ? "grid gap-x-0 sm:gap-x-6 gap-y-0 sm:gap-y-10 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 border-t border-l border-gray-100/50 md:border-none"
                   : "space-y-4"
               )}>
                 {products.map((product) => (
-                  <ProductCard 
-                    key={product._id} 
+                  <ProductCard
+                    key={product._id}
                     product={product}
                   />
                 ))}

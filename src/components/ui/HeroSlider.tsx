@@ -43,10 +43,13 @@ export function HeroSlider({ slides, autoPlay = true, interval = 3000 }: HeroSli
       <CarouselContent>
         {slides.map((slide) => (
           <CarouselItem key={slide.id} className="transition-transform duration-500 ease-in-out group-hover:rotate-y-2">
-            <div className="relative h-[60vh] md:h-[80vh] w-full">
+            <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
               <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="absolute inset-0 container-premium flex items-center">
+              <div className="absolute inset-0 bg-black/40" />
+              {/* Bottom 20% Fade - Mobile Only */}
+              <div className="absolute bottom-0 left-0 right-0 h-1/5 bg-gradient-to-t from-background to-transparent md:hidden z-10 pointer-events-none" />
+
+              <div className="absolute inset-0 container-premium flex items-center z-20">
                 <div className="max-w-2xl text-white space-y-6 animate-in fade-in-5 slide-in-from-bottom-10 duration-700">
                   <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">{slide.badge}</span>
                   <h1 className="text-4xl md:text-6xl font-heading font-bold">

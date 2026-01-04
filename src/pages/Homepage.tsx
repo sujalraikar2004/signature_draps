@@ -1,88 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, Shield, Headphones, RefreshCw, Construction } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { HeroSlider } from '@/components/ui/HeroSlider';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { PremiumFeatures } from '@/components/home/PremiumFeatures';
+import { ProductCardSkeleton } from '@/components/ui/skeletons/ProductCardSkeleton';
 import { useProducts } from '@/contexts/ProductContext';
-import api from '@/Api';
+
 import slide1 from '@/assets/slider/slide-1.jpg';
 import slide2 from '@/assets/slider/slide-2.jpg';
 import slide3 from '@/assets/slider/slide-3.jpg';
+
 import curtainsImg from '@/assets/category-curtains.jpg';
 import beanbagsImg from '@/assets/category-beanbags.jpg';
 import wallpaperImg from '@/assets/category-wallpaper.jpg';
 import blindsImg from '@/assets/category-blinds.jpg';
 
-interface Product {
-  count: number;
-  category: string;
-  image: string;
-}
-
-// Static category data with local images
+/* ---------------- CATEGORY DATA ---------------- */
 const staticCategories = [
-  {
-    category: 'curtains-and-accessories',
-    name: 'Curtains And Accessories',
-    image: curtainsImg,
-    count: 125
-  },
-  {
-    category: 'sofa-recliner-chairs-corner-sofa',
-    name: 'Sofa, Recliner, Chairs and Corner Sofa', 
-    image: beanbagsImg,
-    count: 150
-  },
-  {
-    category: 'home-decor-wallpaper-stickers',
-    name: 'Home Decor Wallpaper and Stickers',
-    image: wallpaperImg,
-    count: 95
-  },
-  {
-    category: 'window-blinds',
-    name: 'Window Blinds',
-    image: blindsImg,
-    count: 110
-  },
-  {
-    category: 'bedsheet-and-comforters',
-    name: 'Bedsheet and Comforters',
-    image: curtainsImg,
-    count: 80
-  },
-  {
-    category: 'institutional-project-window-blinds',
-    name: 'Institutional Project Window Blinds',
-    image: blindsImg,
-    count: 60
-  },
-  {
-    category: 'bean-bags-and-beans',
-    name: 'Bean Bags and Beans',
-    image: beanbagsImg,
-    count: 85
-  },
-  {
-    category: 'carpet-rugs-door-mats',
-    name: 'Carpet, Rugs and Door Mats',
-    image: wallpaperImg,
-    count: 90
-  },
-  {
-    category: 'artificial-grass-plant-vertical-garden',
-    name: 'Artificial Grass, Plant and Vertical Garden',
-    image: curtainsImg,
-    count: 70
-  }
+  { category: 'curtains-and-accessories', name: 'Curtains And Accessories', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765299229/products/products/1765299229630-111033652.jpg" },
+  { category: 'sofa-recliner-chairs-corner-sofa', name: 'Sofa, Recliner and Chairs ', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763019558/products/products/1763019558252-934864604.jpg" },
+  { category: 'home-decor-wallpaper-stickers', name: 'Home Decor Wallpaper ', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763274577/products/products/1763274577443-8735332.jpg" },
+  { category: 'bedsheet-and-comforters', name: 'Bedsheet and Comforters', image: "https://m.media-amazon.com/images/I/71VR-NjNKYL.jpg" },
+  { category: 'institutional-project-window-blinds', name: 'Window Blinds', image: blindsImg },
+  { category: 'bean-bags-and-beans', name: 'Bean Bags and Beans', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763020339/products/products/1763020339891-192788606.jpg" },
+  { category: 'carpet-rugs-door-mats', name: 'Carpet, Rugs and Door Mats', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765420344/products/products/1765420343136-538249634.jpg" },
+  { category: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg" }
 ];
 
-export default function Homepage() {
-  const { products, featuredProducts, newProducts, bestSellers, loading, fetchProducts, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers } = useProducts();
-  const [categories, setCategories] = useState(staticCategories);
+const Homepage = () => {
+  const {
+    newProducts,
+    bestSellers,
+    loading,
+    fetchProducts,
+    fetchFeaturedProducts,
+    fetchNewProducts,
+    fetchBestSellers,
+    products
+  } = useProducts();
+
+  const [categories] = useState(staticCategories);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
 
   useEffect(() => {
     fetchProducts();
@@ -91,282 +51,163 @@ export default function Homepage() {
     fetchBestSellers();
   }, [fetchProducts, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers]);
 
-  console.log(featuredProducts);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    setTimeout(() => {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    }, 400);
+
+    setTimeout(() => {
+      el.scrollTo({ left: 0, behavior: 'smooth' });
+    }, 1800);
+  }, []);
+
+
+  const scrollByAmount = (amount: number) => {
+    scrollRef.current?.scrollBy({
+      left: amount,
+      behavior: 'smooth'
+    });
+  };
 
   const sliderData = [
     {
       id: 1,
       image: slide1,
-      title: "Transform Your Space with",
-      subtitle: "Signature Elegance",
-      description: "Discover our premium collection of curtains, blinds, wallpapers, and complete interior furnishing solutions. Over 10 years of crafting beautiful homes.",
-      badge: "Premium Interior Solutions",
+      title: 'Transform Your Space with',
+      subtitle: 'Signature Elegance',
+      description: 'Premium curtains, blinds and interior furnishing solutions.',
+      badge: 'Premium Interior Solutions',
       cta: {
-        primary: { text: "Shop Curtains", link: "/category/curtains-furnishing" },
-        secondary: { text: "Learn More", link: "/about" }
+        primary: { text: 'Shop Curtains', link: '/category/curtains-and-accessories' },
+        secondary: { text: 'Learn More', link: '/about' }
       }
     },
     {
       id: 2,
       image: slide2,
-      title: "Luxury Blinds &",
-      subtitle: "Premium Wallpapers",
-      description: "Experience the finest quality blinds and wallpapers that bring sophistication and style to every room in your home.",
-      badge: "Exclusive Collection",
+      title: 'Luxury Blinds &',
+      subtitle: 'Premium Wallpapers',
+      description: 'Crafted for modern interiors.',
+      badge: 'Exclusive Collection',
       cta: {
-        primary: { text: "Explore Blinds", link: "/category/zebra-blinds" },
-        secondary: { text: "View Gallery", link: "/products" }
+        primary: { text: 'Explore Blinds', link: '/category/window-blinds' },
+        secondary: { text: 'View Gallery', link: '/gallery' }
       }
     },
     {
       id: 3,
       image: slide3,
-      title: "Complete Interior",
-      subtitle: "Design Solutions",
-      description: "From concept to completion, we provide comprehensive interior design services with premium materials and expert craftsmanship.",
-      badge: "Design Consultation",
+      title: 'Complete Interior',
+      subtitle: 'Design Solutions',
+      description: 'From concept to completion.',
+      badge: 'Design Consultation',
       cta: {
-        primary: { text: "Get Consultation", link: "/contact" },
-        secondary: { text: "View Portfolio", link: "/about" }
+        primary: { text: 'Get Consultation', link: '/contact' },
+        secondary: { text: 'View Portfolio', link: '/about' }
       }
     }
   ];
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Development Notice Banner */}
-      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white py-4 px-4 shadow-lg">
-        <div className="container-premium">
-          <div className="flex items-center justify-center gap-3 text-center">
-            <Construction className="w-6 h-6 animate-pulse" />
-            <p className="text-lg font-semibold">
-              🚧 Website Under Development - Some features may be in progress 🚧
-            </p>
-            <Construction className="w-6 h-6 animate-pulse" />
-          </div>
-        </div>
-      </div>
+    <main className="min-h-screen ">
+      {/* HERO */}
+      <HeroSlider slides={sliderData} />
 
-      {/* Hero Section */}
-      <section className="relative">
-        <HeroSlider slides={sliderData} />
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container-premium">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-heading font-bold mb-6 text-gray-800">
-              Shop by Category
-            </h2>
-            <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
-              Explore our comprehensive range of interior furnishing solutions, carefully curated to transform your living spaces.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.slice(0, 8).map((category, index) => (
-              <div
-                key={category.category}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
-                style={{
-                  animationDelay: `${index * 100}ms`,
-                  animation: 'fadeInUp 0.6s ease-out forwards'
-                }}
-              >
-                {/* Image Container */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2 leading-tight">
-                    {category.name}
-                  </h3>
-                  
-                  <p className="text-gray-500 text-sm mb-4">
-                    {category.count} products
-                  </p>
-
-                  <Link
-                    to={`/category/${category.category}`}
-                    className="inline-block w-full text-center bg-gray-100 hover:bg-primary hover:text-white text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-all duration-300"
-                  >
-                    Explore Collection
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Best Sellers Section */}
-      <section className="py-16">
-        <div className="container-premium">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-3xl font-heading font-bold mb-4">Best Sellers</h2>
-              <p className="text-muted-foreground">
-                Explore our top-selling interior furnishing products.
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/products?isBestSeller=true">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {bestSellers?.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* New Arrivals Section */}
-      <section className="py-16">
-        <div className="container-premium">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-3xl font-heading font-bold mb-4">New Arrivals</h2>
-              <p className="text-muted-foreground">
-                Discover our latest collection of interior furnishing products.
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/products?isNew=true">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {newProducts?.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Our Products Section */}
-      <section className="py-16">
-        <div className="container-premium">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-3xl font-heading font-bold mb-4">Our Products</h2>
-              <p className="text-muted-foreground">
-                Explore our comprehensive range of interior furnishing products.
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/products">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products?.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container-premium">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-heading font-bold mb-4">Why Choose Signature Draps?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Experience excellence in every aspect of our service, from premium quality products to exceptional customer care.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Truck,
-                title: "Free Delivery",
-                description: "Free delivery on orders above ₹2,000 within city limits"
-              },
-              {
-                icon: Shield,
-                title: "Quality Guarantee",
-                description: "Premium quality materials with comprehensive warranty coverage"
-              },
-              {
-                icon: Headphones,
-                title: "Expert Support",
-                description: "Professional consultation and 24/7 customer support"
-              },
-              {
-                icon: RefreshCw,
-                title: "Easy Returns",
-                description: "Hassle-free returns and exchanges within 30 days"
-              }
-            ].map((feature, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-primary text-primary-foreground">
-        <div className="container-premium text-center">
-          <h2 className="text-3xl font-heading font-bold mb-4">
-            Ready to Transform Your Space?
+      {/* CATEGORIES */}
+      <section className="py-1 mt-5 lg:mt-20 bg-white ">
+        <div className="container mx-auto px-2 relative">
+          <h2 className="text-4xl mb-6 text-gray-900">
+            Essential Interior Categories
           </h2>
-          <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
-            Get in touch with our design experts for a personalized consultation and bring your vision to life.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/contact">
-                Get Free Consultation
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-              <Link to="/products">
-                Browse Products
-              </Link>
-            </Button>
+
+
+          <button
+            onClick={() => scrollByAmount(-280)}
+            className="hidden md:flex items-center justify-center absolute left-0 top-1/2 -translate-y-1/2 z-10
+                       w-10 h-10 bg-white border rounded-full shadow-sm hover:bg-gray-50"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          </button>
+
+
+          <button
+            onClick={() => scrollByAmount(280)}
+            className="hidden md:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 z-10
+                       w-10 h-10 bg-white border rounded-full shadow-sm hover:bg-gray-50"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-700" />
+          </button>
+
+          <div className="overflow-hidden ">
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar px-4 md:px-0 lg:px-0"
+            >
+
+              {categories.map((category) => (
+                <Link
+                  key={category.category}
+                  to={`/category/${category.category}`}
+                  className="flex-shrink-0"
+                >
+                  <div className="w-[220px] overflow-hidden flex-col center ">
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+
+                    <div className="py-3 font-medium text-gray-900 text-center tracking-tight group-hover:text-primary transition-colors">
+                      {category.name}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PREMIUM FEATURES */}
+      <PremiumFeatures products={products} />
+
+      {/* BEST SELLERS */}
+      <section className="py-16">
+        <div className="container mx-auto px-2">
+          <h2 className="text-3xl font-bold mb-6">Best Sellers</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              : bestSellers?.slice(0, 8).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NEW ARRIVALS */}
+      <section className="py-16">
+        <div className="container mx-auto px-2">
+          <h2 className="text-3xl font-bold mb-6">New Arrivals</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              : newProducts?.slice(0, 8).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
           </div>
         </div>
       </section>
     </main>
   );
-}
+};
+
+export default Homepage;

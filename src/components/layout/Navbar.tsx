@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, MapPin } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, MapPin, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchWithSuggestions } from '@/components/ui/search-with-suggestions';
@@ -41,9 +41,10 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Top Bar */}
-      <div className="bg-primary text-primary-foreground">
+    <>
+      <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur  supports-[backdrop-filter]:bg-background/60">
+        {/* Top Bar */}
+        {/* <div className="bg-[#061E29] text-primary-foreground  ">
         <div className="container-premium">
           <div className="flex h-10 items-center justify-between text-sm">
             <div className="flex items-center gap-4">
@@ -58,166 +59,178 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      {/* Main Navigation */}
-      <div className="container-premium">
-        <div className="flex h-31 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img
-              src="https://res.cloudinary.com/dfoybcsqz/image/upload/v1764495954/site_assets/site_assets/signature_drapes_logo.jpg"
-              alt="Signature Drapes - Luxury Window Fashions"
-              className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm"
-            />
+        {/* Main Navigation */}
+        <div className="bg-[#206060] text-white py-2  px-4 " >
+          <div className="flex h-31 items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center">
+              <img
+                src="src/assets/Dark Green Modern Initial Logo (3).png"
+                className="h-20 sm:h-10 w-auto object-contain drop-shadow-sm"
+              />
+            </Link>
+            <div></div>
+
+            {/* Search Bar - Desktop */}
+            <div className="hidden md:flex flex-1 max-w-xl mx-8">
+              <SearchWithSuggestions
+                onSearch={handleSearch}
+                placeholder="Search by product code, name, price, category..."
+                className="w-full"
+              />
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center space-x-0.3">
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {isAuthenticated ? user?.username?.split(' ')[0] : 'Account'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {isAuthenticated ? (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/account')}>
+                        My Account
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/my-orders')}>
+                        My Orders
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/wishlist')}>
+                        Wishlist
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                        Logout
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/login')}>
+                        Login
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/register')}>
+                        Register
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Wishlist */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/wishlist')}
+                className="relative"
+              >
+                <Heart className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Wishlist</span>
+                {isAuthenticated && wishlistCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {wishlistCount}
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Cart */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/cart')}
+                className="relative"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Cart</span>
+                {itemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {itemCount}
+                  </Badge>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/gallery')}
+                className="relative"
+              >
+                <Image className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Gallery</span>
+              </Button>
+
+
+              {/* Mobile Menu Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Category Navigation - Desktop */}
+      <div className="bg-[#061E29] hidden md:flex border-t border-[#1D546D]">
+        <nav className="container-premium flex items-center space-x-8 px-5 h-12">
+          <Link
+            to="/"
+            className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+          >
+            Home
           </Link>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <SearchWithSuggestions
-              onSearch={handleSearch}
-              placeholder="Search by product code, name, price, category..."
-              className="w-full"
-            />
-          </div>
-
-          {/* Right Section */}
-          <div className="flex items-center space-x-2">
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {isAuthenticated ? user?.username?.split(' ')[0] : 'Account'}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {isAuthenticated ? (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate('/account')}>
-                      My Account
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/my-orders')}>
-                      My Orders
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/wishlist')}>
-                      Wishlist
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate('/login')}>
-                      Login
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/register')}>
-                      Register
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Wishlist */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/wishlist')}
-              className="relative"
-            >
-              <Heart className="h-4 w-4" />
-              <span className="hidden sm:inline ml-1">Wishlist</span>
-              {isAuthenticated && wishlistCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-full font-medium text-gray-300 hover:text-white p-0 hover:bg-transparent data-[state=open]:text-white">
+                All Categories
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              {categories.map((category) => (
+                <DropdownMenuItem
+                  key={category.id}
+                  onClick={() => navigate(`/category/${category.id}`)}
                 >
-                  {wishlistCount}
-                </Badge>
-              )}
-            </Button>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{category.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {category.productCount}
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            {/* Cart */}
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/cart')}
-              className="relative"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline ml-1">Cart</span>
-              {itemCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {itemCount}
-                </Badge>
-              )}
-            </Button>
-
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Category Navigation - Desktop */}
-        <div className="hidden md:flex border-t">
-          <nav className="flex h-12 items-center space-x-8">
+          {categories.slice(0, 5).map((category) => (
             <Link
-              to="/"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              key={category.id}
+              to={`/category/${category.id}`}
+              className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
             >
-              Home
+              {category.name}
             </Link>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-full font-medium">
-                  All Categories
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
-                {categories.map((category) => (
-                  <DropdownMenuItem 
-                    key={category.id}
-                    onClick={() => navigate(`/category/${category.id}`)}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span>{category.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {category.productCount}
-                      </span>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {categories.slice(0, 5).map((category) => (
-              <Link
-                key={category.id}
-                to={`/category/${category.id}`}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
+          ))}
+        </nav>
       </div>
+
 
       {/* Mobile Menu */}
       {isMenuOpen && (
@@ -244,7 +257,7 @@ export function Navbar() {
               >
                 Home
               </Link>
-              
+
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mt-4">
                 Categories
               </h3>
@@ -262,6 +275,7 @@ export function Navbar() {
           </div>
         </div>
       )}
-    </header>
+    </>
+
   );
 }

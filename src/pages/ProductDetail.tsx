@@ -1,4 +1,5 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ProductDetailSkeleton } from '@/components/ui/skeletons/ProductDetailSkeleton';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Headphones, Plus, Minus, ThumbsUp, MessageCircle, User, Ruler, AlertCircle, Play, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ProductCard } from '@/components/product/ProductCard'; 
+import { ProductCard } from '@/components/product/ProductCard';
 import { ImageZoomModal } from '@/components/ui/image-zoom-modal';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,17 +28,17 @@ const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
   if (variant.sizeLabel) {
     return variant.sizeLabel;
   }
-  
+
   // Area-based products (wallpaper, grass)
   if (variant.area && variant.area > 0) {
     return `${variant.area} sq ft`;
   }
-  
+
   // Round items (carpets with diameter)
   if (variant.diameter && variant.diameter > 0) {
     return `⌀ ${variant.diameter} ${variant.dimensions?.unit || 'ft'}`;
   }
-  
+
   // Dimension-based products (curtains, blinds, etc.)
   if (variant.dimensions?.length && variant.dimensions?.width) {
     const parts = [variant.dimensions.length, variant.dimensions.width];
@@ -46,7 +47,7 @@ const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
     }
     return `${parts.join(' × ')} ${variant.dimensions.unit || 'ft'}`;
   }
-  
+
   // Fallback
   return 'Standard size';
 };
@@ -54,12 +55,12 @@ const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
 // Helper function to generate detailed size information for tooltip
 const getDetailedSizeInfo = (variant: SizeVariant): string[] => {
   const details: string[] = [];
-  
+
   // Add size label if available
   if (variant.sizeLabel) {
     details.push(`Size: ${variant.sizeLabel}`);
   }
-  
+
   // Add dimensions if available
   if (variant.dimensions) {
     const { length, width, height, unit } = variant.dimensions;
@@ -67,22 +68,22 @@ const getDetailedSizeInfo = (variant: SizeVariant): string[] => {
     if (width) details.push(`Width: ${width} ${unit}`);
     if (height && height > 0) details.push(`Height: ${height} ${unit}`);
   }
-  
+
   // Add area if available
   if (variant.area && variant.area > 0) {
     details.push(`Area: ${variant.area} sq ft`);
   }
-  
+
   // Add diameter if available
   if (variant.diameter && variant.diameter > 0) {
     details.push(`Diameter: ${variant.diameter} ${variant.dimensions?.unit || 'ft'}`);
   }
-  
+
   // Add stock information
   if (variant.stockQuantity !== undefined) {
     details.push(`Stock: ${variant.stockQuantity} units`);
   }
-  
+
   return details;
 };
 
@@ -97,7 +98,7 @@ const renderDescription = (text: string): React.ReactNode => {
 
 export default function ProductDetail() {
   const { productId } = useParams();
-  
+
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { getProductById, products, toggleLike, addReview, getProductReviews, markReviewHelpful, updateReview, getUserReview } = useProducts();
@@ -130,7 +131,7 @@ export default function ProductDetail() {
     }
   });
 
- const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -138,6 +139,15 @@ export default function ProductDetail() {
   const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
+  const [zoomStyle, setZoomStyle] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomStyle({ x, y });
+  };
 
   useEffect(() => {
     if (!productId) return;
@@ -146,21 +156,21 @@ export default function ProductDetail() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getProductById(productId); 
-        
+        const data = await getProductById(productId);
+
         if (!data) {
           setError("Product not found");
           return;
         }
-        
+
         setProduct(data);
-        
+
         // Set default size variant and ready-made option if available
         if (data.isCustomizable && data.sizeVariants && data.sizeVariants.length > 0) {
           setSelectedSizeVariant(data.sizeVariants[0]);
           setSizeOption('ready-made'); // Always default to ready-made for better UX
         }
-        
+
         // Set custom size unit from config
         if (data.customSizeConfig?.enabled) {
           setCustomSize(prev => ({
@@ -180,8 +190,8 @@ export default function ProductDetail() {
     };
 
     fetchProduct();
-  }, [productId, getProductById]); 
- 
+  }, [productId, getProductById]);
+
   // Fetch reviews for the product
   useEffect(() => {
     if (!productId) return;
@@ -191,7 +201,7 @@ export default function ProductDetail() {
       try {
         const list = await getProductReviews(productId, 1, 'newest');
         setReviews(list);
-        
+
         // Check if current user has already reviewed this product
         if (user) {
           const existingReview = await getUserReview(productId);
@@ -204,31 +214,31 @@ export default function ProductDetail() {
             });
           }
         }
-       } catch (e) {
-         setReviewsError('Failed to load reviews');
-       } finally {
-         setReviewsLoading(false);
-       }
-     };
-     fetchReviews();
+      } catch (e) {
+        setReviewsError('Failed to load reviews');
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+    fetchReviews();
   }, [productId, getProductReviews, getUserReview, user]);
 
   const relatedProducts = (products || [])
     .filter(p => p.category === product?.category && p._id !== product?._id);
 
-  const discountPercentage = product?.originalPrice 
+  const discountPercentage = product?.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   // Calculate custom size price
   const calculateCustomPrice = () => {
     if (!product?.customSizeConfig || !customSize.measurements) return 0;
-    
+
     const { length, width, height, area, diameter } = customSize.measurements;
     const { pricePerUnit, minimumCharge } = product.customSizeConfig;
-    
+
     let calculatedArea = 0;
-    
+
     if (area) {
       calculatedArea = area;
     } else if (length && width) {
@@ -236,7 +246,7 @@ export default function ProductDetail() {
     } else if (diameter) {
       calculatedArea = Math.PI * Math.pow(diameter / 2, 2);
     }
-    
+
     const calculatedPrice = calculatedArea * (pricePerUnit || 0);
     return Math.max(calculatedPrice, minimumCharge || 0);
   };
@@ -253,14 +263,14 @@ export default function ProductDetail() {
         toast.error('Please select a size');
         return;
       }
-      
+
       if (sizeOption === 'custom') {
         const requiredFields = product.customSizeConfig?.fields || [];
         const hasAllFields = requiredFields.every(field => {
           const value = customSize.measurements[field];
           return value && value > 0;
         });
-        
+
         if (!hasAllFields) {
           toast.error('Please fill in all required measurements');
           return;
@@ -293,7 +303,7 @@ export default function ProductDetail() {
 
     // Add to cart with size information
     addToCart(product?._id || '', quantity, sizeVariantData, customSizeData);
-    
+
     // Show toast with size info
     if (sizeVariantData) {
       toast.success(`Added ${sizeVariantData.name} to cart`);
@@ -314,14 +324,14 @@ export default function ProductDetail() {
         toast.error('Please select a size');
         return;
       }
-      
+
       if (sizeOption === 'custom') {
         const requiredFields = product.customSizeConfig?.fields || [];
         const hasAllFields = requiredFields.every(field => {
           const value = customSize.measurements[field];
           return value && value > 0;
         });
-        
+
         if (!hasAllFields) {
           toast.error('Please fill in all required measurements');
           return;
@@ -354,7 +364,7 @@ export default function ProductDetail() {
 
     // Add to cart with size information
     addToCart(product?._id || '', quantity, sizeVariantData, customSizeData);
-    
+
     // Navigate to cart page
     navigate('/cart');
   };
@@ -364,13 +374,13 @@ export default function ProductDetail() {
       navigate("/login");
       return;
     }
-    
+
     if (isLiking || !product?._id) return; // Prevent double clicks
-    
+
     setIsLiking(true);
     try {
       await toggleLike(product._id);
-      
+
       // Update local product state to reflect the change immediately
       setProduct(prev => {
         if (!prev) return prev;
@@ -384,7 +394,7 @@ export default function ProductDetail() {
     } finally {
       setIsLiking(false);
     }
-   };
+  };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -398,7 +408,7 @@ export default function ProductDetail() {
     }
     try {
       if (!productId) return;
-      
+
       if (isEditingReview && userExistingReview) {
         // Update existing review
         await updateReview(productId, userExistingReview._id, {
@@ -417,17 +427,17 @@ export default function ProductDetail() {
         });
         setNewReview({ rating: 5, title: '', comment: '' });
       }
-      
+
       // Refresh reviews and product rating/count
       const list = await getProductReviews(productId, 1, 'newest');
       setReviews(list);
       const updated = await getProductById(productId);
       if (updated) setProduct(updated);
-      
+
       // Refresh user's review status
       const existingReview = await getUserReview(productId);
       setUserExistingReview(existingReview);
-     } catch (err:any) {
+    } catch (err: any) {
       if (err?.isExistingReview) {
         // User already has a review, switch to edit mode
         setUserExistingReview(err.existingReview);
@@ -439,8 +449,8 @@ export default function ProductDetail() {
         });
       }
       // Error toasts are already handled in context
-     }
-   };
+    }
+  };
 
   const handleEditReview = () => {
     if (userExistingReview) {
@@ -452,7 +462,7 @@ export default function ProductDetail() {
       });
     }
   };
-  
+
   const handleCancelEdit = () => {
     setIsEditingReview(false);
     if (userExistingReview) {
@@ -476,7 +486,7 @@ export default function ProductDetail() {
       await markReviewHelpful(productId, reviewId);
       // Optimistically update helpful count locally
       setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, helpful: (r.helpful || 0) + 1 } as Review : r));
-    } catch (err:any) {
+    } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to mark as helpful');
     }
   };
@@ -515,18 +525,7 @@ export default function ProductDetail() {
 
   // Loading state
   if (loading) {
-    return (
-      <main className="min-h-screen bg-background">
-        <div className="container-premium py-8">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground">Loading product details...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   // Error state or product not found
@@ -567,12 +566,21 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Product Images & Videos */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted relative">
+            <div
+              className="h-[400px] w-full overflow-hidden rounded-lg bg-white relative border border-gray-100"
+              onMouseMove={selectedMediaType === 'image' ? handleMouseMove : undefined}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+            >
               {selectedMediaType === 'image' ? (
                 <img
                   src={product?.images[selectedImage]?.url}
                   alt={product?.name}
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-full object-contain cursor-zoom-in transition-transform duration-100 ease-out"
+                  style={{
+                    transformOrigin: `${zoomStyle.x}% ${zoomStyle.y}%`,
+                    transform: isHovering ? 'scale(2.5)' : 'scale(1)'
+                  }}
                   onClick={() => handleImageClick(selectedImage)}
                 />
               ) : (
@@ -587,10 +595,10 @@ export default function ProductDetail() {
                 </video>
               )}
             </div>
-            
+
             {/* Media Thumbnails (Images first, then Videos) */}
             {(((product?.images?.length || 0) + (product?.videos?.length || 0)) > 1 || (product?.videos?.length || 0) > 0) && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
                 {/* Image Thumbnails */}
                 {product?.images?.map((image, index) => (
                   <button
@@ -599,9 +607,8 @@ export default function ProductDetail() {
                       setSelectedImage(index);
                       setSelectedMediaType('image');
                     }}
-                    className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                      selectedImage === index && selectedMediaType === 'image' ? 'border-primary' : 'border-transparent'
-                    }`}
+                    className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${selectedImage === index && selectedMediaType === 'image' ? 'border-primary' : 'border-transparent'
+                      }`}
                   >
                     <img
                       src={image.url}
@@ -610,7 +617,7 @@ export default function ProductDetail() {
                     />
                   </button>
                 ))}
-                
+
                 {/* Video Thumbnails */}
                 {product?.videos?.map((video, index) => (
                   <button
@@ -619,11 +626,10 @@ export default function ProductDetail() {
                       setSelectedImage((product?.images?.length || 0) + index);
                       setSelectedMediaType('video');
                     }}
-                    className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors relative ${
-                      selectedImage === (product?.images?.length || 0) + index && selectedMediaType === 'video' 
-                        ? 'border-primary' 
-                        : 'border-transparent'
-                    }`}
+                    className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-colors relative ${selectedImage === (product?.images?.length || 0) + index && selectedMediaType === 'video'
+                      ? 'border-primary'
+                      : 'border-transparent'
+                      }`}
                   >
                     <img
                       src={video.thumbnail || video.url}
@@ -649,18 +655,17 @@ export default function ProductDetail() {
               )}
               <h1 className="text-3xl font-heading font-bold mb-1">{product?.name}</h1>
               <p className="text-sm text-muted-foreground mb-3">Code: {product?.productCode}</p>
-              
+
               {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product?.rating)
-                          ? 'fill-accent text-accent'
-                          : 'text-muted-foreground/40'
-                      }`}
+                      className={`h-4 w-4 ${i < Math.floor(product?.rating)
+                        ? 'fill-accent text-accent'
+                        : 'text-muted-foreground/40'
+                        }`}
                     />
                   ))}
                 </div>
@@ -693,16 +698,16 @@ export default function ProductDetail() {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-bold text-primary">
-                  ₹{(sizeOption === 'ready-made' && selectedSizeVariant 
-                    ? selectedSizeVariant.price 
-                    : sizeOption === 'custom' 
-                    ? calculateCustomPrice() 
-                    : product?.price || 0).toLocaleString()}
+                  ₹{(sizeOption === 'ready-made' && selectedSizeVariant
+                    ? selectedSizeVariant.price
+                    : sizeOption === 'custom'
+                      ? calculateCustomPrice()
+                      : product?.price || 0).toLocaleString()}
                 </span>
                 {((sizeOption === 'ready-made' && selectedSizeVariant?.originalPrice) || product?.originalPrice) && (
                   <span className="text-xl text-muted-foreground line-through">
-                    ₹{(sizeOption === 'ready-made' && selectedSizeVariant?.originalPrice 
-                      ? selectedSizeVariant.originalPrice 
+                    ₹{(sizeOption === 'ready-made' && selectedSizeVariant?.originalPrice
+                      ? selectedSizeVariant.originalPrice
                       : product?.originalPrice || 0).toLocaleString()}
                   </span>
                 )}
@@ -746,8 +751,8 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                <RadioGroup 
-                  value={sizeOption} 
+                <RadioGroup
+                  value={sizeOption}
                   onValueChange={(value: any) => {
                     // If clicking on already selected option, deselect it
                     if (sizeOption === value) {
@@ -763,7 +768,7 @@ export default function ProductDetail() {
                 >
                   {product.sizeVariants && product.sizeVariants.length > 0 && (
                     <div className="space-y-3">
-                      <div 
+                      <div
                         className="flex items-center space-x-2 cursor-pointer"
                         onClick={() => {
                           if (sizeOption === 'ready-made') {
@@ -779,14 +784,14 @@ export default function ProductDetail() {
                           Ready-Made Sizes
                         </Label>
                       </div>
-                      
+
                       {/* Always show size variants for better UX */}
                       {(
                         <TooltipProvider>
                           <div className="ml-6 space-y-2">
                             {product.sizeVariants.map((variant) => {
                               const sizeDetails = getDetailedSizeInfo(variant);
-                              
+
                               return (
                                 <Tooltip key={variant._id} delayDuration={200}>
                                   <TooltipTrigger asChild>
@@ -804,11 +809,10 @@ export default function ProductDetail() {
                                           setSelectedSizeVariant(variant);
                                         }
                                       }}
-                                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all relative ${
-                                        selectedSizeVariant?._id === variant._id
-                                          ? 'border-primary bg-primary/5'
-                                          : 'border-border hover:border-primary/50'
-                                      } ${!variant.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      className={`p-3 border-2 rounded-lg cursor-pointer transition-all relative ${selectedSizeVariant?._id === variant._id
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-border hover:border-primary/50'
+                                        } ${!variant.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                       {selectedSizeVariant?._id === variant._id && (
                                         <div className="absolute top-2 right-2">
@@ -888,8 +892,8 @@ export default function ProductDetail() {
                                       </div>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent 
-                                    side="right" 
+                                  <TooltipContent
+                                    side="right"
                                     className="max-w-xs p-4 bg-popover border-2 border-primary/20 shadow-lg"
                                   >
                                     <div className="space-y-2">
@@ -934,7 +938,7 @@ export default function ProductDetail() {
 
                   {product.allowCustomSize && product.customSizeConfig?.enabled && (
                     <div className="space-y-3">
-                      <div 
+                      <div
                         className="flex items-center space-x-2 cursor-pointer"
                         onClick={() => {
                           if (sizeOption === 'custom') {
@@ -956,7 +960,7 @@ export default function ProductDetail() {
                           <p className="text-sm text-muted-foreground mb-3">
                             Enter your custom measurements below:
                           </p>
-                          
+
                           <div className="grid grid-cols-2 gap-3">
                             {product.customSizeConfig.fields.includes('length') && (
                               <div>
@@ -1173,8 +1177,8 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  className="flex-1 btn-hero" 
+                <Button
+                  className="flex-1 btn-hero"
                   size="lg"
                   onClick={handleAddToCart}
                   disabled={!product?.inStock || product?.stockQuantity <= 0}
@@ -1182,28 +1186,26 @@ export default function ProductDetail() {
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="lg"
-                  className={`transition-all duration-200 ${
-                    product?.isLiked 
-                      ? 'text-red-500 bg-red-50 hover:bg-red-100 border-red-200 shadow-md' 
-                      : 'hover:text-red-400 hover:bg-red-50'
-                  } ${isLiking ? 'scale-105' : ''}`}
+                  className={`transition-all duration-200 ${product?.isLiked
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100 border-red-200 shadow-md'
+                    : 'hover:text-red-400 hover:bg-red-50'
+                    } ${isLiking ? 'scale-105' : ''}`}
                   onClick={handleAddToWishlist}
                   disabled={isLiking}
                 >
-                  <Heart 
-                    className={`mr-2 h-5 w-5 transition-all duration-200 ${
-                      product?.isLiked ? 'fill-current animate-pulse' : ''
-                    } ${isLiking ? 'animate-bounce' : ''}`} 
+                  <Heart
+                    className={`mr-2 h-5 w-5 transition-all duration-200 ${product?.isLiked ? 'fill-current animate-pulse' : ''
+                      } ${isLiking ? 'animate-bounce' : ''}`}
                   />
                   {isLiking ? 'Adding...' : product?.isLiked ? 'Added to Wishlist' : 'Add to Wishlist'}
                 </Button>
               </div>
 
-              <Button 
-                className="w-full btn-gold" 
+              <Button
+                className="w-full btn-gold"
                 size="lg"
                 onClick={handleBuyNow}
                 disabled={!product?.inStock || product?.stockQuantity <= 0}
@@ -1239,8 +1241,8 @@ export default function ProductDetail() {
                       {product?.deliveryInfo?.freeDelivery ? 'Free Delivery' : 'Delivery Charges'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {product?.deliveryInfo?.freeDelivery 
-                        ? 'No shipping cost' 
+                      {product?.deliveryInfo?.freeDelivery
+                        ? 'No shipping cost'
                         : `₹${product?.deliveryInfo?.deliveryCharges || 0}`}
                     </p>
                   </div>
@@ -1331,13 +1333,13 @@ export default function ProductDetail() {
               <TabsTrigger value="reviews">Reviews ({product?.reviewCount})</TabsTrigger>
               <TabsTrigger value="write-review">Write Review</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="description" className="mt-6">
               <div className="card-premium p-6">
                 {product?.description && renderDescription(product.description)}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="features" className="mt-6">
               <div className="card-premium p-6">
                 <ul className="space-y-2">
@@ -1350,7 +1352,7 @@ export default function ProductDetail() {
                 </ul>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="mt-6">
               <div className="card-premium p-6">
                 {/* Reviews Header */}
@@ -1362,11 +1364,10 @@ export default function ProductDetail() {
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(product?.rating)
-                                ? 'fill-accent text-accent'
-                                : 'text-muted-foreground/40'
-                            }`}
+                            className={`h-5 w-5 ${i < Math.floor(product?.rating)
+                              ? 'fill-accent text-accent'
+                              : 'text-muted-foreground/40'
+                              }`}
                           />
                         ))}
                       </div>
@@ -1408,19 +1409,18 @@ export default function ProductDetail() {
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star
                                 key={i}
-                                className={`h-4 w-4 ${
-                                  i < (review.rating || 0)
-                                    ? 'fill-accent text-accent'
-                                    : 'text-muted-foreground/40'
-                                }`}
+                                className={`h-4 w-4 ${i < (review.rating || 0)
+                                  ? 'fill-accent text-accent'
+                                  : 'text-muted-foreground/40'
+                                  }`}
                               />
                             ))}
                           </div>
                         </div>
-                        
+
                         <h5 className="font-medium mb-2">{review.title}</h5>
                         <p className="text-muted-foreground mb-4 leading-relaxed">{review.comment}</p>
-                        
+
                         <div className="flex items-center justify-between">
                           <Button
                             variant="ghost"
@@ -1438,13 +1438,13 @@ export default function ProductDetail() {
                 )}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="write-review" className="mt-6">
               <div className="card-premium p-6">
                 <h3 className="text-2xl font-heading font-semibold mb-6">
                   {userExistingReview && !isEditingReview ? 'Your Review' : isEditingReview ? 'Edit Your Review' : 'Write a Review'}
                 </h3>
-                 
+
                 {!user ? (
                   <div className="text-center py-8">
                     <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -1463,11 +1463,10 @@ export default function ProductDetail() {
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-5 w-5 ${
-                                i < userExistingReview.rating
-                                  ? 'fill-accent text-accent'
-                                  : 'text-muted-foreground/40'
-                              }`}
+                              className={`h-5 w-5 ${i < userExistingReview.rating
+                                ? 'fill-accent text-accent'
+                                : 'text-muted-foreground/40'
+                                }`}
                             />
                           ))}
                           <span className="ml-2 font-medium">{userExistingReview.rating} stars</span>
@@ -1496,11 +1495,10 @@ export default function ProductDetail() {
                             className="p-1"
                           >
                             <Star
-                              className={`h-6 w-6 transition-colors ${
-                                i < newReview.rating
-                                  ? 'fill-accent text-accent'
-                                  : 'text-muted-foreground/40 hover:text-accent'
-                              }`}
+                              className={`h-6 w-6 transition-colors ${i < newReview.rating
+                                ? 'fill-accent text-accent'
+                                : 'text-muted-foreground/40 hover:text-accent'
+                                }`}
                             />
                           </button>
                         ))}
@@ -1509,7 +1507,7 @@ export default function ProductDetail() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="review-title" className="text-base font-medium">Review Title *</Label>
                       <input
@@ -1521,7 +1519,7 @@ export default function ProductDetail() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="review-comment" className="text-base font-medium">Your Review *</Label>
                       <Textarea
@@ -1534,7 +1532,7 @@ export default function ProductDetail() {
                         required
                       />
                     </div>
-                    
+
                     <div className="flex gap-4">
                       <Button type="submit" className="btn-hero">
                         {isEditingReview ? 'Update Review' : 'Submit Review'}
@@ -1569,7 +1567,7 @@ export default function ProductDetail() {
             <h2 className="text-2xl font-heading font-semibold mb-8">
               You May Also Like
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <ProductCard key={relatedProduct._id} product={relatedProduct} />
               ))}

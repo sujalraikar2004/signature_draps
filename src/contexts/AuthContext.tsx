@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       toast.success(response.data.message || 'Registration successful! Please verify your phone.');
-    
+
       localStorage.setItem('pendingVerificationPhone', phoneNo);
       localStorage.setItem('pendingVerificationEmail', email);
 
@@ -91,16 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifyPhoneOtp = async (phoneNo: string, otp: string, email: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/verify-phone-otp', { phoneNo, otp, email });
 
       if (!response.data.success) {
         throw new Error(response.data.message || 'OTP verification failed');
       }
-      
+
       toast.success(response.data.message || 'Phone verified! Please verify your email.');
-      
+
       return { email: response.data.email };
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message || 'Invalid OTP. Please try again.');
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendPhoneOtp = async (phoneNo: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/resend-phone-otp', { phoneNo });
 
@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifyEmailOtp = async (email: string, otp: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/verify-email-otp', { email, otp });
 
@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: true,
         isLoading: false
       });
-      
+
       toast.success(response.data.message || 'Email verified! Account activated successfully.');
     } catch (error: any) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resendEmailOtp = async (email: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/resend-email-otp', { email });
 
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendLoginOtp = async (phoneNo: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/send-login-otp', { phoneNo });
 
@@ -193,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phoneNo: string, otp: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await api.post('/user/login', { phoneNo, otp });
 
@@ -227,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: false,
       isLoading: false
     });
-    
+
     toast.success('Logged out successfully');
   };
 

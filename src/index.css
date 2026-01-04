@@ -1,10 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Signature Draps Design System - Premium Interior Brand */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(238, 238, 238);
+  box-sizing: border-box;
+}
 
 @layer base {
   :root {
@@ -62,30 +77,31 @@
     --gradient-primary: linear-gradient(135deg, hsl(180, 50%, 25%), hsl(180, 50%, 30%));
     --gradient-gold: linear-gradient(135deg, hsl(45, 70%, 85%), hsl(40, 90%, 60%));
     --gradient-hero: linear-gradient(135deg, hsl(210, 15%, 98%), hsl(210, 10%, 96%));
-    --gradient-overlay: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.1));
+    --gradient-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1));
 
     /* Premium Shadows */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
-    --shadow-xl: 0 12px 40px rgba(0,0,0,0.16);
-    --shadow-premium: 0 20px 60px rgba(0,0,0,0.12);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.16);
+    --shadow-premium: 0 20px 60px rgba(0, 0, 0, 0.12);
 
     /* Layout & Spacing */
     --radius: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
-    
+
     /* Typography Scale */
-    --font-heading: 'Playfair Display', serif;
-    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Outfit', sans-serif;
 
     /* Animation Durations */
     --transition-fast: 150ms;
     --transition-normal: 250ms;
     --transition-slow: 350ms;
 
-    --sidebar-background: 0 0% 98%;
+
+
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
@@ -150,43 +166,41 @@
     @apply bg-background text-foreground font-body;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading;
   }
 }
 
 @layer components {
+
   /* Premium Button Variants */
   .btn-hero {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 
-           shadow-lg hover:shadow-xl transition-all duration-300
-           font-medium px-8 py-3 rounded-lg;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 font-medium px-8 py-3 rounded-lg;
   }
 
   .btn-gold {
-    @apply bg-gradient-to-r from-secondary to-accent text-accent-foreground
-           hover:from-secondary-hover hover:to-accent-hover
-           shadow-md hover:shadow-lg transition-all duration-300
-           font-medium px-6 py-2.5 rounded-lg;
+    @apply bg-gradient-to-r from-secondary to-accent text-accent-foreground hover:from-secondary-hover hover:to-accent-hover shadow-md hover:shadow-lg transition-all duration-300 font-medium px-6 py-2.5 rounded-lg;
   }
 
   .btn-outline-premium {
-    @apply border-2 border-primary text-primary bg-transparent
-           hover:bg-primary hover:text-primary-foreground
-           transition-all duration-300 font-medium px-6 py-2.5 rounded-lg;
+    @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-medium px-6 py-2.5 rounded-lg;
   }
 
   /* Card Variants */
   .card-premium {
-    @apply bg-card border border-border rounded-xl shadow-md
-           hover:shadow-lg transition-all duration-300;
+    @apply bg-card border border-border rounded-xl shadow-md hover:shadow-lg transition-all duration-300;
   }
 
   /* Text Shadow Effects */
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
   }
-  
+
   .text-shadow-glow {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3);
   }
@@ -195,10 +209,17 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
-  
+
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
   }
 
   /* Glassmorphism Utilities */
@@ -209,9 +230,7 @@
   }
 
   .card-product {
-    @apply bg-card border border-border rounded-lg shadow-sm
-           hover:shadow-md hover:border-primary/20 
-           transition-all duration-300 overflow-hidden;
+    @apply bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 overflow-hidden;
   }
 
   /* Layout Components */
@@ -275,6 +294,7 @@
 }
 
 @layer utilities {
+
   /* Custom Shadows */
   .shadow-premium {
     box-shadow: var(--shadow-premium);
@@ -319,6 +339,7 @@
     animation: scaleIn var(--transition-normal) ease-out;
   }
 }
+
 html {
   scroll-behavior: smooth;
 }
@@ -330,6 +351,7 @@ html {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -341,6 +363,7 @@ html {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -352,6 +375,7 @@ html {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -363,8 +387,23 @@ html {
     opacity: 0;
     transform: translateY(60px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
 }

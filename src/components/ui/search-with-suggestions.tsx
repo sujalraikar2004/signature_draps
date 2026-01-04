@@ -195,7 +195,7 @@ export function SearchWithSuggestions({
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="pr-10 focus:ring-primary"
+          className="pr-10 focus:ring-primary bg-white text-gray-900 placeholder:text-gray-500"
         />
         <Button
           type="button"

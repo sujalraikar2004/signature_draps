@@ -1,0 +1,9 @@
+.overlay{
+    width: full;
+    height: full;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+.imgContainer{
+    max-height: 45vh;
+    width: 200px;
+}
