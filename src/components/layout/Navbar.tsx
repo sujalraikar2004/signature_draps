@@ -63,12 +63,12 @@ export function Navbar() {
 
         {/* Main Navigation */}
         <div className="bg-[#206060] text-white py-2  px-4 " >
-          <div className="flex h-31 items-center justify-between">
+          <div className="flex h-8 md:h-31 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center">
               <img
                 src="src/assets/Dark Green Modern Initial Logo (3).png"
-                className="h-20 sm:h-10 w-auto object-contain drop-shadow-sm"
+                className="h-5 md:h-20 w-auto object-contain drop-shadow-sm"
               />
             </Link>
             <div></div>
@@ -85,10 +85,10 @@ export function Navbar() {
             {/* Right Section */}
             <div className="flex items-center space-x-0.3">
               {/* User Menu */}
-              <DropdownMenu>
+              <DropdownMenu >
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className=" flex items-center gap-2">
+                    <User className="=  h-4 w-4" />
                     <span className="hidden sm:inline">
                       {isAuthenticated ? user?.username?.split(' ')[0] : 'Account'}
                     </span>
@@ -129,7 +129,7 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/wishlist')}
-                className="relative"
+                className="relative "
               >
                 <Heart className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Wishlist</span>
@@ -165,9 +165,9 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/gallery')}
-                className="relative"
+                className="relative hidden md:block"
               >
-                <Image className="h-4 w-4" />
+                <Image className=" md:h-4 md:w-4" />
                 <span className="hidden sm:inline ml-1">Gallery</span>
               </Button>
 
@@ -230,51 +230,69 @@ export function Navbar() {
           ))}
         </nav>
       </div>
-
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t bg-background">
-          <div className="container-premium py-4">
-            {/* Mobile Search */}
-            <div className="mb-4">
+        <div className="md:hidden md:flex flex-1 max-w-xl mx-3 my-3">
               <SearchWithSuggestions
                 onSearch={handleSearch}
-                placeholder="Search by product code, name, price..."
+                placeholder="Search by product code, name, price, category..."
                 className="w-full"
               />
             </div>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+         <div className=" w-full h-full bg-black/50">
+       <div
+  className={`
+    fixed top-0 right-0 z-50 h-full w-1/2
+    bg-background border-l
+    transform transition-transform duration-300 ease-in-out
+    md:hidden
+    ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
+  `}
+>
+  <div className="container-premium py-6">
+    {/* Close Button (optional but recommended) */}
+    <button
+      className="mb-4 text-sm text-muted-foreground"
+      onClick={() => setIsMenuOpen(false)}
+    >
+      ✕ Close
+    </button>
 
-            {/* Mobile Categories */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Navigation
-              </h3>
-              <Link
-                to="/"
-                className="block py-2 text-sm hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
+    {/* Mobile Categories */}
+    <div className="space-y-2">
+      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+        Navigation
+      </h3>
 
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mt-4">
-                Categories
-              </h3>
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/category/${category.id}`}
-                  className="block py-2 text-sm hover:text-primary transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
+      <Link
+        to="/"
+        className="block py-2 text-sm hover:text-primary transition-colors"
+        onClick={() => setIsMenuOpen(false)}
+      >
+        Home
+      </Link>
+
+      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mt-4">
+        Categories
+      </h3>
+
+      {categories.map((category) => (
+        <Link
+          key={category.id}
+          to={`/category/${category.id}`}
+          className="block py-2 text-sm hover:text-primary transition-colors"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          {category.name}
+        </Link>
+      ))}
+    </div>
+  </div>
+</div>
+</div>
+
       )}
+   
     </>
 
   );

@@ -120,7 +120,7 @@ const Homepage = () => {
       {/* CATEGORIES */}
       <section className="py-1 mt-5 lg:mt-20 bg-white ">
         <div className="container mx-auto px-2 relative">
-          <h2 className="text-4xl mb-6 text-gray-900">
+          <h2 className=" text-1xl md:text-4xl mb-6 text-gray-900">
             Essential Interior Categories
           </h2>
 
@@ -155,7 +155,7 @@ const Homepage = () => {
                   className="flex-shrink-0"
                 >
                   <div className="w-[220px] overflow-hidden flex-col center ">
-                    <div className="h-48 overflow-hidden">
+                    <div className=" h-32 md:h-48 overflow-hidden">
                       <img
                         src={category.image}
                         alt={category.name}
@@ -206,6 +206,9 @@ const Homepage = () => {
           </div>
         </div>
       </section>
+      {/* <div className='h-10 w-full bg-background  z-10 position-fixed bottom-0'>
+        ksflsdjfj
+      </div> */}
     </main>
   );
 };

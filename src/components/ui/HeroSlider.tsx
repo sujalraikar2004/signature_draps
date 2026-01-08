@@ -43,7 +43,7 @@ export function HeroSlider({ slides, autoPlay = true, interval = 3000 }: HeroSli
       <CarouselContent>
         {slides.map((slide) => (
           <CarouselItem key={slide.id} className="transition-transform duration-500 ease-in-out group-hover:rotate-y-2">
-            <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
+            <div className="relative h-[30vh] md:h-[50vh] w-full overflow-hidden">
               <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/40" />
               {/* Bottom 20% Fade - Mobile Only */}
@@ -52,15 +52,15 @@ export function HeroSlider({ slides, autoPlay = true, interval = 3000 }: HeroSli
               <div className="absolute inset-0 container-premium flex items-center z-20">
                 <div className="max-w-2xl text-white space-y-6 animate-in fade-in-5 slide-in-from-bottom-10 duration-700">
                   <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">{slide.badge}</span>
-                  <h1 className="text-4xl md:text-6xl font-heading font-bold">
+                  <h1 className="text-2xl md:text-6xl font-heading font-bold">
                     {slide.title} <span className="text-accent">{slide.subtitle}</span>
                   </h1>
-                  <p className="text-lg text-white/90">{slide.description}</p>
+                  <p className="text-sm text-white/90">{slide.description}</p>
                   <div className="flex gap-4">
-                    <Button asChild size="lg" className="btn-hero">
+                    <Button asChild size="sm" className="btn-hero">
                       <Link to={slide.cta.primary.link}>{slide.cta.primary.text}</Link>
                     </Button>
-                    <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-gray-200">
+                    <Button asChild size="sm" variant="secondary" className="bg-white text-primary hover:bg-gray-200">
                       <Link to={slide.cta.secondary.link}>{slide.cta.secondary.text}</Link>
                     </Button>
                   </div>
