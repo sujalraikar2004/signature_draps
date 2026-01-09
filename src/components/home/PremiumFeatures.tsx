@@ -29,7 +29,7 @@ export const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({ products }) =>
     const FeatureCard = ({ title, items, link }: { title: string, items: Product[], link: string }) => (
         <div className="relative group overflow-hidden rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-500">
             <div className="p-5 relative z-10">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-1 md:mb-4">
                     <h3 className="text-1xl md:text-xl font-semibold text-gray-900">{title}</h3>
                     <Link
                         to={link}
@@ -60,9 +60,9 @@ export const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({ products }) =>
     );
 
     return (
-        <section className="py-8 mt-1 md:mt-3">
+        <section className=" py-6 md:py-8 md:mt-3">
             <div className="container mx-auto px-1">
-                <div className="mb-8 flex items-center gap-4">
+                <div className="mb-3  md:mb-8 px-1 flex items-center gap-4">
                     <h2 className="text-1xl md:text-2xl font-semibold text-gray-900">Premium Collection</h2>
                     <div className="h-px flex-grow bg-gray-100"></div>
                 </div>

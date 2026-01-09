@@ -63,12 +63,12 @@ export function Navbar() {
 
         {/* Main Navigation */}
         <div className="bg-[#206060] text-white py-2  px-4 " >
-          <div className="flex h-8 md:h-31 items-center justify-between">
+          <div className="flex h-8  md:h-30 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center">
               <img
-                src="src/assets/Dark Green Modern Initial Logo (3).png"
-                className="h-5 md:h-20 w-auto object-contain drop-shadow-sm"
+                src="https://res.cloudinary.com/dvesn2uo2/image/upload/v1767972463/Dark_Green_Modern_Initial_Logo_3_veq59q.png"
+                className="h-5 md:h-12 w-auto object-contain drop-shadow-sm"
               />
             </Link>
             <div></div>

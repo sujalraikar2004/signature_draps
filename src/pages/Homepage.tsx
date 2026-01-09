@@ -79,7 +79,7 @@ const Homepage = () => {
       image: slide1,
       title: 'Transform Your Space with',
       subtitle: 'Signature Elegance',
-      description: 'Premium curtains, blinds and interior furnishing solutions.',
+      description: 'Premium curtains, blinds and interior furnishing.',
       badge: 'Premium Interior Solutions',
       cta: {
         primary: { text: 'Shop Curtains', link: '/category/curtains-and-accessories' },
@@ -120,7 +120,7 @@ const Homepage = () => {
       {/* CATEGORIES */}
       <section className="py-1 mt-5 lg:mt-20 bg-white ">
         <div className="container mx-auto px-2 relative">
-          <h2 className=" text-1xl md:text-4xl mb-6 text-gray-900">
+          <h2 className=" text-1xl md:text-4xl mb-6 text-gray-900  font-semibold">
             Essential Interior Categories
           </h2>
 
@@ -180,7 +180,7 @@ const Homepage = () => {
       {/* BEST SELLERS */}
       <section className="py-16">
         <div className="container mx-auto px-2">
-          <h2 className="text-3xl font-bold mb-6">Best Sellers</h2>
+          <h2 className="text-1xl md:text-2xl font-bold mb-6">Best Sellers</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {loading
@@ -195,7 +195,7 @@ const Homepage = () => {
       {/* NEW ARRIVALS */}
       <section className="py-16">
         <div className="container mx-auto px-2">
-          <h2 className="text-3xl font-bold mb-6">New Arrivals</h2>
+          <h2 className="text-1xl md:text-2xl font-bold mb-6">New Arrivals</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {loading
