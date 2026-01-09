@@ -8,7 +8,8 @@ export const categories: Category[] = [
   {
     id: 'curtains-and-accessories',
     name: 'Curtains & Accessories',
-    image: curtainsImg,
+    shortName: 'Curtains',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765299229/products/products/1765299229630-111033652.jpg",
     icon: '🪟',
     description: 'Premium curtains, drapes, and accessories to transform your windows',
     productCount: 125,
@@ -22,6 +23,7 @@ export const categories: Category[] = [
   {
     id: 'window-blinds',
     name: 'Window Blinds',
+    shortName: 'Blinds',
     image: blindsImg,
     icon: '🎭',
     description: 'Modern and functional window blinds for light control and privacy',
@@ -36,7 +38,8 @@ export const categories: Category[] = [
   {
     id: 'bean-bags-and-beans',
     name: 'Bean Bags and Beans',
-    image: beanbagsImg,
+    shortName: 'Bean Bags',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763020339/products/products/1763020339891-192788606.jpg",
     icon: '🪑',
     description: 'Comfortable bean bags and refill beans for relaxed seating',
     productCount: 85,
@@ -49,7 +52,8 @@ export const categories: Category[] = [
   {
     id: 'home-decor-wallpaper-stickers',
     name: 'Wallpaper & Wall Coverings',
-    image: wallpaperImg,
+    shortName: 'Wallpaper',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763274577/products/products/1763274577443-8735332.jpg",
     icon: '🎨',
     description: 'Beautiful wallpapers and decorative stickers for wall enhancement',
     productCount: 95,
@@ -63,7 +67,8 @@ export const categories: Category[] = [
   {
     id: 'sofa-recliner-chairs-corner-sofa',
     name: 'Sofa, Recliner, Chairs and Corner Sofa',
-    image: beanbagsImg,
+    shortName: 'Seating',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763019558/products/products/1763019558252-934864604.jpg",
     icon: '🛋️',
     description: 'Comfortable and stylish seating solutions for your living space',
     productCount: 150,
@@ -74,12 +79,11 @@ export const categories: Category[] = [
       { id: 'corner-sofas', name: 'Corner Sofas', productCount: 30 }
     ]
   },
-  
-  
   {
     id: 'bedsheet-and-comforters',
     name: 'Bedsheet & Comforters',
-    image: curtainsImg,
+    shortName: 'Bedding',
+    image: "https://m.media-amazon.com/images/I/71VR-NjNKYL.jpg",
     icon: '🛏️',
     description: 'Comfortable bedding essentials for a good night\'s sleep',
     productCount: 80,
@@ -92,6 +96,7 @@ export const categories: Category[] = [
   {
     id: 'institutional-project-window-blinds',
     name: 'Institutional Project Window Blinds',
+    shortName: 'Office Blinds',
     image: blindsImg,
     icon: '🏢',
     description: 'Professional-grade blinds for offices, hospitals, and institutions',
@@ -102,11 +107,11 @@ export const categories: Category[] = [
       { id: 'school-blinds', name: 'School Blinds', productCount: 20 }
     ]
   },
-  
   {
     id: 'carpet-rugs-door-mats',
     name: 'Carpet, Rugs & Door Mats',
-    image: wallpaperImg,
+    shortName: 'Floor Decor',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765420344/products/products/1765420343136-538249634.jpg",
     icon: '🏠',
     description: 'Quality carpets, rugs, and mats for flooring and decoration',
     productCount: 90,
@@ -119,7 +124,8 @@ export const categories: Category[] = [
   {
     id: 'artificial-grass-plant-vertical-garden',
     name: 'Artificial Grass, Plant and Vertical Garden',
-    image: curtainsImg,
+    shortName: 'Grass & Plants',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg",
     icon: '🌿',
     description: 'Artificial greenery solutions for indoor and outdoor spaces',
     productCount: 70,

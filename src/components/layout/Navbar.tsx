@@ -230,69 +230,80 @@ export function Navbar() {
           ))}
         </nav>
       </div>
-        <div className="md:hidden md:flex flex-1 max-w-xl mx-3 my-3">
-              <SearchWithSuggestions
-                onSearch={handleSearch}
-                placeholder="Search by product code, name, price, category..."
-                className="w-full"
-              />
-            </div>
+      <div className="md:hidden md:flex flex-1 max-w-xl mx-3 my-3">
+        <SearchWithSuggestions
+          onSearch={handleSearch}
+          placeholder="Search by product code, name, price, category..."
+          className="w-full"
+        />
+      </div>
       {/* Mobile Menu */}
       {isMenuOpen && (
-         <div className=" w-full h-full bg-black/50">
-       <div
-  className={`
+        <div className=" w-full h-full bg-black/50">
+          <div
+            className={`
     fixed top-0 right-0 z-50 h-full w-1/2
     bg-background border-l
     transform transition-transform duration-300 ease-in-out
     md:hidden
     ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
   `}
->
-  <div className="container-premium py-6">
-    {/* Close Button (optional but recommended) */}
-    <button
-      className="mb-4 text-sm text-muted-foreground"
-      onClick={() => setIsMenuOpen(false)}
-    >
-      ✕ Close
-    </button>
+          >
+            <div className="container-premium py-6">
+              {/* Close Button (optional but recommended) */}
+              <button
+                className="mb-4 text-sm text-muted-foreground"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ✕ Close
+              </button>
 
-    {/* Mobile Categories */}
-    <div className="space-y-2">
-      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-        Navigation
-      </h3>
+              {/* Mobile Categories */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                  Navigation
+                </h3>
 
-      <Link
-        to="/"
-        className="block py-2 text-sm hover:text-primary transition-colors"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        Home
-      </Link>
+                <Link
+                  to="/"
+                  className="block py-2 text-sm hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Home
+                </Link>
 
-      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mt-4">
-        Categories
-      </h3>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mt-4">
+                  Categories
+                </h3>
 
-      {categories.map((category) => (
-        <Link
-          key={category.id}
-          to={`/category/${category.id}`}
-          className="block py-2 text-sm hover:text-primary transition-colors"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          {category.name}
-        </Link>
-      ))}
-    </div>
-  </div>
-</div>
-</div>
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  {categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/category/${category.id}`}
+                      className="flex flex-col items-center p-2 rounded-lg hover:bg-accent transition-all group"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <div className="w-16 h-16 rounded-full overflow-hidden mb-2 border-2 border-transparent group-hover:border-primary transition-all">
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-center line-clamp-2">
+                        {category.shortName || category.name}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       )}
-   
+
     </>
 
   );

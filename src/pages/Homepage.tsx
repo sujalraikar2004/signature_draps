@@ -120,7 +120,7 @@ const Homepage = () => {
       {/* CATEGORIES */}
       <section className="py-1 mt-5 lg:mt-20 bg-white ">
         <div className="container mx-auto px-2 relative">
-          <h2 className=" text-1xl md:text-4xl mb-6 text-gray-900  font-semibold">
+          <h2 className=" text-1xl md:text-2xl mb-6 text-gray-900  font-semibold">
             Essential Interior Categories
           </h2>
 
