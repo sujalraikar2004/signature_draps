@@ -87,7 +87,7 @@ export function Navbar() {
               {/* User Menu */}
               <DropdownMenu >
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className=" flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-2">
                     <User className="=  h-4 w-4" />
                     <span className="hidden sm:inline">
                       {isAuthenticated ? user?.username?.split(' ')[0] : 'Account'}
