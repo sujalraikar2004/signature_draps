@@ -16,7 +16,7 @@ export default function Login() {
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [errors, setErrors] = useState<{ phoneNo?: string; otp?: string }>({});
-  
+
   const { sendLoginOtp, login, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -30,35 +30,35 @@ export default function Login() {
 
   const validatePhoneNo = () => {
     const newErrors: { phoneNo?: string } = {};
-    
+
     if (!phoneNo) {
       newErrors.phoneNo = 'Phone number is required';
     } else if (!/^\d{10}$/.test(phoneNo)) {
       newErrors.phoneNo = 'Please enter a valid 10-digit phone number';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateOtp = () => {
     const newErrors: { otp?: string } = {};
-    
+
     if (!otp) {
       newErrors.otp = 'OTP is required';
     } else if (!/^\d{6}$/.test(otp)) {
       newErrors.otp = 'OTP must be 6 digits';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
     if (!validatePhoneNo()) return;
-    
+
     try {
       await sendLoginOtp(phoneNo);
       setOtpSent(true);
@@ -71,14 +71,14 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateOtp()) return;
-    
+
     try {
       await login(phoneNo, otp);
       navigate('/');
     } catch (error) {
-      // Error is handled in the auth context
+
     }
   };
 
@@ -111,7 +111,7 @@ export default function Login() {
               Sign in with your phone number
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="space-y-4">
@@ -132,10 +132,10 @@ export default function Login() {
                     <p className="text-sm text-destructive">{errors.phoneNo}</p>
                   )}
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full btn-hero" 
+
+                <Button
+                  type="submit"
+                  className="w-full btn-hero"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -208,10 +208,10 @@ export default function Login() {
                     {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
                   </Button>
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full btn-hero" 
+
+                <Button
+                  type="submit"
+                  className="w-full btn-hero"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -225,7 +225,7 @@ export default function Login() {
                 </Button>
               </form>
             )}
-            
+
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}

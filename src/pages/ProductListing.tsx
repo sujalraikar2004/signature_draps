@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,6 +38,7 @@ const discountOptions: FilterOption[] = [
 ];
 
 const ProductListing = () => {
+  const location = useLocation().pathname;
   const { categoryId } = useParams();
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
@@ -131,8 +132,8 @@ const ProductListing = () => {
         {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">
-              {searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}
+            <h1 className="text-1xl md:text-2xl font-semibold">
+              {searchQuery ? `Search Results for "${searchQuery}"` : `${location}`}
             </h1>
             <p className="text-muted-foreground mt-1">{filteredProducts.length} products found</p>
           </div>
