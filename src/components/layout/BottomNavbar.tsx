@@ -28,7 +28,7 @@ export function BottomNavbar() {
             </Link>
 
             <Link
-                to="/account"
+                to="/login"
                 className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#206060] transition-colors"
             >
                 <User className="h-6 w-6" />

@@ -38,7 +38,7 @@ import ScrollToTop from "./components/ui/ScrollToTop.jsx"
 import { Analytics } from "@vercel/analytics/react"
 import Gallery from "./pages/Gallery"
 
-// import order
+
 const queryClient = new QueryClient();
 
 const App = () => (

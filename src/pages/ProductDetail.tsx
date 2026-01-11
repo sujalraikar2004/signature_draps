@@ -22,24 +22,22 @@ import { toast } from 'sonner';
 import api from '@/Api';
 import { Product, Review, SizeVariant, CustomSize } from '@/types';
 
-// Helper function to format size display based on category and variant data
 const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
-  // Bean bags - prioritize sizeLabel
+
   if (variant.sizeLabel) {
     return variant.sizeLabel;
   }
 
-  // Area-based products (wallpaper, grass)
   if (variant.area && variant.area > 0) {
     return `${variant.area} sq ft`;
+
   }
 
-  // Round items (carpets with diameter)
   if (variant.diameter && variant.diameter > 0) {
     return `⌀ ${variant.diameter} ${variant.dimensions?.unit || 'ft'}`;
   }
 
-  // Dimension-based products (curtains, blinds, etc.)
+
   if (variant.dimensions?.length && variant.dimensions?.width) {
     const parts = [variant.dimensions.length, variant.dimensions.width];
     if (variant.dimensions.height && variant.dimensions.height > 0) {
@@ -48,11 +46,12 @@ const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
     return `${parts.join(' × ')} ${variant.dimensions.unit || 'ft'}`;
   }
 
-  // Fallback
+
+
   return 'Standard size';
 };
 
-// Helper function to generate detailed size information for tooltip
+
 const getDetailedSizeInfo = (variant: SizeVariant): string[] => {
   const details: string[] = [];
 
@@ -1567,7 +1566,7 @@ export default function ProductDetail() {
             <h2 className="text-2xl font-heading font-semibold mb-8">
               You May Also Like
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2  md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <ProductCard key={relatedProduct._id} product={relatedProduct} />
               ))}
@@ -1584,3 +1583,4 @@ export default function ProductDetail() {
     </main>
   );
 }
+

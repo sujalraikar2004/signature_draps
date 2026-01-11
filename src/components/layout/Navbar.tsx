@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart, MapPin, Image } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, ShoppingCart, User, Menu, X, Heart, MapPin, Image, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchWithSuggestions } from '@/components/ui/search-with-suggestions';
@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +18,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Navbar() {
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const cart = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const { wishlistCount } = useProducts();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   const itemCount = cart?.getItemCount() || 0;
 
@@ -64,13 +68,26 @@ export function Navbar() {
         {/* Main Navigation */}
         <div className="bg-[#206060] text-white py-2  px-4 " >
           <div className="flex h-8  md:h-30 items-center justify-between">
+            {/* Mobile Back Arrow */}
+            {!isHome && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden mr-2"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+
             {/* Logo */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className={`flex items-center ${!isHome ? 'hidden md:flex' : ''}`}>
               <img
                 src="https://res.cloudinary.com/dvesn2uo2/image/upload/v1767972463/Dark_Green_Modern_Initial_Logo_3_veq59q.png"
                 className="h-5 md:h-12 w-auto object-contain drop-shadow-sm"
               />
             </Link>
+
             <div></div>
 
             {/* Search Bar - Desktop */}

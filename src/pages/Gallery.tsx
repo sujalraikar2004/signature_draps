@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import ImageViewer, { GalleryImage } from "../components/ImageViewers/ImageViewer";
+import ImageViewer, { GalleryImage } from "../components/ImageViewers/ImageViewer.tsx";
 
-// Premium Placeholder Images (Unsplash)
+
 const galleryData: GalleryImage[] = [
     // Curtains
     {
