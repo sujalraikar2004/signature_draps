@@ -125,12 +125,12 @@ export function ProductCard({ product, className = '', addToCartLabel }: Product
 
         {/* Product Info - Myntra Style */}
         <div className="pt-2 pb-1 px-1">
-          {/* Brand & Name */}
+          {/* Product Name & Brand */}
           <h3 className="font-bold text-[15px] text-gray-900 truncate leading-tight">
-            {product.brand || 'Brand Name'}
+            {product.name}
           </h3>
           <p className="text-[13px] text-gray-500 font-normal truncate mt-0.5">
-            {product.name}
+            {product.brand || 'Brand Name'}
           </p>
 
           {/* Price Block */}

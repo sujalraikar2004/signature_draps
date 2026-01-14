@@ -124,6 +124,17 @@ const ProductListing = () => {
 
   const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 50000], brands: [], colors: [], discountRange: [] });
 
+  // Get category display name
+  const getCategoryName = () => {
+    if (searchQuery) return `Search Results for "${searchQuery}"`;
+    if (isBestSellerParam === 'true') return 'Best Sellers';
+    if (isNewParam === 'true') return 'New Arrivals';
+    if (categoryId) {
+      const category = categories.find(c => c.category === categoryId);
+      return category?.name || categoryId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    return 'All Products';
+  };
 
 
   return (
@@ -133,7 +144,7 @@ const ProductListing = () => {
         <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-1xl md:text-2xl font-semibold">
-              {searchQuery ? `Search Results for "${searchQuery}"` : `${location}`}
+              {getCategoryName()}
             </h1>
             <p className="text-muted-foreground mt-1">{filteredProducts.length} products found</p>
           </div>

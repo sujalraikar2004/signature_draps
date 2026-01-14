@@ -64,6 +64,7 @@ export interface Review {
 }
 
 export interface Category {
+  category: string;
   id: string;
   name: string;
   shortName?: string;

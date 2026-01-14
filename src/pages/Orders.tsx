@@ -157,33 +157,7 @@ export default function Orders() {
             ))}
           </div>
 
-          {/* Order Summary / Info */}
-          <div className="lg:col-span-1">
-            <div className="card-premium p-6 sticky top-24 space-y-4">
-              <h2 className="text-xl font-semibold">Delivery & Info</h2>
-              <ul className="text-sm text-muted-foreground space-y-2">
-                <li>• Free delivery in Mumbai & Delhi NCR</li>
-                <li>• Professional installation available</li>
-                <li>• 30-day return policy</li>
-                <li>• Quality guarantee on all products</li>
-              </ul>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <h3 className="font-medium">Total Orders Amount</h3>
-                <p className="text-lg font-semibold">
-                  ₹{orders
-                    .reduce((sum, o) => sum + o.totalAmount, 0)
-                    .toLocaleString()}
-                </p>
-              </div>
-
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/">Continue Shopping</Link>
-              </Button>
-            </div>
-          </div>
+         
         </div>
       </div>
     </main>

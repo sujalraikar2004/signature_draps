@@ -211,13 +211,13 @@ export function SearchWithSuggestions({
       {showSuggestions && (query.length >= 2 || recentSearches.length > 0) && (
         <div
           ref={suggestionsRef}
-          className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md shadow-lg max-h-96 overflow-y-auto"
+          className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-y-auto"
         >
           {/* Recent Searches */}
           {showRecentSearches && recentSearches.length > 0 && query.length < 2 && (
-            <div className="p-3 border-b border-border">
+            <div className="p-3 border-b border-gray-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   Recent Searches
                 </span>
@@ -225,7 +225,7 @@ export function SearchWithSuggestions({
                   variant="ghost"
                   size="sm"
                   onClick={clearRecentSearches}
-                  className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900"
                 >
                   Clear
                 </Button>
@@ -235,8 +235,8 @@ export function SearchWithSuggestions({
                   <button
                     key={search}
                     className={cn(
-                      "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors",
-                      selectedIndex === index && "bg-muted"
+                      "w-full text-left px-3 py-2 text-sm text-gray-900 rounded-md hover:bg-gray-100 transition-colors",
+                      selectedIndex === index && "bg-gray-100"
                     )}
                     onClick={() => handleSearch(search)}
                   >
@@ -253,11 +253,11 @@ export function SearchWithSuggestions({
               {loading ? (
                 <div className="flex items-center justify-center py-4">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
+                  <span className="ml-2 text-sm text-gray-700">Searching...</span>
                 </div>
               ) : suggestions.length > 0 ? (
                 <div className="space-y-1">
-                  <span className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <span className="text-sm font-medium text-gray-700 mb-2 block">
                     Suggestions
                   </span>
                   {suggestions.map((suggestion, index) => {
@@ -266,8 +266,8 @@ export function SearchWithSuggestions({
                       <button
                         key={`${suggestion.type}-${suggestion.text}`}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2",
-                          selectedIndex === adjustedIndex && "bg-muted"
+                          "w-full text-left px-3 py-2 text-sm text-gray-900 rounded-md hover:bg-gray-100 transition-colors flex items-center gap-2",
+                          selectedIndex === adjustedIndex && "bg-gray-100"
                         )}
                         onClick={() => handleSuggestionClick(suggestion)}
                       >
@@ -284,7 +284,7 @@ export function SearchWithSuggestions({
                   })}
                 </div>
               ) : query.length >= 2 && !loading ? (
-                <div className="py-4 text-center text-sm text-muted-foreground">
+                <div className="py-4 text-center text-sm text-gray-700">
                   No suggestions found for "{query}"
                 </div>
               ) : null}
