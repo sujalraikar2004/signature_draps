@@ -12,9 +12,10 @@ import { toast } from 'sonner';
 interface ProductCardProps {
   product: Product;
   className?: string;
+  addToCartLabel?: string;
 }
 
-export function ProductCard({ product, className = '' }: ProductCardProps) {
+export function ProductCard({ product, className = '', addToCartLabel }: ProductCardProps) {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -113,7 +114,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               {isInStock ? (
                 <>
                   <ShoppingCart className="h-3.5 w-3.5 md:mr-2" />
-                  <span className="hidden md:inline">ADD TO BAG</span>
+                  <span className="hidden md:inline uppercase">{addToCartLabel || 'ADD TO BAG'}</span>
                 </>
               ) : (
                 <span className="text-[9px] md:text-xs">OUT</span>
