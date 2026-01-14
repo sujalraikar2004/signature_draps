@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import "./ImageViewer.css";
 
 export interface GalleryImage {
@@ -7,6 +7,8 @@ export interface GalleryImage {
     src: string;
     category: string;
     title: string;
+    type?: 'image' | 'video';
+    thumbnailUrl?: string;
 }
 
 interface ImageViewerProps {
@@ -18,6 +20,7 @@ interface ImageViewerProps {
 
 const ImageViewer: React.FC<ImageViewerProps> = ({ images, index, onClose, onChange }) => {
     const currentImage = images[index];
+    const [isZoomed, setIsZoomed] = React.useState(false);
 
     // Handle keyboard navigation
     React.useEffect(() => {
@@ -31,63 +34,114 @@ const ImageViewer: React.FC<ImageViewerProps> = ({ images, index, onClose, onCha
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [index, images.length, onClose, onChange]);
 
+    // Reset zoom when changing images
+    React.useEffect(() => {
+        setIsZoomed(false);
+    }, [index]);
+
     if (!currentImage) return null;
 
     return (
-        <div className="overlay fixed inset-0 z-[9999] bg-white/95 flex items-center justify-center backdrop-blur-md transition-all duration-300">
+        <div className="overlay fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center transition-all duration-300 animate-fade-in">
+            {/* Background gradient effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/95 to-black/90"></div>
+            
+            {/* Top bar with controls */}
+            <div className="absolute top-0 left-0 right-0 z-50 p-4 md:p-6 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
+                {/* Image counter */}
+                <div className="px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md text-white text-sm font-medium border border-white/20 animate-slide-in-left">
+                    <span className="font-bold text-lg">{index + 1}</span>
+                    <span className="mx-2 text-white/60">/</span>
+                    <span className="text-white/80">{images.length}</span>
+                </div>
 
-            {/* Close */}
-            <button
-                onClick={onClose}
-                className="absolute top-6 right-6 p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 z-50"
-            >
-                <X size={32} strokeWidth={1.5} />
-            </button>
+                {/* Close button */}
+                <button
+                    onClick={onClose}
+                    className="group p-3 md:p-4 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all duration-300 transform hover:scale-110 hover:rotate-90 border border-white/20 animate-slide-in-right"
+                    aria-label="Close"
+                >
+                    <X size={24} strokeWidth={2} />
+                </button>
+            </div>
 
-            <div className="flex items-center justify-between w-full h-full max-w-[95vw] px-4 md:px-10 relative">
+            <div className="flex items-center justify-center w-full h-full px-4 md:px-8 relative">
 
-                {/* Left Arrow */}
+                {/* Left Arrow - Enhanced */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         if (index > 0) onChange(index - 1);
                     }}
                     disabled={index === 0}
-                    className={`p-3 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 disabled:opacity-20 disabled:hover:bg-transparent disabled:cursor-not-allowed transform hover:scale-110 ${index === 0 ? 'invisible' : ''}`}
+                    className={`absolute left-4 md:left-8 z-40 group p-4 md:p-5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all duration-300 transform hover:scale-110 disabled:opacity-0 disabled:pointer-events-none border border-white/20 hover:border-white/40 ${
+                        index === 0 ? 'invisible' : ''
+                    }`}
+                    aria-label="Previous"
                 >
-                    <ChevronLeft size={48} strokeWidth={1} />
+                    <ChevronLeft size={32} strokeWidth={2.5} className="transform group-hover:-translate-x-1 transition-transform" />
                 </button>
 
-                {/* Image Container */}
-                <div className="flex-1 flex flex-col items-center justify-center h-full py-8 md:py-12" onClick={onClose}>
+                {/* Media Container - Much Larger */}
+                <div className="flex-1 flex flex-col items-center justify-center h-full py-4 md:py-6 max-w-7xl mx-auto">
                     <div
-                        className="relative max-h-[85vh] max-w-full flex flex-col items-center"
+                        className="relative w-full flex flex-col items-center animate-scale-in"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <img
-                            src={currentImage.src}
-                            alt={currentImage.title}
-                            className="imgContainer max-h-[75vh] md:max-h-[80vh] max-w-full object-contain shadow-2xl rounded-sm"
-                        />
+                        {currentImage.type === 'video' ? (
+                            <video
+                                src={currentImage.src}
+                                controls
+                                autoPlay
+                                className={`w-full max-h-[90vh] object-contain rounded-lg shadow-2xl shadow-black/50 transition-all duration-500 ${
+                                    isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'
+                                }`}
+                                onClick={() => setIsZoomed(!isZoomed)}
+                            />
+                        ) : (
+                            <img
+                                src={currentImage.src}
+                                alt={currentImage.title}
+                                className={`w-full max-h-[90vh] object-contain rounded-lg shadow-2xl shadow-black/50 transition-all duration-500 ${
+                                    isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in hover:scale-105'
+                                }`}
+                                onClick={() => setIsZoomed(!isZoomed)}
+                            />
+                        )}
 
-                        {/* Caption - Soft and subtle */}
-                        <div className="mt-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h3 className="text-gray-900 text-xl font-heading font-light tracking-wide">{currentImage.title}</h3>
-                            <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">{currentImage.category}</p>
+                        {/* Zoom indicator for images */}
+                        {currentImage.type !== 'video' && !isZoomed && (
+                            <div className="absolute top-4 right-4 px-3 py-2 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs font-medium border border-white/20 flex items-center gap-2 animate-fade-in">
+                                <ZoomIn size={14} />
+                                <span>Click to zoom</span>
+                            </div>
+                        )}
+
+                        {/* Caption - Enhanced */}
+                        <div className="mt-8 text-center px-4 animate-fade-in-up max-w-2xl">
+                            <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-3">
+                                <p className="text-white/80 text-xs uppercase tracking-widest font-semibold">{currentImage.category}</p>
+                            </div>
+                            <h3 className="text-white text-2xl md:text-3xl font-heading font-semibold tracking-wide leading-tight">
+                                {currentImage.title}
+                            </h3>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Arrow */}
+                {/* Right Arrow - Enhanced */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         if (index < images.length - 1) onChange(index + 1);
                     }}
                     disabled={index === images.length - 1}
-                    className={`p-3 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 disabled:opacity-20 disabled:hover:bg-transparent disabled:cursor-not-allowed transform hover:scale-110 ${index === images.length - 1 ? 'invisible' : ''}`}
+                    className={`absolute right-4 md:right-8 z-40 group p-4 md:p-5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all duration-300 transform hover:scale-110 disabled:opacity-0 disabled:pointer-events-none border border-white/20 hover:border-white/40 ${
+                        index === images.length - 1 ? 'invisible' : ''
+                    }`}
+                    aria-label="Next"
                 >
-                    <ChevronRight size={48} strokeWidth={1} />
+                    <ChevronRight size={32} strokeWidth={2.5} className="transform group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
         </div>
