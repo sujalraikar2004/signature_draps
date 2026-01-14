@@ -37,6 +37,7 @@ import RazorpayPayment from "./components/payment/RazorpayPayment"
 import ScrollToTop from "./components/ui/ScrollToTop.jsx"
 import { Analytics } from "@vercel/analytics/react"
 import Gallery from "./pages/Gallery"
+import UserProfile from "./pages/UserProfile.tsx"
 
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
                       <Route path="/product/:productId" element={<ProductDetail />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/profile" element={<UserProfile />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/verify-otp" element={<VerifyOtp />} />
