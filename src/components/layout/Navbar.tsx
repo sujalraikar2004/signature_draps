@@ -26,6 +26,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const isProfile = location.pathname === '/profile';
 
   const itemCount = cart?.getItemCount() || 0;
 
@@ -247,13 +248,15 @@ export function Navbar() {
           ))}
         </nav>
       </div>
-      <div className="md:hidden md:flex flex-1 max-w-xl mx-3 my-3">
-        <SearchWithSuggestions
-          onSearch={handleSearch}
-          placeholder="Search by product code, name, price, category..."
-          className="w-full"
-        />
-      </div>
+      {!isProfile && (
+        <div className="md:hidden flex flex-1 max-w-xl mx-3 my-3">
+          <SearchWithSuggestions
+            onSearch={handleSearch}
+            placeholder="Search by product code, name, price, category..."
+            className="w-full"
+          />
+        </div>
+      )}
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className=" w-full h-full bg-black/50">
