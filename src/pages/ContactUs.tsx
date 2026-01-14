@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, Instagram } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Instagram, Upload, X, Image as ImageIcon, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import api from '@/Api';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -14,11 +15,49 @@ export default function ContactUs() {
     subject: '',
     message: ''
   });
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Message sent successfully! We will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    
+    if (!formData.name || !formData.email || !formData.phone || !formData.subject || !formData.message) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phoneNo', formData.phone);
+      formDataToSend.append('subject', formData.subject);
+      formDataToSend.append('message', formData.message);
+
+      // Append media files
+      mediaFiles.forEach((file) => {
+        formDataToSend.append('mediaFiles', file);
+      });
+
+      const response = await api.post('/contact-queries', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        toast.success('Message sent successfully! We will get back to you soon.');
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setMediaFiles([]);
+      }
+    } catch (error: any) {
+      console.error('Error submitting query:', error);
+      toast.error(error.response?.data?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -26,6 +65,48 @@ export default function ContactUs() {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB
+
+      if (!isImage && !isVideo) {
+        toast.error(`${file.name} is not a valid image or video file`);
+        return false;
+      }
+
+      if (!isValidSize) {
+        toast.error(`${file.name} is too large. Maximum size is 50MB`);
+        return false;
+      }
+
+      return true;
+    });
+
+    // Check total number of files
+    if (mediaFiles.length + validFiles.length > 10) {
+      toast.error('You can only upload up to 10 files');
+      return;
+    }
+
+    setMediaFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      return <ImageIcon className="h-4 w-4" />;
+    }
+    return <Video className="h-4 w-4" />;
   };
 
   return (
@@ -108,10 +189,82 @@ export default function ContactUs() {
                   required
                 />
               </div>
+
+              {/* File Upload Section */}
+              <div>
+                <Label htmlFor="mediaFiles">
+                  Attach Images or Videos (Optional)
+                </Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Upload images or videos of the product you need help with (Max 10 files, 50MB each)
+                </p>
+                <div className="space-y-3">
+                  <Input
+                    id="mediaFiles"
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                  
+                  {/* File Preview */}
+                  {mediaFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">
+                        Selected Files ({mediaFiles.length}/10)
+                      </p>
+                      <div className="grid gap-2">
+                        {mediaFiles.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                          >
+                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                              {getFileIcon(file)}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  {file.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFile(index)}
+                              className="flex-shrink-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               
-              <Button type="submit" className="w-full btn-hero" size="lg">
-                <Send className="mr-2 h-5 w-5" />
-                Send Message
+              <Button 
+                type="submit" 
+                className="w-full btn-hero" 
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-5 w-5" />
+                    Send Message
+                  </>
+                )}
               </Button>
             </form>
           </div>
@@ -227,24 +380,7 @@ export default function ContactUs() {
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="card-premium p-8">
-              <h3 className="text-xl font-heading font-semibold mb-4">Quick Support</h3>
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <Phone className="mr-2 h-4 w-4" />
-                  Schedule a Free Consultation
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Request a Quote
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Find Nearest Store
-                </Button>
-              </div>
-            </div>
+          
           </div>
         </div>
       </div>

@@ -1,92 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ImageViewer, { GalleryImage } from "../components/ImageViewers/ImageViewer.tsx";
-
-
-const galleryData: GalleryImage[] = [
-    // Curtains
-    {
-        id: 1,
-        category: "Curtains",
-        title: "Sheer Elegance Living Room",
-        src: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
-    },
-    {
-        id: 2,
-        category: "Curtains",
-        title: "Velvet Drapes Bedroom",
-        src: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?q=80&w=2070&auto=format&fit=crop"
-    },
-    {
-        id: 3,
-        category: "Curtains",
-        title: "Modern Minimalist Curtains",
-        src: "https://images.unsplash.com/photo-1629079447777-6242553fb164?q=80&w=2070&auto=format&fit=crop"
-    },
-    // Wallpapers
-    {
-        id: 4,
-        category: "Wallpapers",
-        title: "Floral Feature Wall",
-        src: "https://images.unsplash.com/photo-1615529182904-14819c35db37?q=80&w=2080&auto=format&fit=crop"
-    },
-    {
-        id: 5,
-        category: "Wallpapers",
-        title: "Geometric Pattern Design",
-        src: "https://images.unsplash.com/photo-1598287515059-8d1979b9003c?q=80&w=2070&auto=format&fit=crop"
-    },
-    {
-        id: 6,
-        category: "Wallpapers",
-        title: "Textured Luxury Wallpaper",
-        src: "https://images.unsplash.com/photo-1618221155710-d6b711f3d63e?q=80&w=2070&auto=format&fit=crop"
-    },
-    // Blinds
-    {
-        id: 7,
-        category: "Blinds",
-        title: "Wooden Venetian Blinds",
-        src: "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?q=80&w=2067&auto=format&fit=crop"
-    },
-    {
-        id: 8,
-        category: "Blinds",
-        title: "Automated Roller Blinds",
-        src: "https://images.unsplash.com/photo-1490238059082-82404b9c1d63?q=80&w=2070&auto=format&fit=crop"
-    },
-    // Furniture
-    {
-        id: 9,
-        category: "Furniture",
-        title: "Recliner Sofa Set",
-        src: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop"
-    },
-    {
-        id: 10,
-        category: "Furniture",
-        title: "Modern Coffee Table",
-        src: "https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?q=80&w=2064&auto=format&fit=crop"
-    },
-    // Grass/Outdoors
-    {
-        id: 11,
-        category: "Outdoors",
-        title: "Vertical Garden Wall",
-        src: "https://images.unsplash.com/photo-1533519782559-0f4b3f81014e?q=80&w=2070&auto=format&fit=crop"
-    },
-    {
-        id: 12,
-        category: "Outdoors",
-        title: "Artificial Lawn Install",
-        src: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=1932&auto=format&fit=crop"
-    }
-];
-
-const categories = ["All", "Curtains", "Wallpapers", "Blinds", "Furniture", "Outdoors"];
+import api from "../Api.tsx";
 
 export default function Gallery() {
+    const [galleryData, setGalleryData] = useState<GalleryImage[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState<string[]>(["All"]);
     const [activeCategory, setActiveCategory] = useState("All");
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+
+    // Fetch gallery items from API
+    useEffect(() => {
+        const fetchGalleryData = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get('/gallery', {
+                    params: {
+                        isActive: true,
+                        limit: 100
+                    }
+                });
+
+                if (response.data.success) {
+                    const items = response.data.data;
+                    
+                    // Transform API data to GalleryImage format
+                    const transformedData: GalleryImage[] = items.map((item: any) => ({
+                        id: item._id,
+                        category: item.category,
+                        title: item.title,
+                        src: item.mediaUrl,
+                        type: item.mediaType,
+                        thumbnailUrl: item.thumbnailUrl
+                    }));
+
+                    setGalleryData(transformedData);
+
+                    // Extract unique categories
+                    const categorySet = new Set(items.map((item: any) => item.category));
+                    const uniqueCategories = ["All", ...Array.from(categorySet)] as string[];
+                    setCategories(uniqueCategories);
+                }
+            } catch (error) {
+                console.error('Error fetching gallery data:', error);
+                // Fallback to empty array on error
+                setGalleryData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGalleryData();
+    }, []);
 
     const filteredImages = activeCategory === "All"
         ? galleryData
@@ -101,70 +66,138 @@ export default function Gallery() {
 
     return (
         <>
-            <div className="min-h-screen bg-gray-50 pb-20">
-                {/* Header */}
-                <div className="bg-white py-16 shadow-sm mb-10">
-                    <div className="container mx-auto px-4 text-center">
-                        <span className="text-secondary font-bold tracking-widest text-sm uppercase mb-2 block">Portfolio</span>
-                        <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900">Our Masterpieces</h1>
-                        <div className="w-24 h-1 bg-secondary mx-auto mt-6 rounded-full" />
-                        <p className="max-w-2xl mx-auto mt-6 text-gray-500 font-light text-lg">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pb-20">
+                {/* Header with gradient background */}
+                <div className="relative bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 py-20 shadow-lg mb-16 overflow-hidden">
+                    <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+                    <div className="container mx-auto px-4 text-center relative z-10">
+                        <span className="inline-block text-primary font-bold tracking-widest text-xs uppercase mb-4 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm animate-fade-in">Our Portfolio</span>
+                        <h1 className="text-5xl md:text-7xl font-heading font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent animate-fade-in-up">
+                            Our Masterpieces
+                        </h1>
+                        <div className="w-32 h-1.5 bg-gradient-to-r from-primary via-secondary to-primary mx-auto mt-8 rounded-full shadow-lg animate-scale-in" />
+                        <p className="max-w-3xl mx-auto mt-8 text-gray-600 font-light text-lg md:text-xl leading-relaxed animate-fade-in-up" style={{animationDelay: '0.2s'}}>
                             Discover our collection of premium interior transformations, from elegant drapery to modern automation.
                         </p>
                     </div>
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 left-0 w-72 h-72 bg-primary/10 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+                    <div className="absolute bottom-0 right-0 w-72 h-72 bg-secondary/10 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2"></div>
                 </div>
 
-                <div className="container mx-auto px-4">
-
-                    {/* Filter Tabs */}
-                    <div className="flex flex-wrap justify-center gap-3 mb-12">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeCategory === cat
-                                    ? "bg-primary text-white shadow-md scale-105"
-                                    : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200"
-                                    }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Masonry Grid */}
-                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-                        {filteredImages.map((image) => (
-                            <div
-                                key={image.id}
-                                onClick={() => handleImageClick(image.id)}
-                                className="break-inside-avoid group cursor-pointer relative overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-xl transition-all duration-300"
-                            >
-                                <div className="relative">
-                                    <img
-                                        src={image.src}
-                                        alt={image.title}
-                                        className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                                        loading="lazy"
-                                    />
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center">
-                                        <span className="text-white/80 text-xs font-bold uppercase tracking-wider mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
-                                            {image.category}
-                                        </span>
-                                        <h3 className="text-white font-heading font-medium text-lg translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
-                                            {image.title}
-                                        </h3>
-                                    </div>
-                                </div>
+                <div className="container mx-auto px-4 md:px-6 lg:px-8">
+                    {loading ? (
+                        <div className="flex flex-col justify-center items-center py-32">
+                            <div className="relative">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/30"></div>
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-primary absolute top-0 left-0"></div>
                             </div>
-                        ))}
-                    </div>
-
-                    {filteredImages.length === 0 && (
-                        <div className="text-center py-20 text-gray-400">
-                            <p>No images found in this category yet.</p>
+                            <p className="mt-6 text-gray-500 animate-pulse">Loading gallery...</p>
                         </div>
+                    ) : (
+                        <>
+                            {/* Filter Tabs with modern design */}
+                            <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-16 animate-fade-in">
+                                {categories.map((cat, index) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        style={{animationDelay: `${index * 0.05}s`}}
+                                        className={`group relative px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 transform hover:scale-110 animate-fade-in-up ${
+                                            activeCategory === cat
+                                                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/30 scale-110"
+                                                : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-primary/50 hover:shadow-lg"
+                                        }`}
+                                    >
+                                        <span className="relative z-10">{cat}</span>
+                                        {activeCategory === cat && (
+                                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary opacity-20 blur-xl animate-pulse"></div>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Enhanced Masonry Grid */}
+                            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                                {filteredImages.map((image, index) => (
+                                    <div
+                                        key={image.id}
+                                        onClick={() => handleImageClick(image.id)}
+                                        style={{animationDelay: `${index * 0.05}s`}}
+                                        className="break-inside-avoid group cursor-pointer relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up"
+                                    >
+                                        <div className="relative overflow-hidden rounded-2xl">
+                                            {/* Media content */}
+                                            {image.type === 'video' ? (
+                                                <div className="relative">
+                                                    <video
+                                                        src={image.src}
+                                                        className="w-full h-auto object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                                                        poster={image.thumbnailUrl}
+                                                        muted
+                                                        loop
+                                                        onMouseEnter={(e) => e.currentTarget.play()}
+                                                        onMouseLeave={(e) => e.currentTarget.pause()}
+                                                    />
+                                                    {/* Video play icon overlay */}
+                                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                                                        <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    src={image.src}
+                                                    alt={image.title}
+                                                    className="w-full h-auto object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                                                    loading="lazy"
+                                                />
+                                            )}
+                                            
+                                            {/* Gradient overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+                                                {/* Category badge */}
+                                                <div className="absolute top-4 left-4">
+                                                    <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-bold uppercase tracking-wider border border-white/30 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                                                        {image.category}
+                                                    </span>
+                                                </div>
+                                                
+                                                {/* Title and view button */}
+                                                <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
+                                                    <h3 className="text-white font-heading font-semibold text-xl mb-3 leading-tight">
+                                                        {image.title}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        <span className="font-medium">View Full Size</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Border glow on hover */}
+                                            <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/0 group-hover:ring-primary/50 transition-all duration-500"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {filteredImages.length === 0 && (
+                                <div className="text-center py-32 animate-fade-in">
+                                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 mb-6">
+                                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No Items Found</h3>
+                                    <p className="text-gray-500">No images found in this category yet. Check back soon!</p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
