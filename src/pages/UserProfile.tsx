@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Pencil, ShoppingBag, LogOut, ChevronRight } from 'lucide-react';
+import { Pencil, ShoppingBag, LogOut, ChevronRight, ShoppingCart, Heart } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
@@ -64,6 +64,34 @@ const UserProfile = () => {
                                 <Pencil className="h-5 w-5 text-[#206060]" />
                             </div>
                             <span className="font-semibold text-gray-800">Edit Profile</span>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-300" />
+                    </button>
+
+                    {/* My Cart */}
+                    <button
+                        onClick={() => navigate('/cart')}
+                        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-50"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#f0f9f9] p-3 rounded-2xl">
+                                <ShoppingCart className="h-5 w-5 text-[#206060]" />
+                            </div>
+                            <span className="font-semibold text-gray-800">My Cart</span>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-300" />
+                    </button>
+
+                    {/* My Wishlist */}
+                    <button
+                        onClick={() => navigate('/wishlist')}
+                        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-50"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#f0f9f9] p-3 rounded-2xl">
+                                <Heart className="h-5 w-5 text-[#206060]" />
+                            </div>
+                            <span className="font-semibold text-gray-800">My Wishlist</span>
                         </div>
                         <ChevronRight className="h-5 w-5 text-gray-300" />
                     </button>

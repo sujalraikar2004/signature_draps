@@ -147,14 +147,14 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/wishlist')}
-                className="relative "
+                className={`relative ${isProfile ? 'hidden md:flex' : ''}`}
               >
                 <Heart className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Wishlist</span>
                 {isAuthenticated && wishlistCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    className="h-3 w-3 absolute -top-2 -right-2 md:h-5 md:w-5 rounded-full p-0 flex items-center justify-center text-xs"
                   >
                     {wishlistCount}
                   </Badge>
@@ -166,7 +166,7 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/cart')}
-                className="relative"
+                className={`relative ${isProfile ? 'hidden md:flex' : ''}`}
               >
                 <ShoppingCart className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Cart</span>
