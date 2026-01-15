@@ -70,8 +70,8 @@ export function Navbar() {
       </div> */}
 
         {/* Main Navigation */}
-        <div className="bg-[#206060] text-white py-2  px-4 " >
-          <div className="flex h-8  md:h-30 items-center justify-between">
+        <div className="bg-[#206060] text-white py-2 md:py-3  px-4 " >
+          <div className="flex h-8  md:h-26 items-center justify-between">
             {/* Mobile Back Arrow */}
             {!isHome && (
               <Button
@@ -88,7 +88,7 @@ export function Navbar() {
             <Link to="/" className={`flex items-center ${!isHome ? 'hidden md:flex' : ''}`}>
               <img
                 src="https://res.cloudinary.com/dvesn2uo2/image/upload/v1767972463/Dark_Green_Modern_Initial_Logo_3_veq59q.png"
-                className="h-5 md:h-12 w-auto object-contain drop-shadow-sm"
+                className="h-5 md:h-11 w-auto object-contain drop-shadow-sm"
               />
             </Link>
 
@@ -104,7 +104,7 @@ export function Navbar() {
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center space-x-0.3">
+            <div className="flex  justify-between item-center space-x-0.6 ">
               {/* User Menu */}
               <DropdownMenu >
                 <DropdownMenuTrigger asChild>
@@ -186,7 +186,7 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/gallery')}
-                className="relative hidden md:block"
+                className="relative hidden md:block  md:flex"
               >
                 <Image className=" md:h-4 md:w-4" />
                 <span className="hidden sm:inline ml-1">Gallery</span>
@@ -209,7 +209,7 @@ export function Navbar() {
 
       {/* Category Navigation - Desktop */}
       <div className="bg-[#061E29] hidden md:flex border-t border-[#1D546D]">
-        <nav className="container-premium flex items-center space-x-8 px-5 h-12">
+        <nav className="container-premium flex items-center space-x-8 px-5 h-11">
           <Link
             to="/"
             className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
