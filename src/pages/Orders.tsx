@@ -60,104 +60,140 @@ export default function Orders() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container-premium py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold mb-2">My Orders</h1>
-          <p className="text-muted-foreground">
-            {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed
-          </p>
+    <main className="min-h-screen bg-muted/30">
+      <div className="container-premium py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 px-2 sm:px-0">
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-heading font-bold mb-1 tracking-tight">My Orders</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed in total
+            </p>
+          </div>
+          <div className="hidden sm:block">
+            <Button variant="outline" size="sm" className="rounded-full px-6">
+              Download All Invoices
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Orders List */}
-          <div className="lg:col-span-2 space-y-6">
-            {orders.map((order) => (
-              <div key={order._id} className="card-premium p-6 space-y-4">
-                {/* Order Header */}
-                <div className="flex justify-between items-start">
+        <div className="space-y-4 sm:space-y-6">
+          {orders.map((order) => (
+            <div key={order._id} className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+              {/* Desktop Header */}
+              <div className="hidden sm:flex items-center justify-between p-4 bg-muted/30 border-b border-border/50">
+                <div className="flex gap-8 text-sm">
                   <div>
-                    <h2 className="font-semibold">Order #{order.orderId}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Placed on {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Payment Mode: {order.paymentMode} • Status: {order.paymentStatus}
-                    </p>
+                    <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mb-1">Order Placed</p>
+                    <p className="font-medium">{new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        order.orderStatus === 'DELIVERED'
-                          ? 'default'
-                          : order.orderStatus === 'CANCELLED'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className={order.orderStatus === 'DELIVERED' ? 'bg-green-500 hover:bg-green-600' : ''}
-                    >
-                      {order.orderStatus}
-                    </Badge>
-                    {order.orderStatus === 'DELIVERED' && (
-                      <CheckCircle className="h-5 w-5 text-success" />
-                    )}
-                    {order.orderStatus === 'CANCELLED' && (
+                  <div>
+                    <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mb-1">Total Amount</p>
+                    <p className="font-medium text-primary">₹{(order.totalAmount || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mb-1">Ship To</p>
+                    <p className="font-medium underline decoration-dotted cursor-help">{order.shippingAddress.fullName}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mb-1">Order ID #{order.orderId}</p>
+                  <div className="flex items-center gap-2 justify-end">
+                    <Link to={`/my-orders/${order._id}`} className="text-xs text-primary font-medium hover:underline">View Details</Link>
+                    <Separator orientation="vertical" className="h-3" />
+                    <Link to="#" className="text-xs text-primary font-medium hover:underline">Invoice</Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Header (Simplified) */}
+              <div className="sm:hidden p-4 border-b border-border/40 flex justify-between items-center bg-muted/10">
+                <div>
+                  <p className="font-bold text-sm"># {order.orderId}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <Badge
+                  variant={
+                    order.orderStatus === 'DELIVERED'
+                      ? 'outline'
+                      : order.orderStatus === 'CANCELLED'
+                        ? 'destructive'
+                        : 'secondary'
+                  }
+                  className={`capitalize px-3 py-1 text-[10px] font-bold ${order.orderStatus === 'DELIVERED' ? 'border-green-500 text-green-600 bg-green-50' : ''
+                    }`}
+                >
+                  {order.orderStatus.toLowerCase()}
+                </Badge>
+              </div>
+
+              <div className="p-4 sm:p-6">
+                {/* Status Section for Mobile/Desktop */}
+                <div className="flex items-center gap-2 mb-6 sm:mb-8">
+                  <div className={`p-2 rounded-full ${order.orderStatus === 'DELIVERED' ? 'bg-green-100' : 'bg-primary/10'}`}>
+                    {order.orderStatus === 'DELIVERED' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : order.orderStatus === 'CANCELLED' ? (
                       <XCircle className="h-5 w-5 text-destructive" />
-                    )}
-                    {order.orderStatus === 'SHIPPED' && (
+                    ) : (
                       <Truck className="h-5 w-5 text-primary" />
                     )}
                   </div>
+                  <div>
+                    <h3 className="font-bold text-base sm:text-lg leading-tight">
+                      {order.orderStatus === 'DELIVERED' ? 'Arrived' : order.orderStatus === 'CANCELLED' ? 'Order Cancelled' : 'In Transit'}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {order.orderStatus === 'DELIVERED'
+                        ? 'Your package was delivered successfully'
+                        : order.orderStatus === 'CANCELLED'
+                          ? 'This order was cancelled and refunded'
+                          : 'Your order is being processed and will ship soon'}
+                    </p>
+                  </div>
                 </div>
 
-                <Separator />
-
                 {/* Products */}
-                <div className="divide-y">
+                <div className="space-y-6 sm:space-y-4">
                   {order.products.map((item) => (
-                    <div key={item.productId} className="flex items-center gap-4 py-4">
-                      <img
-                        src={item.image || '/placeholder.png'}
-                        alt={item.name}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Qty: {item.quantity}
-                        </p>
+                    <div key={item.productId} className="flex gap-4 sm:gap-6 items-start border-b border-border/20 last:border-0 pb-6 last:pb-0">
+                      <div className="relative shrink-0">
+                        <img
+                          src={item.image || '/placeholder.png'}
+                          alt={item.name}
+                          className="w-20 h-24 sm:w-24 sm:h-28 object-cover rounded-md border border-border/50 bg-muted/20"
+                        />
+                        <span className="absolute -top-2 -right-2 bg-foreground text-background text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-background">
+                          x{item.quantity}
+                        </span>
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Link to={`/my-orders/${order._id}`} className="font-bold text-sm sm:text-base hover:text-primary transition-colors line-clamp-2 leading-snug">
+                          {item.name}
+                        </Link>
                         {item.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
+                          <p className="text-xs text-muted-foreground line-clamp-1 italic">
                             {item.description}
                           </p>
                         )}
-                      </div>
-                      <div className="font-semibold">
-                        ₹{(item.priceAtPurchase * item.quantity).toLocaleString()}
+                        <p className="font-bold text-sm sm:text-base mt-1">₹{(item.priceAtPurchase).toLocaleString()}</p>
+
+                        <div className="pt-2 flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold px-4 rounded-md">
+                            Buy it again
+                          </Button>
+                          <Button asChild variant="ghost" size="sm" className="h-8 text-[11px] font-medium px-4">
+                            <Link to={`/my-orders/${order._id}`}>View item</Link>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                <Separator />
-
-                {/* Shipping Address */}
-                <div className="text-sm">
-                  <p className="font-medium mb-1">Delivery Address</p>
-                  <p>{order.shippingAddress.fullName}</p>
-                  <p>{order.shippingAddress.street}</p>
-                  <p>
-                    {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
-                    - {order.shippingAddress.postalCode}
-                  </p>
-                  <p>{order.shippingAddress.country}</p>
-                  <p>Phone: {order.shippingAddress.phone}</p>
-                </div>
               </div>
-            ))}
-          </div>
-
-         
+            </div>
+          ))}
         </div>
       </div>
     </main>

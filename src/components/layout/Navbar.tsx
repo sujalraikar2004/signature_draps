@@ -45,6 +45,9 @@ export function Navbar() {
     }
   };
 
+  const hideSearchPaths = ['/contact', '/gallery', '/cart', '/wishlist', '/my-orders'];
+  const shouldHideSearch = hideSearchPaths.includes(location.pathname);
+
   return (
     <>
       <header className="sticky top-0 z-50 w-full  bg-background/95 backdrop-blur  supports-[backdrop-filter]:bg-background/60">
@@ -92,7 +95,7 @@ export function Navbar() {
             <div></div>
 
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-xl mx-8">
+            <div className={`hidden md:flex flex-1 max-w-xl mx-8 ${shouldHideSearch ? 'invisible' : ''}`}>
               <SearchWithSuggestions
                 onSearch={handleSearch}
                 placeholder="Search by product code, name, price, category..."
@@ -248,7 +251,7 @@ export function Navbar() {
           ))}
         </nav>
       </div>
-      {!isProfile && (
+      {!isProfile && !shouldHideSearch && (
         <div className="md:hidden flex flex-1 max-w-xl mx-3 my-3">
           <SearchWithSuggestions
             onSearch={handleSearch}
