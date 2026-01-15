@@ -37,15 +37,11 @@ export function Footer() {
             {/* Company Info */}
             <div className="space-y-4">
               <div className="flex items-center">
-                <img
-                  src="https://res.cloudinary.com/dfoybcsqz/image/upload/v1764495954/site_assets/site_assets/signature_drapes_logo.jpg"
-                  alt="Signature Drapes - Luxury Window Fashions"
-                  className="h-14 w-auto object-contain drop-shadow-sm"
-                />
+
               </div>
               <p className="text-primary-foreground/80 text-sm leading-relaxed">
-                Premium interior solutions for your home and office. We specialize in 
-                luxury curtains, blinds, wallpapers, and complete interior furnishing 
+                Premium interior solutions for your home and office. We specialize in
+                luxury curtains, blinds, wallpapers, and complete interior furnishing
                 with over 10 years of expertise.
               </p>
               <div className="flex space-x-4">
@@ -112,7 +108,7 @@ export function Footer() {
                   <p className="text-primary-foreground/80">signaturedrapes31@gmail.com</p>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h5 className="font-semibold text-accent">Business Hours</h5>
                 <p className="text-sm text-primary-foreground/80">

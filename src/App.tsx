@@ -10,6 +10,7 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BottomNavbar } from "@/components/layout/BottomNavbar";
+import { FloatingContact } from "@/components/layout/FloatingContact";
 import Homepage from "./pages/Homepage";
 import ProductListing from "./pages/ProductListing";
 import ProductDetail from "./pages/ProductDetail";
@@ -91,6 +92,7 @@ const App = () => (
                   </div>
                   <Footer />
                   <BottomNavbar />
+                  <FloatingContact />
                 </div>
               </BrowserRouter>
             </CartProvider>
