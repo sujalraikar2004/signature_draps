@@ -10,26 +10,7 @@ export function Footer() {
     <footer className="bg-primary text-primary-foreground">
       <div className="container-premium">
         {/* Newsletter Section */}
-        <div className="border-b border-primary-foreground/20 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-heading font-semibold mb-4">
-              Stay Updated with Our Latest Designs
-            </h3>
-            <p className="text-primary-foreground/80 mb-6">
-              Subscribe to get exclusive offers, design tips, and new arrivals
-            </p>
-            <div className="flex max-w-md mx-auto">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="rounded-r-none bg-primary-foreground text-foreground"
-              />
-              <Button className="rounded-l-none btn-gold">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Main Footer Content */}
         <div className="py-16">
