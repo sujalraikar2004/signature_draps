@@ -23,7 +23,7 @@ export default function Gallery() {
 
                 if (response.data.success) {
                     const items = response.data.data;
-                    
+
                     // Transform API data to GalleryImage format
                     const transformedData: GalleryImage[] = items.map((item: any) => ({
                         id: item._id,
@@ -72,11 +72,11 @@ export default function Gallery() {
                     <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
                     <div className="container mx-auto px-4 text-center relative z-10">
                         <span className="inline-block text-primary font-bold tracking-widest text-xs uppercase mb-4 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm animate-fade-in">Our Portfolio</span>
-                        <h1 className="text-5xl md:text-7xl font-heading font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent animate-fade-in-up">
+                        <h1 className="text-3xl md:text-5xl font-heading font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent animate-fade-in-up">
                             Our Masterpieces
                         </h1>
                         <div className="w-32 h-1.5 bg-gradient-to-r from-primary via-secondary to-primary mx-auto mt-8 rounded-full shadow-lg animate-scale-in" />
-                        <p className="max-w-3xl mx-auto mt-8 text-gray-600 font-light text-lg md:text-xl leading-relaxed animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+                        <p className="max-w-3xl mx-auto mt-8 text-gray-600 font-light text-lg md:text-xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                             Discover our collection of premium interior transformations, from elegant drapery to modern automation.
                         </p>
                     </div>
@@ -102,12 +102,11 @@ export default function Gallery() {
                                     <button
                                         key={cat}
                                         onClick={() => setActiveCategory(cat)}
-                                        style={{animationDelay: `${index * 0.05}s`}}
-                                        className={`group relative px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 transform hover:scale-110 animate-fade-in-up ${
-                                            activeCategory === cat
+                                        style={{ animationDelay: `${index * 0.05}s` }}
+                                        className={`group relative px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 transform hover:scale-110 animate-fade-in-up ${activeCategory === cat
                                                 ? "bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/30 scale-110"
                                                 : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-primary/50 hover:shadow-lg"
-                                        }`}
+                                            }`}
                                     >
                                         <span className="relative z-10">{cat}</span>
                                         {activeCategory === cat && (
@@ -118,12 +117,12 @@ export default function Gallery() {
                             </div>
 
                             {/* Enhanced Masonry Grid */}
-                            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 md:gap-6 space-y-4 md:space-y-6">
                                 {filteredImages.map((image, index) => (
                                     <div
                                         key={image.id}
                                         onClick={() => handleImageClick(image.id)}
-                                        style={{animationDelay: `${index * 0.05}s`}}
+                                        style={{ animationDelay: `${index * 0.05}s` }}
                                         className="break-inside-avoid group cursor-pointer relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up"
                                     >
                                         <div className="relative overflow-hidden rounded-2xl">
@@ -154,7 +153,7 @@ export default function Gallery() {
                                                     loading="lazy"
                                                 />
                                             )}
-                                            
+
                                             {/* Gradient overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
                                                 {/* Category badge */}
@@ -163,7 +162,7 @@ export default function Gallery() {
                                                         {image.category}
                                                     </span>
                                                 </div>
-                                                
+
                                                 {/* Title and view button */}
                                                 <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
                                                     <h3 className="text-white font-heading font-semibold text-xl mb-3 leading-tight">
@@ -178,7 +177,7 @@ export default function Gallery() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Border glow on hover */}
                                             <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/0 group-hover:ring-primary/50 transition-all duration-500"></div>
                                         </div>

@@ -92,7 +92,7 @@ export function Navbar() {
             <div></div>
 
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-xl mx-8">
+            <div className={`hidden md:flex flex-1 max-w-xl mx-8 ${location.pathname === '/contact' ? 'invisible' : ''}`}>
               <SearchWithSuggestions
                 onSearch={handleSearch}
                 placeholder="Search by product code, name, price, category..."
@@ -248,7 +248,7 @@ export function Navbar() {
           ))}
         </nav>
       </div>
-      {!isProfile && (
+      {!isProfile && location.pathname !== '/contact' && (
         <div className="md:hidden flex flex-1 max-w-xl mx-3 my-3">
           <SearchWithSuggestions
             onSearch={handleSearch}

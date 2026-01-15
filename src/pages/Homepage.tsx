@@ -197,7 +197,7 @@ const Homepage = () => {
         <div className="container mx-auto px-2">
           <h2 className="text-1xl md:text-2xl font-bold mb-6">New Arrivals</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2   md:grid-cols-4 gap-6">
             {loading
               ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : newProducts?.slice(0, 8).map((product) => (
