@@ -184,7 +184,7 @@ const Homepage = () => {
         <div className="max-w-[1440px] mx-auto px-4">
           <h2 className="text-1xl md:text-2xl font-bold mb-6">Best Sellers</h2>
 
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : bestSellers?.slice(0, 10).map((product, index) => (
@@ -199,7 +199,7 @@ const Homepage = () => {
         <div className="max-w-[1440px] mx-auto px-4">
           <h2 className="text-1xl md:text-2xl font-bold mb-6">New Arrivals</h2>
 
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
             {loading
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : newProducts?.slice(0, 10).map((product, index) => (
