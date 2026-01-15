@@ -180,9 +180,9 @@ const Homepage = () => {
       <PremiumFeatures products={products} />
 
       {/* BEST SELLERS */}
-      <section className="py-16">
+      <section className="py-2">
         <div className="max-w-[1440px] mx-auto px-4">
-          <h2 className="text-1xl md:text-2xl font-bold mb-6">Best Sellers</h2>
+          <h2 className="text-1xl md:text-2xl font-bold mb-4">Best Sellers</h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
             {loading
@@ -195,9 +195,9 @@ const Homepage = () => {
       </section>
 
       {/* NEW ARRIVALS */}
-      <section className="py-16">
+      <section className="py-2">
         <div className="max-w-[1440px] mx-auto px-4">
-          <h2 className="text-1xl md:text-2xl font-bold mb-6">New Arrivals</h2>
+          <h2 className="text-1xl md:text-2xl font-bold mb-4">New Arrivals</h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
             {loading
