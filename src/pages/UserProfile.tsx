@@ -35,7 +35,6 @@ const UserProfile = () => {
                     <div className="relative">
                         <Avatar className="h-28 w-28 border-4 border-white/20 shadow-xl">
 
-                            <AvatarImage src={user?.avatar} alt={user?.username} />
                             <AvatarFallback className="bg-[#1a4d4d] text-white text-4xl font-bold">
                                 {firstLetter}
                             </AvatarFallback>

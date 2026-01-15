@@ -1,19 +1,95 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, CheckCircle, XCircle, Package } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Package, Download, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useOrders } from '@/contexts/OrderContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { downloadInvoice } from '@/utils/generateInvoice';
+import { useToast } from '@/hooks/use-toast';
+import api from '@/Api';
 
 export default function Orders() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { orders, getUserOrders, isLoading } = useOrders();
+  const { toast } = useToast();
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) getUserOrders();
   }, []);
+
+  const handleDownloadInvoice = (order: any) => {
+    console.log('Download invoice clicked for order:', order.orderId);
+    console.log('Order data:', order);
+    console.log('User data:', user);
+    
+    if (order.paymentStatus !== 'PAID') {
+      toast({
+        title: 'Cannot Download Invoice',
+        description: 'Invoice can only be downloaded for paid orders.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      console.log('Starting invoice generation...');
+      const userInfo = { 
+        email: user?.email || '', 
+        username: user?.username || '' 
+      };
+      console.log('User info for invoice:', userInfo);
+      
+      downloadInvoice(order, userInfo);
+      
+      console.log('Invoice generated successfully');
+      toast({
+        title: 'Invoice Downloaded',
+        description: `Invoice for order #${order.orderId} has been downloaded successfully.`,
+      });
+    } catch (error: any) {
+      console.error('Download invoice error:', error);
+      console.error('Error stack:', error.stack);
+      toast({
+        title: 'Download Failed',
+        description: error.message || 'Failed to generate invoice. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleEmailInvoice = async (order: any) => {
+    if (order.paymentStatus !== 'PAID') {
+      toast({
+        title: 'Cannot Send Invoice',
+        description: 'Invoice can only be sent for paid orders.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSendingEmail(order.orderId);
+    try {
+      const response = await api.post(`/order/${order.orderId}/send-invoice`);
+      
+      if (response.data.success) {
+        toast({
+          title: 'Invoice Sent',
+          description: `Invoice has been sent to ${user?.email}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Failed to Send Invoice',
+        description: error.response?.data?.message || 'Failed to send invoice email. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSendingEmail(null);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -69,11 +145,7 @@ export default function Orders() {
               {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed in total
             </p>
           </div>
-          <div className="hidden sm:block">
-            <Button variant="outline" size="sm" className="rounded-full px-6">
-              Download All Invoices
-            </Button>
-          </div>
+          
         </div>
 
         <div className="space-y-4 sm:space-y-6">
@@ -97,11 +169,7 @@ export default function Orders() {
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mb-1">Order ID #{order.orderId}</p>
-                  <div className="flex items-center gap-2 justify-end">
-                    <Link to={`/my-orders/${order._id}`} className="text-xs text-primary font-medium hover:underline">View Details</Link>
-                    <Separator orientation="vertical" className="h-3" />
-                    <Link to="#" className="text-xs text-primary font-medium hover:underline">Invoice</Link>
-                  </div>
+                  
                 </div>
               </div>
 
@@ -180,17 +248,20 @@ export default function Orders() {
                         <p className="font-bold text-sm sm:text-base mt-1">₹{(item.priceAtPurchase).toLocaleString()}</p>
 
                         <div className="pt-2 flex flex-wrap gap-2">
-                          <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold px-4 rounded-md">
-                            Buy it again
+                          <Button asChild variant="outline" size="sm" className="h-8 text-[11px] font-bold px-4 rounded-md">
+                            <Link to={`/product/${item.productId}`}>Buy it again</Link>
                           </Button>
                           <Button asChild variant="ghost" size="sm" className="h-8 text-[11px] font-medium px-4">
-                            <Link to={`/my-orders/${order._id}`}>View item</Link>
+                            <Link to={`/product/${item.productId}`}>View item</Link>
                           </Button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Download Invoice Button - Mobile & Desktop */}
+                
               </div>
             </div>
           ))}
