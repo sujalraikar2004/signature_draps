@@ -206,9 +206,34 @@ const Homepage = () => {
           </div>
         </div>
       </section>
-      {/* <div className='h-10 w-full bg-background  z-10 position-fixed bottom-0'>
-        ksflsdjfj
-      </div> */}
+      {/* SUPPORT BUTTON - DESKTOP */}
+      <div className="hidden md:flex fixed bottom-8 right-8 z-50 items-center">
+        <Link
+          to="/contact"
+          className="group flex items-center gap-3"
+        >
+          <span className="bg-white/90 backdrop-blur-sm text-[#206060] px-4 py-2 rounded-full text-sm font-semibold shadow-md transform transition-all duration-300 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 border border-gray-100">
+            Need Help?
+          </span>
+          <div className="relative flex items-center justify-center w-14 h-14 bg-[#206060] text-white rounded-full shadow-lg hover:scale-110 transition-all duration-300">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="relative z-10"
+            >
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+            </svg>
+            <div className="absolute inset-0 rounded-full bg-[#206060] opacity-20 blur-md group-hover:blur-lg transition-all"></div>
+          </div>
+        </Link>
+      </div>
     </main>
   );
 };

@@ -68,7 +68,7 @@ export default function Gallery() {
         <>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 pb-20">
                 {/* Header with gradient background */}
-                <div className="relative bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 py-20 shadow-lg mb-16 overflow-hidden">
+                <div className="relative bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 py-20 mb-16 overflow-hidden">
                     <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
                     <div className="container mx-auto px-4 text-center relative z-10">
                         <span className="inline-block text-primary font-bold tracking-widest text-xs uppercase mb-4 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm animate-fade-in">Our Portfolio</span>
@@ -97,21 +97,18 @@ export default function Gallery() {
                     ) : (
                         <>
                             {/* Filter Tabs with modern design */}
-                            <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-16 animate-fade-in">
+                            <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-16 animate-fade-in">
                                 {categories.map((cat, index) => (
                                     <button
                                         key={cat}
                                         onClick={() => setActiveCategory(cat)}
                                         style={{ animationDelay: `${index * 0.05}s` }}
-                                        className={`group relative px-8 py-3 rounded-full text-sm font-semibold transition-all duration-500 transform hover:scale-110 animate-fade-in-up ${activeCategory === cat
-                                                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/30 scale-110"
-                                                : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-primary/50 hover:shadow-lg"
+                                        className={`group relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 animate-fade-in-up ${activeCategory === cat
+                                            ? "bg-[#206060] text-white shadow-md"
+                                            : "bg-white text-gray-600 border border-gray-200 hover:border-[#206060]/50 hover:text-[#206060]"
                                             }`}
                                     >
                                         <span className="relative z-10">{cat}</span>
-                                        {activeCategory === cat && (
-                                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary opacity-20 blur-xl animate-pulse"></div>
-                                        )}
                                     </button>
                                 ))}
                             </div>
