@@ -28,6 +28,8 @@ const staticCategories = [
   { category: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg" }
 ];
 
+import { MarriageCardProduct } from '@/components/product/MarriageCardProduct';
+
 const Homepage = () => {
   const {
     newProducts,
@@ -118,8 +120,8 @@ const Homepage = () => {
       <HeroSlider slides={sliderData} />
 
       {/* CATEGORIES */}
-      <section className="py-1 mt-5 lg:mt-20 bg-white ">
-        <div className="container mx-auto px-2 relative">
+      <section className="py-1 mt-5 lg:mt-20 bg-white">
+        <div className="max-w-[1440px] mx-auto px-4 relative">
           <h2 className=" text-1xl md:text-2xl mb-6 text-gray-900  font-semibold">
             Essential Interior Categories
           </h2>
@@ -179,14 +181,14 @@ const Homepage = () => {
 
       {/* BEST SELLERS */}
       <section className="py-16">
-        <div className="container mx-auto px-2">
+        <div className="max-w-[1440px] mx-auto px-4">
           <h2 className="text-1xl md:text-2xl font-bold mb-6">Best Sellers</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
             {loading
-              ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-              : bestSellers?.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} />
+              ? Array.from({ length: 5 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              : bestSellers?.slice(0, 10).map((product, index) => (
+                <MarriageCardProduct key={product._id} product={product} index={index + 1} />
               ))}
           </div>
         </div>
@@ -194,14 +196,14 @@ const Homepage = () => {
 
       {/* NEW ARRIVALS */}
       <section className="py-16">
-        <div className="container mx-auto px-2">
+        <div className="max-w-[1440px] mx-auto px-4">
           <h2 className="text-1xl md:text-2xl font-bold mb-6">New Arrivals</h2>
 
-          <div className="grid grid-cols-2   md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
             {loading
-              ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-              : newProducts?.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} />
+              ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              : newProducts?.slice(0, 10).map((product, index) => (
+                <MarriageCardProduct key={product._id} product={product} index={index} />
               ))}
           </div>
         </div>
