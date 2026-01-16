@@ -186,7 +186,7 @@ const Homepage = () => {
 
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
             {loading
-              ? Array.from({ length: 5 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              ? Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : bestSellers?.slice(0, 10).map((product, index) => (
                 <MarriageCardProduct key={product._id} product={product} index={index + 1} />
               ))}
@@ -201,7 +201,7 @@ const Homepage = () => {
 
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 lg:gap-6">
             {loading
-              ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
+              ? Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : newProducts?.slice(0, 10).map((product, index) => (
                 <MarriageCardProduct key={product._id} product={product} index={index} />
               ))}
