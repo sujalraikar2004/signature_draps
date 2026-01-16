@@ -147,16 +147,16 @@ const Homepage = () => {
           <div className="overflow-hidden ">
             <div
               ref={scrollRef}
-              className="grid grid-cols-2 md:flex gap-4 md:overflow-x-auto md:scroll-smooth md:scrollbar-horizontal px-4 md:px-0 lg:px-0 pb-4"
+              className="flex gap-4 overflow-x-auto scroll-smooth no-scrollbar px-4 md:px-0 lg:px-0"
             >
 
               {categories.map((category) => (
                 <Link
                   key={category.category}
                   to={`/category/${category.category}`}
-                  className="w-full md:flex-shrink-0"
+                  className="flex-shrink-0"
                 >
-                  <div className="w-full md:w-[220px] overflow-hidden flex-col center ">
+                  <div className="w-[220px] overflow-hidden flex-col center ">
                     <div className=" h-32 md:h-48 overflow-hidden">
                       <img
                         src={category.image}
