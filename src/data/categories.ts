@@ -7,6 +7,7 @@ import blindsImg from '@/assets/category-blinds.jpg';
 export const categories: Category[] = [
   {
     id: 'curtains-and-accessories',
+    category: 'curtains-and-accessories',
     name: 'Curtains & Accessories',
     shortName: 'Curtains',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765299229/products/products/1765299229630-111033652.jpg",
@@ -22,6 +23,7 @@ export const categories: Category[] = [
   },
   {
     id: 'window-blinds',
+    category: 'window-blinds',
     name: 'Window Blinds',
     shortName: 'Blinds',
     image: blindsImg,
@@ -37,6 +39,7 @@ export const categories: Category[] = [
   },
   {
     id: 'bean-bags-and-beans',
+    category: 'bean-bags-and-beans',
     name: 'Bean Bags and Beans',
     shortName: 'Bean Bags',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763020339/products/products/1763020339891-192788606.jpg",
@@ -51,6 +54,7 @@ export const categories: Category[] = [
   },
   {
     id: 'home-decor-wallpaper-stickers',
+    category: 'home-decor-wallpaper-stickers',
     name: 'Wallpaper & Wall Coverings',
     shortName: 'Wallpaper',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763274577/products/products/1763274577443-8735332.jpg",
@@ -66,6 +70,7 @@ export const categories: Category[] = [
   },
   {
     id: 'sofa-recliner-chairs-corner-sofa',
+    category: 'sofa-recliner-chairs-corner-sofa',
     name: 'Sofa, Recliner, Chairs and Corner Sofa',
     shortName: 'Seating',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763019558/products/products/1763019558252-934864604.jpg",
@@ -81,6 +86,7 @@ export const categories: Category[] = [
   },
   {
     id: 'bedsheet-and-comforters',
+    category: 'bedsheet-and-comforters',
     name: 'Bedsheet & Comforters',
     shortName: 'Bedding',
     image: "https://m.media-amazon.com/images/I/71VR-NjNKYL.jpg",
@@ -95,6 +101,7 @@ export const categories: Category[] = [
   },
   {
     id: 'institutional-project-window-blinds',
+    category: 'institutional-project-window-blinds',
     name: 'Institutional Project Window Blinds',
     shortName: 'Office Blinds',
     image: blindsImg,
@@ -109,6 +116,7 @@ export const categories: Category[] = [
   },
   {
     id: 'carpet-rugs-door-mats',
+    category: 'carpet-rugs-door-mats',
     name: 'Carpet, Rugs & Door Mats',
     shortName: 'Floor Decor',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765420344/products/products/1765420343136-538249634.jpg",
@@ -123,6 +131,7 @@ export const categories: Category[] = [
   },
   {
     id: 'artificial-grass-plant-vertical-garden',
+    category: 'artificial-grass-plant-vertical-garden',
     name: 'Artificial Grass, Plant and Vertical Garden',
     shortName: 'Grass & Plants',
     image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg",

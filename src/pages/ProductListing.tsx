@@ -52,7 +52,7 @@ const ProductListing = () => {
 
   const [filters, setFilters] = useState({
     category: categoryId || '',
-    priceRange: [0, 50000],
+    priceRange: [0, 500000],
     brands: [] as string[],
     colors: [] as string[],
     discountRange: [] as string[],
@@ -122,7 +122,7 @@ const ProductListing = () => {
     });
   }, [products, filters]);
 
-  const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 50000], brands: [], colors: [], discountRange: [] });
+  const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 500000], brands: [], colors: [], discountRange: [] });
 
   // Get category display name
   const getCategoryName = () => {
@@ -130,7 +130,7 @@ const ProductListing = () => {
     if (isBestSellerParam === 'true') return 'Best Sellers';
     if (isNewParam === 'true') return 'New Arrivals';
     if (categoryId) {
-      const category = categories.find(c => c.category === categoryId);
+      const category = categories.find(c => c.id === categoryId);
       return category?.name || categoryId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
     return 'All Products';

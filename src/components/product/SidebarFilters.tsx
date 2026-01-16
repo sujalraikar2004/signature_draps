@@ -43,13 +43,13 @@ export function SidebarFilters({
                 <Slider
                     value={filters.priceRange}
                     min={0}
-                    max={50000}
-                    step={500}
+                    max={500000}
+                    step={5000}
                     onValueChange={handlePriceChange}
                 />
                 <div className="flex justify-between text-sm mt-2 font-medium text-muted-foreground">
-                    <span>₹{filters.priceRange[0]}</span>
-                    <span>₹{filters.priceRange[1]}</span>
+                    <span>₹{filters.priceRange[0].toLocaleString('en-IN')}</span>
+                    <span>₹{filters.priceRange[1].toLocaleString('en-IN')}</span>
                 </div>
             </div>
 
