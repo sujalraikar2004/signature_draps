@@ -152,16 +152,18 @@ export function Navbar() {
                 onClick={() => navigate('/wishlist')}
                 className={`relative ${isProfile ? 'hidden md:flex' : ''}`}
               >
-                <Heart className="h-4 w-4" />
+                <div className="relative">
+                  <Heart className="h-4 w-4" />
+                  {isAuthenticated && wishlistCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-3.5 w-3.5 md:h-5 md:w-5 rounded-full p-0 grid place-items-center text-[9px] md:text-xs border-2 border-[#206060] leading-none"
+                    >
+                      {wishlistCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className="hidden sm:inline ml-1">Wishlist</span>
-                {isAuthenticated && wishlistCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className=" absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                  >
-                    {wishlistCount}
-                  </Badge>
-                )}
               </Button>
 
               {/* Cart */}
@@ -171,16 +173,18 @@ export function Navbar() {
                 onClick={() => navigate('/cart')}
                 className={`relative ${isProfile ? 'hidden md:flex' : ''}`}
               >
-                <ShoppingCart className="h-4 w-4" />
+                <div className="relative">
+                  <ShoppingCart className="h-4 w-4" />
+                  {itemCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-3.5 w-3.5 md:h-5 md:w-5 rounded-full p-0 grid place-items-center text-[9px] md:text-xs border-2 border-[#206060] leading-none"
+                    >
+                      {itemCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className="hidden sm:inline ml-1">Cart</span>
-                {itemCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                  >
-                    {itemCount}
-                  </Badge>
-                )}
               </Button>
               <Button
                 variant="ghost"
