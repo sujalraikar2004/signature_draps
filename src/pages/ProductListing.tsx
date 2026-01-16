@@ -52,7 +52,7 @@ const ProductListing = () => {
 
   const [filters, setFilters] = useState({
     category: categoryId || '',
-    priceRange: [0, 50000],
+    priceRange: [0, 150000],
     brands: [] as string[],
     colors: [] as string[],
     discountRange: [] as string[],
@@ -122,7 +122,7 @@ const ProductListing = () => {
     });
   }, [products, filters]);
 
-  const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 50000], brands: [], colors: [], discountRange: [] });
+  const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 150000], brands: [], colors: [], discountRange: [] });
 
   // Get category display name
   const getCategoryName = () => {
