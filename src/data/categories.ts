@@ -143,5 +143,18 @@ export const categories: Category[] = [
       { id: 'artificial-plants', name: 'Artificial Plants', productCount: 25 },
       { id: 'vertical-gardens', name: 'Vertical Gardens', productCount: 20 }
     ]
+  },
+  {
+    id: 'outsiders',
+    category: 'outsiders',
+    name: 'Outsiders',
+    shortName: 'Outsiders',
+    image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg",
+    icon: '🏖️',
+    description: 'Premium outdoor and functional textile solutions',
+    productCount: 0,
+    subcategories: [
+      { id: 'easy-dry', name: 'Easy Dry', productCount: 0 }
+    ]
   }
 ];
