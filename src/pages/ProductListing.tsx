@@ -58,31 +58,14 @@ const ProductListing = () => {
     discountRange: [] as string[],
   });
 
-  // Infinite Scroll State
-  const [visibleCount, setVisibleCount] = useState(20);
-  const observerTarget = React.useRef<HTMLDivElement>(null);
-
+  // Fetch products based on category or search
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => prev + 20);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Reset visible count when filters or products change
-  useEffect(() => {
-    setVisibleCount(20);
-  }, [filters, searchQuery, categoryId]);
+    if (searchQuery) searchProductsAPI(searchQuery);
+    else if (categoryId) fetchProductsByCategory(categoryId);
+    else if (isBestSellerParam === 'true') fetchProducts({ isBestSeller: true });
+    else if (isNewParam === 'true') fetchProducts({ isNew: true });
+    else fetchProducts();
+  }, [categoryId, searchQuery, isBestSellerParam, isNewParam]);
 
   const handleCheckboxChange = (type: 'brands' | 'colors' | 'discountRange', value: string) => {
     setFilters(prev => {
@@ -98,15 +81,7 @@ const ProductListing = () => {
     setFilters(prev => ({ ...prev, priceRange: value }));
   };
 
-  // Fetch products based on category or search
-  useEffect(() => {
-    if (searchQuery) searchProductsAPI(searchQuery);
-    else if (categoryId) fetchProductsByCategory(categoryId);
-    else if (isBestSellerParam === 'true') fetchProducts({ isBestSeller: true });
-    else if (isNewParam === 'true') fetchProducts({ isNew: true });
-    else fetchProducts();
-  }, [categoryId, searchQuery, isBestSellerParam, isNewParam]);
-
+  // Filter products based on selected filters
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     return products.filter(p => {
@@ -121,6 +96,33 @@ const ProductListing = () => {
       return inPrice && inBrand && inColor;
     });
   }, [products, filters]);
+
+  // Infinite Scroll State
+  const [visibleCount, setVisibleCount] = useState(20);
+  const observerTarget = React.useRef<HTMLDivElement>(null);
+
+  // Reset visible count when filters or products change
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [filters, searchQuery, categoryId]);
+
+  // Infinite scroll observer - only load more if there are more products
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < filteredProducts.length) {
+          setVisibleCount((prev) => Math.min(prev + 20, filteredProducts.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [visibleCount, filteredProducts.length]);
 
   const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 150000], brands: [], colors: [], discountRange: [] });
 
