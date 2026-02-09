@@ -51,7 +51,7 @@ const Homepage = () => {
     fetchFeaturedProducts();
     fetchNewProducts();
     fetchBestSellers();
-  }, [fetchProducts, fetchFeaturedProducts, fetchNewProducts, fetchBestSellers]);
+  }, []);
 
 
   useEffect(() => {

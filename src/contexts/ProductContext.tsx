@@ -120,6 +120,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   // --- Product APIs ---
   const fetchProducts = useCallback(async (params?: Record<string, any>) => {
+    setProducts(null); // Clear previous products
     const data = await handleApiCall<{ data: Product[] }>(() =>
       api.get("/products", { params })
     );
@@ -127,6 +128,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   }, []);
 
   const fetchProductsByCategory = useCallback(async (categoryId: string) => {
+    setProducts(null); // Clear previous products before fetching
     const data = await handleApiCall<{ data: Product[] }>(() =>
       api.get(`/products/category/${categoryId}`)
     );
@@ -191,10 +193,16 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   const searchProducts = useCallback(
     async (query: string, filters: any = {}) => {
       try {
+        setProducts(null); // Clear previous products
+        setLoading(true);
         const params = { q: query, ...filters };
         const response = await api.get("/products/search", { params });
-        return response.data.data || [];
+        const results = response.data.data || [];
+        setProducts(results);
+        setLoading(false);
+        return results;
       } catch (error: any) {
+        setLoading(false);
         toast.error(error.response?.data?.message || "Search failed");
         return [];
       }
@@ -425,12 +433,6 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
       toast.error(error.response?.data?.message || "Failed to update wishlist");
     }
   }, [fetchWishlist]);
-
-  // Auto fetch products on mount (only once)
-  useEffect(() => {
-    fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Auto fetch wishlist when user is authenticated
   useEffect(() => {

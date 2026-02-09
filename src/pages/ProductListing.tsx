@@ -49,6 +49,7 @@ const ProductListing = () => {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [filters, setFilters] = useState({
     category: categoryId || '',
@@ -60,11 +61,18 @@ const ProductListing = () => {
 
   // Fetch products based on category or search
   useEffect(() => {
-    if (searchQuery) searchProductsAPI(searchQuery);
-    else if (categoryId) fetchProductsByCategory(categoryId);
-    else if (isBestSellerParam === 'true') fetchProducts({ isBestSeller: true });
-    else if (isNewParam === 'true') fetchProducts({ isNew: true });
-    else fetchProducts();
+    setIsInitialLoad(true);
+    if (searchQuery) {
+      searchProductsAPI(searchQuery).finally(() => setIsInitialLoad(false));
+    } else if (categoryId) {
+      fetchProductsByCategory(categoryId).finally(() => setIsInitialLoad(false));
+    } else if (isBestSellerParam === 'true') {
+      fetchProducts({ isBestSeller: true }).finally(() => setIsInitialLoad(false));
+    } else if (isNewParam === 'true') {
+      fetchProducts({ isNew: true }).finally(() => setIsInitialLoad(false));
+    } else {
+      fetchProducts().finally(() => setIsInitialLoad(false));
+    }
   }, [categoryId, searchQuery, isBestSellerParam, isNewParam]);
 
   const handleCheckboxChange = (type: 'brands' | 'colors' | 'discountRange', value: string) => {
@@ -83,6 +91,8 @@ const ProductListing = () => {
 
   // Filter products based on selected filters
   const filteredProducts = useMemo(() => {
+    // Don't show old products during initial load of a new category/search
+    if (isInitialLoad && !products) return [];
     if (!products) return [];
     return products.filter(p => {
       // Price filter
@@ -95,7 +105,7 @@ const ProductListing = () => {
         : true;
       return inPrice && inBrand && inColor;
     });
-  }, [products, filters]);
+  }, [products, filters, isInitialLoad]);
 
   // Pagination State
   const PRODUCTS_PER_PAGE = 20;
@@ -243,7 +253,7 @@ const ProductListing = () => {
 
           {/* Product Grid */}
           <div className="flex-1">
-            {loading ? (
+            {(loading || isInitialLoad) ? (
               <div className={`grid gap-x-0 sm:gap-x-6 gap-y-0 sm:gap-y-10 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 border-t border-l border-gray-100/50 md:border-none`}>
                 {Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)}
               </div>
