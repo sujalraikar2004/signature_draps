@@ -19,7 +19,7 @@ import blindsImg from '@/assets/category-blinds.jpg';
 /* ---------------- CATEGORY DATA ---------------- */
 const staticCategories = [
   { category: 'curtains-and-accessories', name: 'Curtains And Accessories', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765299229/products/products/1765299229630-111033652.jpg" },
-  { category: 'sofa-recliner-chairs-corner-sofa', name: 'Sofa, Recliner and Chairs ', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763019558/products/products/1763019558252-934864604.jpg" },
+  { category: 'sofa-recliner-chairs-corner-sofa', name: 'Sofa, Recliner and Chairs ', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1771525561/zo4tmj0ly41ko4ihemh0.jpg" },
   { category: 'home-decor-wallpaper-stickers', name: 'Home Decor Wallpaper ', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763274577/products/products/1763274577443-8735332.jpg" },
   { category: 'bedsheet-and-comforters', name: 'Bedsheet and Comforters', image: "https://m.media-amazon.com/images/I/71VR-NjNKYL.jpg" },
   { category: 'institutional-project-window-blinds', name: 'Window Blinds', image: blindsImg },
