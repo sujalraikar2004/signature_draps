@@ -97,6 +97,7 @@ export interface SizeVariant {
   originalPrice?: number;
   stockQuantity: number;
   inStock: boolean;
+  deliveryCharges?: number; // Per-variant delivery charge (e.g. small doormat ₹50, large ₹100)
 }
 
 export interface CustomSizeConfig {

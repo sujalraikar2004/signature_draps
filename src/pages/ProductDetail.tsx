@@ -230,11 +230,13 @@ export default function ProductDetail() {
     : 0;
 
   // Calculate custom size price
+  // The result is always >= product.price (base price floor) and >= minimumCharge
   const calculateCustomPrice = () => {
-    if (!product?.customSizeConfig || !customSize.measurements) return 0;
+    if (!product?.customSizeConfig || !customSize.measurements) return product?.price || 0;
 
     const { length, width, height, area, diameter } = customSize.measurements;
     const { pricePerUnit, minimumCharge } = product.customSizeConfig;
+    const basePrice = product?.price || 0;
 
     let calculatedArea = 0;
 
@@ -247,7 +249,8 @@ export default function ProductDetail() {
     }
 
     const calculatedPrice = calculatedArea * (pricePerUnit || 0);
-    return Math.max(calculatedPrice, minimumCharge || 0);
+    // Floor at both minimumCharge AND the product's base price
+    return Math.max(calculatedPrice, minimumCharge || 0, basePrice);
   };
 
   const handleAddToCart = () => {
@@ -287,7 +290,8 @@ export default function ProductDetail() {
           variantId: selectedSizeVariant._id,
           name: selectedSizeVariant.name,
           dimensions: selectedSizeVariant.dimensions,
-          price: selectedSizeVariant.price
+          price: selectedSizeVariant.price,
+          deliveryCharges: selectedSizeVariant.deliveryCharges ?? product?.deliveryInfo?.deliveryCharges ?? 0
         };
       } else if (sizeOption === 'custom') {
         const calculatedPrice = calculateCustomPrice();
@@ -348,7 +352,8 @@ export default function ProductDetail() {
           variantId: selectedSizeVariant._id,
           name: selectedSizeVariant.name,
           dimensions: selectedSizeVariant.dimensions,
-          price: selectedSizeVariant.price
+          price: selectedSizeVariant.price,
+          deliveryCharges: selectedSizeVariant.deliveryCharges ?? product?.deliveryInfo?.deliveryCharges ?? 0
         };
       } else if (sizeOption === 'custom') {
         const calculatedPrice = calculateCustomPrice();
@@ -711,9 +716,34 @@ export default function ProductDetail() {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Inclusive of all taxes • Free shipping available
-              </p>
+              {/* Show variant delivery charge inline under price */}
+              {sizeOption === 'ready-made' && selectedSizeVariant ? (
+                <p className="text-sm text-muted-foreground">
+                  Inclusive of all taxes •{' '}
+                  {(selectedSizeVariant.deliveryCharges ?? 0) === 0
+                    ? <span className="text-success font-medium">Free delivery</span>
+                    : <span>Delivery: <span className="font-medium text-foreground">₹{selectedSizeVariant.deliveryCharges!.toLocaleString()}</span></span>
+                  }
+                </p>
+              ) : sizeOption === 'custom' ? (
+                <p className="text-sm text-muted-foreground">
+                  Inclusive of all taxes •{' '}
+                  {(product?.deliveryInfo?.freeDelivery || (product?.deliveryInfo?.deliveryCharges ?? 0) === 0)
+                    ? <span className="text-success font-medium">Free delivery</span>
+                    : <span>Delivery: <span className="font-medium text-foreground">₹{(product?.deliveryInfo?.deliveryCharges || 0).toLocaleString()}</span></span>
+                  }
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Inclusive of all taxes •{' '}
+                  {product?.deliveryInfo?.freeDelivery
+                    ? <span className="text-success font-medium">Free delivery</span>
+                    : product?.deliveryInfo?.deliveryCharges
+                      ? <span>Delivery: <span className="font-medium text-foreground">₹{product.deliveryInfo.deliveryCharges.toLocaleString()}</span></span>
+                      : <span className="text-success font-medium">Free delivery</span>
+                  }
+                </p>
+              )}
             </div>
 
             {/* Disclaimer */}
@@ -1113,19 +1143,39 @@ export default function ProductDetail() {
                           </div>
 
                           {product.customSizeConfig.pricePerUnit && (
-                            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-1">
                               <p className="text-sm font-medium">
                                 Price: ₹{product.customSizeConfig.pricePerUnit} per {product.customSizeConfig.unit}
                               </p>
                               {product.customSizeConfig.minimumCharge && (
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground">
                                   Minimum charge: ₹{product.customSizeConfig.minimumCharge.toLocaleString()}
                                 </p>
                               )}
+                              {/* Always show base price floor */}
+                              <p className="text-xs text-muted-foreground">
+                                Base product price: ₹{product.price.toLocaleString()} (minimum)
+                              </p>
                               {calculateCustomPrice() > 0 && (
-                                <p className="text-lg font-bold text-primary mt-2">
-                                  Estimated Total: ₹{calculateCustomPrice().toLocaleString()}
-                                </p>
+                                <>
+                                  <p className="text-lg font-bold text-primary mt-2">
+                                    Estimated Total: ₹{calculateCustomPrice().toLocaleString()}
+                                  </p>
+                                  {/* Warn if the price was floored to base price */}
+                                  {(() => {
+                                    const { length, width, area, diameter } = customSize.measurements;
+                                    const { pricePerUnit } = product.customSizeConfig;
+                                    let calcArea = area || 0;
+                                    if (!calcArea && length && width) calcArea = length * width;
+                                    if (!calcArea && diameter) calcArea = Math.PI * Math.pow(diameter / 2, 2);
+                                    const rawPrice = calcArea * (pricePerUnit || 0);
+                                    return rawPrice > 0 && rawPrice < product.price ? (
+                                      <p className="text-xs text-amber-600 font-medium">
+                                        * Price adjusted to minimum base price of ₹{product.price.toLocaleString()}
+                                      </p>
+                                    ) : null;
+                                  })()}
+                                </>
                               )}
                             </div>
                           )}
@@ -1230,20 +1280,38 @@ export default function ProductDetail() {
                   </div>
                 )}
 
-                {/* Free Delivery or Delivery Charges */}
+                {/* Free Delivery or Delivery Charges — shows per-variant charge when a variant is selected */}
                 <div className="flex items-center space-x-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
                   <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <Truck className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">
-                      {product?.deliveryInfo?.freeDelivery ? 'Free Delivery' : 'Delivery Charges'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {product?.deliveryInfo?.freeDelivery
-                        ? 'No shipping cost'
-                        : `₹${product?.deliveryInfo?.deliveryCharges || 0}`}
-                    </p>
+                    {sizeOption === 'ready-made' && selectedSizeVariant ? (
+                      // Per-variant delivery charge
+                      (selectedSizeVariant.deliveryCharges ?? 0) === 0 ? (
+                        <>
+                          <p className="text-sm font-medium text-success">Free Delivery</p>
+                          <p className="text-xs text-muted-foreground">For this size</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium">Delivery Charges</p>
+                          <p className="text-xs font-semibold text-foreground">₹{selectedSizeVariant.deliveryCharges!.toLocaleString()} for this size</p>
+                        </>
+                      )
+                    ) : (
+                      // Product-level delivery charge
+                      <>
+                        <p className="text-sm font-medium">
+                          {product?.deliveryInfo?.freeDelivery ? 'Free Delivery' : 'Delivery Charges'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {product?.deliveryInfo?.freeDelivery
+                            ? 'No shipping cost'
+                            : `₹${product?.deliveryInfo?.deliveryCharges || 0}`}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
 
