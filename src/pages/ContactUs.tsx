@@ -291,7 +291,7 @@ export default function ContactUs() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Email</h3>
-                    <p className="text-muted-foreground">signaturedraps31@gmail.com</p>
+                    <p className="text-muted-foreground">signaturedrapes31@gmail.com</p>
                   </div>
                 </div>
 
