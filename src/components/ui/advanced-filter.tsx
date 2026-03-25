@@ -51,6 +51,7 @@ const CATEGORIES = [
   { id: 'bean-bags-and-beans', name: 'Bean Bags and Beans', icon: '🪑', color: 'bg-orange-100 text-orange-700' },
   { id: 'carpet-rugs-door-mats', name: 'Carpet, Rugs and Door Mats', icon: '🏠', color: 'bg-red-100 text-red-700' },
   { id: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', icon: '🌿', color: 'bg-emerald-100 text-emerald-700' },
+  { id: 'pvc-flooring', name: 'PVC Flooring', icon: '🧩', color: 'bg-amber-100 text-amber-700' },
 ];
 
 const COLORS = [

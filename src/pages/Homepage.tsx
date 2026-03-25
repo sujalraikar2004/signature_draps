@@ -25,7 +25,8 @@ const staticCategories = [
   { category: 'institutional-project-window-blinds', name: 'Window Blinds', image: blindsImg },
   { category: 'bean-bags-and-beans', name: 'Bean Bags and Beans', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1763020339/products/products/1763020339891-192788606.jpg" },
   { category: 'carpet-rugs-door-mats', name: 'Carpet, Rugs and Door Mats', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765420344/products/products/1765420343136-538249634.jpg" },
-  { category: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg" }
+  { category: 'artificial-grass-plant-vertical-garden', name: 'Artificial Grass, Plant and Vertical Garden', image: "https://res.cloudinary.com/dfoybcsqz/image/upload/v1765340836/products/products/1765340835878-400873391.jpg" },
+  { category: 'pvc-flooring', name: 'PVC Flooring', image: "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?auto=format&fit=crop&w=1200&q=80" }
 ];
 
 import { MarriageCardProduct } from '@/components/product/MarriageCardProduct';

@@ -145,6 +145,21 @@ export const categories: Category[] = [
     ]
   },
   {
+    id: 'pvc-flooring',
+    category: 'pvc-flooring',
+    name: 'PVC Flooring',
+    shortName: 'PVC Flooring',
+    image: "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?auto=format&fit=crop&w=1200&q=80",
+    icon: '🧩',
+    description: 'Durable and stylish PVC flooring solutions for homes and commercial spaces',
+    productCount: 0,
+    subcategories: [
+      { id: 'pvc-floor-tiles', name: 'PVC Floor Tiles', productCount: 0 },
+      { id: 'spc-flooring', name: 'SPC Flooring', productCount: 0 },
+      { id: 'pvc-flooring-rolls', name: 'PVC Flooring Rolls', productCount: 0 }
+    ]
+  },
+  {
     id: 'outsiders',
     category: 'outsiders',
     name: 'Outsiders',
