@@ -102,7 +102,7 @@ export interface SizeVariant {
 
 export interface CustomSizeConfig {
   enabled: boolean;
-  fields: ('length' | 'width' | 'height' | 'area' | 'diameter')[];
+  fields: ('length' | 'width' | 'height' | 'area' | 'diameter' | 'count')[];
   unit: 'cm' | 'inch' | 'ft' | 'm' | 'sqft' | 'sqm';
   pricePerUnit?: number;
   minimumCharge?: number;
@@ -116,6 +116,7 @@ export interface CustomSize {
     height?: number;
     area?: number;
     diameter?: number;
+    count?: number;
     unit: string;
   };
   calculatedPrice?: number;

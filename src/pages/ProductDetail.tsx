@@ -1125,6 +1125,33 @@ export default function ProductDetail() {
                                 </div>
                               </div>
                             )}
+
+                            {product.customSizeConfig.fields.includes('count') && (
+                              <div>
+                                <Label htmlFor="count" className="text-sm">Count *</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    id="count"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    placeholder="0"
+                                    value={customSize.measurements.count || ''}
+                                    onChange={(e) => setCustomSize(prev => ({
+                                      ...prev,
+                                      measurements: {
+                                        ...prev.measurements,
+                                        count: parseInt(e.target.value, 10) || undefined
+                                      }
+                                    }))}
+                                    className="flex-1"
+                                  />
+                                  <span className="flex items-center text-sm text-muted-foreground min-w-[40px]">
+                                    nos
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div>
