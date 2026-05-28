@@ -45,7 +45,7 @@ const ProductListing = () => {
   const isBestSellerParam = searchParams.get('isBestSeller');
   const isNewParam = searchParams.get('isNew');
 
-  const { products, loading, error, fetchProducts, fetchProductsByCategory, searchProducts: searchProductsAPI } = useProducts();
+  const { products, pagination, loading, error, fetchProducts, searchProducts: searchProductsAPI } = useProducts();
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -59,21 +59,41 @@ const ProductListing = () => {
     discountRange: [] as string[],
   });
 
-  // Fetch products based on category or search
+  const getStorageKey = () => `productListing_page_${categoryId || searchQuery || 'all'}`;
+  
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Try to restore previous page from sessionStorage
+    const saved = sessionStorage.getItem(getStorageKey());
+    return saved ? parseInt(saved, 10) : 1;
+  });
+
+  // Reset to page 1 when filters, category, or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, categoryId, searchQuery]);
+
+  // Fetch products based on category or search along with all filters
   useEffect(() => {
     setIsInitialLoad(true);
+    const fetchParams: any = {
+      page: currentPage,
+      limit: 25,
+      minPrice: filters.priceRange[0],
+      maxPrice: filters.priceRange[1],
+    };
+
+    if (filters.brands.length) fetchParams.brands = filters.brands.join(',');
+    if (filters.colors.length) fetchParams.colors = filters.colors.join(',');
+    if (categoryId) fetchParams.category = categoryId;
+    if (isBestSellerParam === 'true') fetchParams.isBestSeller = true;
+    if (isNewParam === 'true') fetchParams.isNew = true;
+
     if (searchQuery) {
-      searchProductsAPI(searchQuery).finally(() => setIsInitialLoad(false));
-    } else if (categoryId) {
-      fetchProductsByCategory(categoryId).finally(() => setIsInitialLoad(false));
-    } else if (isBestSellerParam === 'true') {
-      fetchProducts({ isBestSeller: true }).finally(() => setIsInitialLoad(false));
-    } else if (isNewParam === 'true') {
-      fetchProducts({ isNew: true }).finally(() => setIsInitialLoad(false));
+      searchProductsAPI(searchQuery, fetchParams).finally(() => setIsInitialLoad(false));
     } else {
-      fetchProducts().finally(() => setIsInitialLoad(false));
+      fetchProducts(fetchParams).finally(() => setIsInitialLoad(false));
     }
-  }, [categoryId, searchQuery, isBestSellerParam, isNewParam]);
+  }, [categoryId, searchQuery, isBestSellerParam, isNewParam, currentPage, filters]);
 
   const handleCheckboxChange = (type: 'brands' | 'colors' | 'discountRange', value: string) => {
     setFilters(prev => {
@@ -89,53 +109,18 @@ const ProductListing = () => {
     setFilters(prev => ({ ...prev, priceRange: value }));
   };
 
-  // Filter products based on selected filters
-  const filteredProducts = useMemo(() => {
-    // Don't show old products during initial load of a new category/search
-    if (isInitialLoad && !products) return [];
-    if (!products) return [];
-    return products.filter(p => {
-      // Price filter
-      const inPrice = p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1];
-      // Brand filter
-      const inBrand = filters.brands.length ? filters.brands.includes(p.brand) : true;
-      // Color filter
-      const inColor = filters.colors.length
-        ? filters.colors.some(color => p.name.toLowerCase().includes(color.toLowerCase()))
-        : true;
-      return inPrice && inBrand && inColor;
-    });
-  }, [products, filters, isInitialLoad]);
-
-  // Pagination State
-  const PRODUCTS_PER_PAGE = 20;
-  const getStorageKey = () => `productListing_page_${categoryId || searchQuery || 'all'}`;
-  
-  const [currentPage, setCurrentPage] = useState(() => {
-    // Try to restore previous page from sessionStorage
-    const saved = sessionStorage.getItem(getStorageKey());
-    return saved ? parseInt(saved, 10) : 1;
-  });
-
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-
-  // Get current products for the page
+  // Get current products (from context after backend filtering)
   const currentProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    const endIndex = startIndex + PRODUCTS_PER_PAGE;
-    return filteredProducts.slice(startIndex, endIndex);
-  }, [filteredProducts, currentPage]);
+    if (isInitialLoad && !products) return [];
+    return products || [];
+  }, [products, isInitialLoad]);
 
   // Save current page to sessionStorage
   useEffect(() => {
     sessionStorage.setItem(getStorageKey(), currentPage.toString());
   }, [currentPage, categoryId, searchQuery]);
 
-  // Reset to page 1 when filters, category, or search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters, categoryId, searchQuery]);
+  const totalPages = pagination?.totalPages || 1;
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -204,7 +189,7 @@ const ProductListing = () => {
               {getCategoryName()}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {filteredProducts.length} products found
+              {pagination?.totalProducts || currentProducts.length} products found
               {totalPages > 1 && ` • Page ${currentPage} of ${totalPages}`}
             </p>
           </div>
@@ -257,7 +242,7 @@ const ProductListing = () => {
               <div className={`grid gap-x-0 sm:gap-x-6 gap-y-0 sm:gap-y-10 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 border-t border-l border-gray-100/50 md:border-none`}>
                 {Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)}
               </div>
-            ) : filteredProducts.length === 0 ? (
+            ) : currentProducts.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-lg text-muted-foreground mb-4">No products found</p>
                 <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
@@ -279,7 +264,7 @@ const ProductListing = () => {
                       disabled={currentPage === 1}
                       className="px-3"
                     >
-                      Previous
+                      Previous Page
                     </Button>
 
                     {/* Page Numbers */}
@@ -304,10 +289,10 @@ const ProductListing = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages || !pagination?.hasNext}
                       className="px-3"
                     >
-                      Next
+                      Next Page
                     </Button>
                   </div>
                 )}

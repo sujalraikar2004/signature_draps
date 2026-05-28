@@ -98,7 +98,7 @@ export function Navbar() {
             <div className={`hidden md:flex flex-1 max-w-xl mx-8 ${shouldHideSearch ? 'invisible' : ''}`}>
               <SearchWithSuggestions
                 onSearch={handleSearch}
-                placeholder="Search by product code, name, price, category..."
+                placeholder="Try 'Zebra blinds under 5000' or 'Red sofa'..."
                 className="w-full"
               />
             </div>
@@ -259,7 +259,7 @@ export function Navbar() {
         <div className="md:hidden flex flex-1 max-w-xl mx-3 my-3">
           <SearchWithSuggestions
             onSearch={handleSearch}
-            placeholder="Search by product code, name, price, category..."
+            placeholder="Try 'Zebra blinds under 5000' or 'Red sofa'..."
             className="w-full"
           />
         </div>

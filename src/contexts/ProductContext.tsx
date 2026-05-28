@@ -14,6 +14,7 @@ import { useAuth } from "./AuthContext";
 // Types
 interface ProductContextType {
   products: Product[] | null;
+  pagination: { currentPage: number; totalPages: number; totalProducts: number; hasNext: boolean; hasPrev: boolean; } | null;
   featuredProducts: Product[] | null;
   newProducts: Product[] | null;
   bestSellers: Product[] | null;
@@ -79,6 +80,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   const { user } = useAuth();
 
   const [products, setProducts] = useState<Product[] | null>(null);
+  const [pagination, setPagination] = useState<any | null>(null);
   const [featuredProducts, setFeaturedProducts] = useState<Product[] | null>(
     null
   );
@@ -121,15 +123,18 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   // --- Product APIs ---
   const fetchProducts = useCallback(async (params?: Record<string, any>) => {
     setProducts(null); // Clear previous products
-    const data = await handleApiCall<{ data: Product[] }>(() =>
+    const data = await handleApiCall<any>(() =>
       api.get("/products", { params })
     );
-    if (data) setProducts(data.data);
+    if (data) {
+      setProducts(data.data);
+      if (data.pagination) setPagination(data.pagination);
+    }
   }, []);
 
   const fetchProductsByCategory = useCallback(async (categoryId: string) => {
     setProducts(null); // Clear previous products before fetching
-    const data = await handleApiCall<{ data: Product[] }>(() =>
+    const data = await handleApiCall<any>(() =>
       api.get(`/products/category/${categoryId}`)
     );
     if (data) setProducts(data.data);
@@ -199,6 +204,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
         const response = await api.get("/products/search", { params });
         const results = response.data.data || [];
         setProducts(results);
+        if (response.data.pagination) setPagination(response.data.pagination);
         setLoading(false);
         return results;
       } catch (error: any) {
@@ -450,6 +456,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   const value: ProductContextType = {
     products,
+    pagination,
     featuredProducts,
     newProducts,
     bestSellers,
