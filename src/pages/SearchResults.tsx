@@ -47,7 +47,7 @@ const SORT_OPTIONS = [
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { searchProducts, categories } = useProducts();
+  const { searchProducts, categories, pagination } = useProducts();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,6 +56,7 @@ export default function SearchResults() {
 
   // Search and filter states
   const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
   const [filters, setFilters] = useState({
     category: searchParams.get('category') || '',
     priceRange: [
@@ -90,6 +91,8 @@ export default function SearchResults() {
         brands: filters.brands.length > 0 ? filters.brands : undefined,
         features: filters.features.length > 0 ? filters.features : undefined,
         sortBy: filters.sortBy,
+        page: page,
+        limit: 20
       };
 
       const results = await searchProducts(query, searchFilters);
@@ -99,6 +102,7 @@ export default function SearchResults() {
       // Update URL params
       const params = new URLSearchParams();
       params.set('q', query);
+      if (page > 1) params.set('page', page.toString());
       if (filters.category) params.set('category', filters.category);
       if (filters.priceRange[0] > 0) params.set('minPrice', filters.priceRange[0].toString());
       if (filters.priceRange[1] < 50000) params.set('maxPrice', filters.priceRange[1].toString());
@@ -120,20 +124,29 @@ export default function SearchResults() {
     }
   };
 
-  // Initial search on mount and when query changes
+  // Initial search on mount and when query, page or filters change
   useEffect(() => {
     if (query) {
       performSearch();
     }
-  }, [query, filters]);
+  }, [query, page, filters]);
 
   // Update query from URL params
   useEffect(() => {
     const urlQuery = searchParams.get('q');
+    const urlPage = parseInt(searchParams.get('page') || '1');
     if (urlQuery && urlQuery !== query) {
       setQuery(urlQuery);
     }
+    if (urlPage && urlPage !== page) {
+      setPage(urlPage);
+    }
   }, [searchParams]);
+
+  // Reset to page 1 when filters or query change
+  useEffect(() => {
+    setPage(1);
+  }, [query, filters]);
 
   const handleNewSearch = (newQuery: string) => {
     setQuery(newQuery);
@@ -377,6 +390,53 @@ export default function SearchResults() {
                 <p className="text-muted-foreground">
                   Enter a search term to find products you're looking for.
                 </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && products.length > 0 && (
+              <div className="mt-12 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    // Show 5 pages max around current page
+                    let pageNum = page - 2 + i;
+                    if (page <= 3) pageNum = i + 1;
+                    if (page >= pagination.totalPages - 2) pageNum = pagination.totalPages - 4 + i;
+                    
+                    if (pageNum > 0 && pageNum <= pagination.totalPages) {
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={page === pageNum ? "default" : "outline"}
+                          size="sm"
+                          className="w-8 h-8 p-0"
+                          onClick={() => setPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+                  disabled={page === pagination.totalPages}
+                >
+                  Next
+                </Button>
               </div>
             )}
           </div>

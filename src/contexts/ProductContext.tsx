@@ -76,6 +76,11 @@ interface Props {
   children: ReactNode;
 }
 
+const freshParams = (params: Record<string, any> = {}) => ({
+  ...params,
+  _t: Date.now(),
+});
+
 export const ProductProvider: React.FC<Props> = ({ children }) => {
   const { user } = useAuth();
 
@@ -124,7 +129,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   const fetchProducts = useCallback(async (params?: Record<string, any>) => {
     setProducts(null); // Clear previous products
     const data = await handleApiCall<any>(() =>
-      api.get("/products", { params })
+      api.get("/products", { params: freshParams(params) })
     );
     if (data) {
       setProducts(data.data);
@@ -135,14 +140,14 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
   const fetchProductsByCategory = useCallback(async (categoryId: string) => {
     setProducts(null); // Clear previous products before fetching
     const data = await handleApiCall<any>(() =>
-      api.get(`/products/category/${categoryId}`)
+      api.get(`/products/category/${categoryId}`, { params: freshParams() })
     );
     if (data) setProducts(data.data);
   }, []);
 
   const fetchFeaturedProducts = useCallback(async () => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
-      api.get("/products/featured")
+      api.get("/products/featured", { params: freshParams() })
     );
     console.log("featured product", data);
     if (data) setFeaturedProducts(data.data);
@@ -150,14 +155,14 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   const fetchNewProducts = useCallback(async () => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
-      api.get("/products/new")
+      api.get("/products/new", { params: freshParams() })
     );
     if (data) setNewProducts(data.data);
   }, []);
 
   const fetchBestSellers = useCallback(async () => {
     const data = await handleApiCall<{ data: Product[] }>(() =>
-      api.get("/products/best-sellers")
+      api.get("/products/best-sellers", { params: freshParams() })
     );
     if (data) setBestSellers(data.data);
   }, []);
@@ -200,7 +205,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
       try {
         setProducts(null); // Clear previous products
         setLoading(true);
-        const params = { q: query, ...filters };
+        const params = freshParams({ q: query, ...filters });
         const response = await api.get("/products/search", { params });
         const results = response.data.data || [];
         setProducts(results);
@@ -222,7 +227,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        const response = await api.get(`/products/${productId}`);
+        const response = await api.get(`/products/${productId}`, { params: freshParams() });
         console.log('Product data:', response.data);
         
         if (response.data?.success && response.data?.data) {
@@ -282,7 +287,7 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
 
   const fetchCategories = useCallback(async () => {
     const response = await handleApiCall<{ data: Category[] }>(() =>
-      api.get("/products/categories")
+      api.get("/products/categories", { params: freshParams() })
     );
     console.log("this is categories api response", response);
     if (response) setCategories(response.data);
