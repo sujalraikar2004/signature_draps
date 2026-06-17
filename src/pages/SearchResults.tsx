@@ -214,7 +214,7 @@ export default function SearchResults() {
             <div className="w-full md:w-96">
               <SearchWithSuggestions
                 onSearch={handleNewSearch}
-                placeholder="Try 'Zebra blinds under 5000' or 'Red sofa'..."
+                placeholder="Try 'Wooden blinds' or 'PVC blinds under 5000'..."
                 className="w-full"
               />
             </div>

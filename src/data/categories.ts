@@ -38,6 +38,20 @@ export const categories: Category[] = [
     ]
   },
   {
+    id: 'pvc-wooden-window-blinds',
+    category: 'pvc-wooden-window-blinds',
+    name: 'PVC & Wooden Window Blinds',
+    shortName: 'PVC/Wood Blinds',
+    image: blindsImg,
+    icon: '🪟',
+    description: 'PVC and wooden blinds for durable, elegant window coverage',
+    productCount: 0,
+    subcategories: [
+      { id: 'pvc-blinds', name: 'PVC Blinds', productCount: 0 },
+      { id: 'wooden-blinds', name: 'Wooden Blinds', productCount: 0 }
+    ]
+  },
+  {
     id: 'bean-bags-and-beans',
     category: 'bean-bags-and-beans',
     name: 'Bean Bags and Beans',

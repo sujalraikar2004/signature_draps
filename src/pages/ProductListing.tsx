@@ -40,8 +40,9 @@ const discountOptions: FilterOption[] = [
 const ProductListing = () => {
   const location = useLocation().pathname;
   const { categoryId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
+  const subcategoryParam = searchParams.get('subcategory') || '';
   const isBestSellerParam = searchParams.get('isBestSeller');
   const isNewParam = searchParams.get('isNew');
 
@@ -59,7 +60,7 @@ const ProductListing = () => {
     discountRange: [] as string[],
   });
 
-  const getStorageKey = () => `productListing_page_${categoryId || searchQuery || 'all'}`;
+  const getStorageKey = () => `productListing_page_${categoryId || searchQuery || 'all'}_${subcategoryParam || 'all'}`;
   
   const [currentPage, setCurrentPage] = useState(() => {
     // Try to restore previous page from sessionStorage
@@ -70,7 +71,7 @@ const ProductListing = () => {
   // Reset to page 1 when filters, category, or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, categoryId, searchQuery]);
+  }, [filters, categoryId, searchQuery, subcategoryParam]);
 
   // Fetch products based on category or search along with all filters
   useEffect(() => {
@@ -85,6 +86,7 @@ const ProductListing = () => {
     if (filters.brands.length) fetchParams.brands = filters.brands.join(',');
     if (filters.colors.length) fetchParams.colors = filters.colors.join(',');
     if (categoryId) fetchParams.category = categoryId;
+    if (subcategoryParam) fetchParams.subcategory = subcategoryParam;
     if (isBestSellerParam === 'true') fetchParams.isBestSeller = true;
     if (isNewParam === 'true') fetchParams.isNew = true;
 
@@ -93,7 +95,7 @@ const ProductListing = () => {
     } else {
       fetchProducts(fetchParams).finally(() => setIsInitialLoad(false));
     }
-  }, [categoryId, searchQuery, isBestSellerParam, isNewParam, currentPage, filters]);
+  }, [categoryId, subcategoryParam, searchQuery, isBestSellerParam, isNewParam, currentPage, filters]);
 
   const handleCheckboxChange = (type: 'brands' | 'colors' | 'discountRange', value: string) => {
     setFilters(prev => {
@@ -118,7 +120,7 @@ const ProductListing = () => {
   // Save current page to sessionStorage
   useEffect(() => {
     sessionStorage.setItem(getStorageKey(), currentPage.toString());
-  }, [currentPage, categoryId, searchQuery]);
+  }, [currentPage, categoryId, subcategoryParam, searchQuery]);
 
   const totalPages = pagination?.totalPages || 1;
 
@@ -166,14 +168,27 @@ const ProductListing = () => {
 
   const clearFilters = () => setFilters({ category: categoryId || '', priceRange: [0, 150000], brands: [], colors: [], discountRange: [] });
 
+  const currentCategory = categoryId ? categories.find(c => c.id === categoryId) : undefined;
+  const currentSubcategory = currentCategory?.subcategories?.find(subcategory => subcategory.id === subcategoryParam);
+
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (subcategoryId) {
+      nextParams.set('subcategory', subcategoryId);
+    } else {
+      nextParams.delete('subcategory');
+    }
+    setSearchParams(nextParams);
+  };
+
   // Get category display name
   const getCategoryName = () => {
     if (searchQuery) return `Search Results for "${searchQuery}"`;
     if (isBestSellerParam === 'true') return 'Best Sellers';
     if (isNewParam === 'true') return 'New Arrivals';
     if (categoryId) {
-      const category = categories.find(c => c.id === categoryId);
-      return category?.name || categoryId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const categoryName = currentCategory?.name || categoryId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return currentSubcategory ? `${categoryName} / ${currentSubcategory.name}` : categoryName;
     }
     return 'All Products';
   };
@@ -221,6 +236,30 @@ const ProductListing = () => {
             </Sheet>
           </div>
         </div>
+
+        {currentCategory?.subcategories && currentCategory.subcategories.length > 0 && (
+          <div className="mb-6 flex gap-2 overflow-x-auto px-3 md:px-0 pb-2">
+            <Button
+              variant={!subcategoryParam ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSubcategoryChange('')}
+              className="shrink-0"
+            >
+              All
+            </Button>
+            {currentCategory.subcategories.map(subcategory => (
+              <Button
+                key={subcategory.id}
+                variant={subcategoryParam === subcategory.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSubcategoryChange(subcategory.id)}
+                className="shrink-0"
+              >
+                {subcategory.name}
+              </Button>
+            ))}
+          </div>
+        )}
 
         <div className="flex gap-8">
           {/* Sidebar - Desktop */}
