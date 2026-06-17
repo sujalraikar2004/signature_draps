@@ -103,7 +103,7 @@ export default function Login() {
               </div>
               <div>
                 <span className="text-xl font-heading font-bold text-primary">Signature</span>
-                <span className="text-xl font-heading font-bold text-accent ml-1">Draps</span>
+                <span className="text-xl font-heading font-bold text-accent ml-1">Drapes</span>
               </div>
             </div>
             <CardTitle className="text-2xl font-heading">Welcome Back</CardTitle>
