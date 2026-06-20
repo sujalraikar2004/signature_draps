@@ -153,8 +153,7 @@ export const categories: Category[] = [
     description: 'Artificial greenery solutions for indoor and outdoor spaces',
     productCount: 70,
     subcategories: [
-      { id: 'artificial-grass', name: 'Artificial Grass', productCount: 25 },
-      { id: 'lawn-grass', name: 'Lawn Grass', productCount: 0 },
+      { id: 'lawn-grass', name: 'Artificial Lawn Grass', productCount: 25 },
       { id: 'artificial-plants', name: 'Artificial Plants', productCount: 25 },
       { id: 'vertical-gardens', name: 'Vertical Gardens', productCount: 20 }
     ]

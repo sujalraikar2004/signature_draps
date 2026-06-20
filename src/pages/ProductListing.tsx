@@ -42,7 +42,11 @@ const ProductListing = () => {
   const { categoryId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
-  const subcategoryParam = searchParams.get('subcategory') || '';
+  const requestedSubcategory = searchParams.get('subcategory') || '';
+  const subcategoryParam =
+    categoryId === 'artificial-grass-plant-vertical-garden' && requestedSubcategory === 'artificial-grass'
+      ? 'lawn-grass'
+      : requestedSubcategory;
   const isBestSellerParam = searchParams.get('isBestSeller');
   const isNewParam = searchParams.get('isNew');
 
@@ -76,7 +80,7 @@ const ProductListing = () => {
   // Fetch products based on category or search along with all filters
   useEffect(() => {
     setIsInitialLoad(true);
-    const fetchParams: any = {
+    const fetchParams: Record<string, string | number | boolean> = {
       page: currentPage,
       limit: 25,
       minPrice: filters.priceRange[0],
@@ -170,6 +174,88 @@ const ProductListing = () => {
 
   const currentCategory = categoryId ? categories.find(c => c.id === categoryId) : undefined;
   const currentSubcategory = currentCategory?.subcategories?.find(subcategory => subcategory.id === subcategoryParam);
+
+  useEffect(() => {
+    if (requestedSubcategory !== 'artificial-grass' || subcategoryParam !== 'lawn-grass') return;
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('subcategory', 'lawn-grass');
+    setSearchParams(nextParams, { replace: true });
+  }, [requestedSubcategory, searchParams, setSearchParams, subcategoryParam]);
+
+  useEffect(() => {
+    const defaultTitle = 'Signature Draps - Premium Interior Solutions | Curtains, Blinds & Wallpapers';
+    const defaultDescription = 'Transform your space with Signature Draps premium collection of curtains, blinds, wallpapers, and interior furnishing.';
+    const defaultKeywords = 'curtains, blinds, wallpapers, interior design, home decor, window treatments, premium curtains, zebra blinds, roman blinds';
+    const defaultOgTitle = 'Signature Draps - Premium Interior Solutions';
+    const defaultOgDescription = 'Premium curtains, blinds, wallpapers and complete interior solutions for your home and office.';
+    const categoryName = currentCategory?.name;
+    const subcategoryName = currentSubcategory?.name;
+    const pageName = subcategoryName || categoryName;
+    const isArtificialGreeneryCategory = categoryId === 'artificial-grass-plant-vertical-garden';
+
+    const title = pageName
+      ? `${pageName} Online | Signature Draps`
+      : searchQuery
+        ? `Search Results for "${searchQuery}" | Signature Draps`
+        : 'Shop Premium Interior Products | Signature Draps';
+
+    const description = isArtificialGreeneryCategory
+      ? subcategoryName === 'Artificial Lawn Grass'
+        ? 'Shop premium artificial lawn grass and synthetic turf for balconies, terraces, gardens, homes, offices, and commercial spaces.'
+        : 'Shop artificial lawn grass, artificial plants, and vertical garden panels for beautiful, low-maintenance indoor and outdoor spaces.'
+      : categoryName
+        ? `Shop premium ${categoryName.toLowerCase()} from Signature Draps. Explore quality designs for homes, offices, and commercial interiors.`
+        : defaultDescription;
+
+    const keywords = isArtificialGreeneryCategory
+      ? 'artificial lawn grass, artificial grass, synthetic grass, synthetic turf, balcony grass, garden grass, artificial plants, vertical garden'
+      : pageName
+        ? `${pageName}, ${pageName} online, home decor, interior furnishing, Signature Draps`
+        : 'curtains, blinds, wallpapers, artificial lawn grass, interior design, home decor';
+
+    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+      let element = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, key);
+        document.head.appendChild(element);
+      }
+      element.content = content;
+    };
+
+    document.title = title;
+    setMeta('meta[name="description"]', 'name', 'description', description);
+    setMeta('meta[name="keywords"]', 'name', 'keywords', keywords);
+    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
+    setMeta('meta[property="og:description"]', 'property', 'og:description', description);
+
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const createdCanonical = !canonical;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    const canonicalUrl = new URL(location, window.location.origin);
+    canonicalUrl.search = subcategoryParam ? `?subcategory=${encodeURIComponent(subcategoryParam)}` : '';
+    canonical.href = canonicalUrl.toString();
+    setMeta('meta[property="og:url"]', 'property', 'og:url', canonical.href);
+
+    return () => {
+      document.title = defaultTitle;
+      const descriptionMeta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
+      if (descriptionMeta) descriptionMeta.content = defaultDescription;
+      const keywordsMeta = document.head.querySelector<HTMLMetaElement>('meta[name="keywords"]');
+      if (keywordsMeta) keywordsMeta.content = defaultKeywords;
+      const ogTitleMeta = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+      if (ogTitleMeta) ogTitleMeta.content = defaultOgTitle;
+      const ogDescriptionMeta = document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]');
+      if (ogDescriptionMeta) ogDescriptionMeta.content = defaultOgDescription;
+      if (createdCanonical) canonical.remove();
+      document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.remove();
+    };
+  }, [categoryId, currentCategory, currentSubcategory, location, searchQuery, subcategoryParam]);
 
   const handleSubcategoryChange = (subcategoryId: string) => {
     const nextParams = new URLSearchParams(searchParams);
