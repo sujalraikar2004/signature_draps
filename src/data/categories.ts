@@ -154,6 +154,7 @@ export const categories: Category[] = [
     productCount: 70,
     subcategories: [
       { id: 'artificial-grass', name: 'Artificial Grass', productCount: 25 },
+      { id: 'lawn-grass', name: 'Lawn Grass', productCount: 0 },
       { id: 'artificial-plants', name: 'Artificial Plants', productCount: 25 },
       { id: 'vertical-gardens', name: 'Vertical Gardens', productCount: 20 }
     ]
