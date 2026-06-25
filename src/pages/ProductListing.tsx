@@ -43,6 +43,54 @@ const discountOptions: FilterOption[] = [
 const titleCase = (value = '') =>
   value.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
 
+const buildGenericCategoryContent = (
+  category: typeof categories[number],
+  subcategory?: NonNullable<typeof categories[number]['subcategories']>[number]
+): CategorySeoContent => {
+  const name = subcategory?.name || category.name;
+  const relatedLinks = categories
+    .filter(item => item.id !== category.id)
+    .slice(0, 5)
+    .map(item => ({ label: item.name, path: `/category/${item.id}` }));
+
+  return {
+    key: subcategory?.id || category.id,
+    h1: `${name} for Complete Interior Styling`,
+    intro: [
+      `${name} from Signature Drapes is curated for customers who want practical, good-looking interior solutions for homes, offices, rental properties, commercial spaces, and renovation projects. This category helps you compare suitable designs, materials, finishes, and usage options without treating the product as a standalone purchase. The right choice should support privacy, comfort, maintenance, durability, and the visual style of the room.`,
+      `When selecting ${name.toLowerCase()}, consider the room size, daily usage, sunlight exposure, cleaning routine, existing furniture, wall colors, floor finish, and installation conditions. A well-planned interior product should look good on day one and remain easy to use after regular handling. Signature Drapes focuses on products that can be coordinated with curtains, blinds, wallpapers, flooring, rugs, artificial greenery, and accessories for a more complete result.`
+    ],
+    benefits: [
+      `Improves the finish and usability of residential and commercial interiors.`,
+      `Supports coordinated styling with other Signature Drapes categories.`,
+      `Helps customers select practical options for daily use, cleaning, and maintenance.`,
+      `Works for single-room upgrades as well as larger interior projects.`
+    ],
+    buyingGuide: [
+      `Start by identifying the main problem you want ${name.toLowerCase()} to solve. Some customers need privacy, some need visual warmth, some need easy cleaning, and others need a product that can handle high traffic or regular use. Matching the product to the purpose prevents unnecessary replacement later.`,
+      `Check measurements, surface condition, mounting area, color palette, and how the product will interact with furniture, doors, windows, lighting, and flooring. If the area is exposed to dust, sunlight, moisture, pets, children, or heavy usage, choose finishes and materials that are easier to maintain.`,
+      `For larger projects, keep photos and measurements ready before consultation. This helps the team suggest combinations that work together instead of choosing each item separately. A coordinated plan usually gives better results than buying products one by one without considering the entire room.`
+    ],
+    applications: [
+      `Suitable for homes, offices, shops, clinics, schools, rental apartments, hospitality spaces, and interior renovation projects.`,
+      `Useful for room makeovers, new installations, privacy improvement, surface finishing, decor upgrades, and coordinated furnishing plans.`
+    ],
+    customization: `${name} can often be selected or customized by size, finish, color, material, usage requirement, and installation area. The best option depends on the room purpose and the amount of daily handling expected.`,
+    installation: `Before installation, measure the area carefully and check wall, window, floor, or surface conditions. Professional guidance helps avoid gaps, uneven finishing, poor alignment, and product choices that do not suit the actual site.`,
+    faqs: [
+      {
+        question: `How do I choose the right ${name.toLowerCase()}?`,
+        answer: `Choose based on room purpose, measurements, sunlight, privacy, cleaning needs, budget, and the finish of nearby interiors. Photos and measurements make recommendations more accurate.`
+      },
+      {
+        question: `Can Signature Drapes help with measurement and selection?`,
+        answer: `Yes. Signature Drapes can help customers understand measurements, product suitability, installation needs, and related category combinations for a complete interior look.`
+      }
+    ],
+    relatedLinks
+  };
+};
+
 function CategorySeoSection({ content }: { content?: CategorySeoContent }) {
   if (!content) return null;
 
@@ -160,7 +208,9 @@ const ProductListing = () => {
   const isInvalidCategory = Boolean(categoryId && !currentCategory);
   const isInvalidSubcategory = Boolean(subcategoryParam && currentCategory && !currentSubcategory);
   const isInvalidListing = isInvalidCategory || isInvalidSubcategory;
-  const categoryContent = getCategorySeoContent(categoryId, subcategoryParam);
+  const categoryContent = !isInvalidListing && currentCategory
+    ? getCategorySeoContent(categoryId, subcategoryParam) || buildGenericCategoryContent(currentCategory, currentSubcategory)
+    : undefined;
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
