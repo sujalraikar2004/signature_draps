@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import api from '@/Api';
+import { SEO } from '@/components/seo/SEO';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -110,6 +111,12 @@ export default function ContactUs() {
   };
 
   return (
+    <>
+    <SEO
+      title="Contact Signature Drapes"
+      description="Contact Signature Drapes for curtains, blinds, wallpapers, artificial grass, installation support, design consultation, and custom interior furnishing queries."
+      canonicalPath="/contact"
+    />
     <main className="min-h-screen bg-background">
       <div className="container-premium py-16">
         {/* Header */}
@@ -385,5 +392,6 @@ export default function ContactUs() {
         </div>
       </div>
     </main>
+    </>
   );
 }

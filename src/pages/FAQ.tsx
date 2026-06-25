@@ -1,6 +1,8 @@
 import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { SEO } from '@/components/seo/SEO';
+import { faqSchema } from '@/lib/seo';
 
 export default function FAQ() {
   const faqData = [
@@ -111,7 +113,16 @@ export default function FAQ() {
     }
   ];
 
+  const faqSchemaItems = faqData.flatMap(section => section.questions);
+
   return (
+    <>
+    <SEO
+      title="Frequently Asked Questions"
+      description="Find answers about Signature Drapes orders, shipping, product quality, custom sizes, installation, returns, payment, and pricing."
+      canonicalPath="/faq"
+      structuredData={faqSchema(faqSchemaItems)}
+    />
     <main className="min-h-screen bg-background">
       <div className="container-premium py-16">
         {/* Header */}
@@ -177,5 +188,6 @@ export default function FAQ() {
         </div>
       </div>
     </main>
+    </>
   );
 }

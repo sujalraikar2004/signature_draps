@@ -1,8 +1,15 @@
 import React from 'react';
 import { Users, Award, Clock, MapPin, Scissors, Palette, Shield, Settings, Heart, CheckCircle } from 'lucide-react';
+import { SEO } from '@/components/seo/SEO';
 
 export default function AboutUs() {
   return (
+    <>
+    <SEO
+      title="About Signature Drapes"
+      description="Learn about Signature Drapes, our interior furnishing mission, product expertise, installation services, and commitment to quality curtains, blinds, wallpapers, and home decor."
+      canonicalPath="/about"
+    />
     <main className="min-h-screen bg-background">
       <div className="container-premium py-16">
         {/* Hero Section - Our Mission */}
@@ -193,5 +200,6 @@ export default function AboutUs() {
         </div>
       </div>
     </main>
+    </>
   );
 }

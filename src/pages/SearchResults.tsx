@@ -12,6 +12,7 @@ import { Product } from '@/types';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ProductCardSkeleton } from '@/components/ui/skeletons/ProductCardSkeleton';
 import { cn } from '@/lib/utils';
+import { SEO } from '@/components/seo/SEO';
 
 const brandOptions: FilterOption[] = [
   { label: 'KALINI', value: 'KALINI', count: 10 },
@@ -194,6 +195,13 @@ export default function SearchResults() {
   };
 
   return (
+    <>
+    <SEO
+      title={query ? `Search Results for "${query}"` : 'Search Products'}
+      description="Search Signature Drapes products across curtains, blinds, wallpapers, artificial grass, flooring, carpets, rugs, and interior decor."
+      canonicalPath="/search"
+      robots="noindex, follow"
+    />
     <div className="min-h-screen bg-background">
       <div className="w-full px-4 py-8">
         {/* Search Header */}
@@ -443,5 +451,6 @@ export default function SearchResults() {
         </div>
       </div>
     </div>
+    </>
   );
 }

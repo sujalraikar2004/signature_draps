@@ -226,8 +226,10 @@ export const ProductProvider: React.FC<Props> = ({ children }) => {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await api.get(`/products/${productId}`, { params: freshParams() });
+
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(productId);
+        const endpoint = isObjectId ? `/products/${productId}` : `/products/slug/${productId}`;
+        const response = await api.get(endpoint, { params: freshParams() });
         console.log('Product data:', response.data);
         
         if (response.data?.success && response.data?.data) {

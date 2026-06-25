@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useParams, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ProductCard } from '@/components/product/ProductCard';
+import { SEO } from '@/components/seo/SEO';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
@@ -12,6 +13,7 @@ import { ProductCardSkeleton } from '@/components/ui/skeletons/ProductCardSkelet
 import { useProducts } from '@/contexts/ProductContext';
 import { categories } from '@/data/categories';
 import { SidebarFilters, FilterOption } from '@/components/product/SidebarFilters';
+import { categoryPath, collectionSchema, DEFAULT_DESCRIPTION } from '@/lib/seo';
 
 
 
@@ -38,7 +40,6 @@ const discountOptions: FilterOption[] = [
 ];
 
 const ProductListing = () => {
-  const location = useLocation().pathname;
   const { categoryId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q');
@@ -183,80 +184,6 @@ const ProductListing = () => {
     setSearchParams(nextParams, { replace: true });
   }, [requestedSubcategory, searchParams, setSearchParams, subcategoryParam]);
 
-  useEffect(() => {
-    const defaultTitle = 'Signature Draps - Premium Interior Solutions | Curtains, Blinds & Wallpapers';
-    const defaultDescription = 'Transform your space with Signature Draps premium collection of curtains, blinds, wallpapers, and interior furnishing.';
-    const defaultKeywords = 'curtains, blinds, wallpapers, interior design, home decor, window treatments, premium curtains, zebra blinds, roman blinds';
-    const defaultOgTitle = 'Signature Draps - Premium Interior Solutions';
-    const defaultOgDescription = 'Premium curtains, blinds, wallpapers and complete interior solutions for your home and office.';
-    const categoryName = currentCategory?.name;
-    const subcategoryName = currentSubcategory?.name;
-    const pageName = subcategoryName || categoryName;
-    const isArtificialGreeneryCategory = categoryId === 'artificial-grass-plant-vertical-garden';
-
-    const title = pageName
-      ? `${pageName} Online | Signature Draps`
-      : searchQuery
-        ? `Search Results for "${searchQuery}" | Signature Draps`
-        : 'Shop Premium Interior Products | Signature Draps';
-
-    const description = isArtificialGreeneryCategory
-      ? subcategoryName === 'Artificial Lawn Grass'
-        ? 'Shop premium artificial lawn grass and synthetic turf for balconies, terraces, gardens, homes, offices, and commercial spaces.'
-        : 'Shop artificial lawn grass, artificial plants, and vertical garden panels for beautiful, low-maintenance indoor and outdoor spaces.'
-      : categoryName
-        ? `Shop premium ${categoryName.toLowerCase()} from Signature Draps. Explore quality designs for homes, offices, and commercial interiors.`
-        : defaultDescription;
-
-    const keywords = isArtificialGreeneryCategory
-      ? 'artificial lawn grass, artificial grass, synthetic grass, synthetic turf, balcony grass, garden grass, artificial plants, vertical garden'
-      : pageName
-        ? `${pageName}, ${pageName} online, home decor, interior furnishing, Signature Draps`
-        : 'curtains, blinds, wallpapers, artificial lawn grass, interior design, home decor';
-
-    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
-      let element = document.head.querySelector<HTMLMetaElement>(selector);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute(attribute, key);
-        document.head.appendChild(element);
-      }
-      element.content = content;
-    };
-
-    document.title = title;
-    setMeta('meta[name="description"]', 'name', 'description', description);
-    setMeta('meta[name="keywords"]', 'name', 'keywords', keywords);
-    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
-    setMeta('meta[property="og:description"]', 'property', 'og:description', description);
-
-    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    const createdCanonical = !canonical;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
-    }
-    const canonicalUrl = new URL(location, window.location.origin);
-    canonicalUrl.search = subcategoryParam ? `?subcategory=${encodeURIComponent(subcategoryParam)}` : '';
-    canonical.href = canonicalUrl.toString();
-    setMeta('meta[property="og:url"]', 'property', 'og:url', canonical.href);
-
-    return () => {
-      document.title = defaultTitle;
-      const descriptionMeta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
-      if (descriptionMeta) descriptionMeta.content = defaultDescription;
-      const keywordsMeta = document.head.querySelector<HTMLMetaElement>('meta[name="keywords"]');
-      if (keywordsMeta) keywordsMeta.content = defaultKeywords;
-      const ogTitleMeta = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]');
-      if (ogTitleMeta) ogTitleMeta.content = defaultOgTitle;
-      const ogDescriptionMeta = document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]');
-      if (ogDescriptionMeta) ogDescriptionMeta.content = defaultOgDescription;
-      if (createdCanonical) canonical.remove();
-      document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.remove();
-    };
-  }, [categoryId, currentCategory, currentSubcategory, location, searchQuery, subcategoryParam]);
-
   const handleSubcategoryChange = (subcategoryId: string) => {
     const nextParams = new URLSearchParams(searchParams);
     if (subcategoryId) {
@@ -279,8 +206,33 @@ const ProductListing = () => {
     return 'All Products';
   };
 
+  const pageName = currentSubcategory?.name || currentCategory?.name;
+  const isArtificialGreeneryCategory = categoryId === 'artificial-grass-plant-vertical-garden';
+  const seoTitle = pageName
+    ? `${pageName} Online`
+    : searchQuery
+      ? `Search Results for "${searchQuery}"`
+      : 'Shop Premium Interior Products';
+  const seoDescription = isArtificialGreeneryCategory
+    ? currentSubcategory?.name === 'Artificial Lawn Grass'
+      ? 'Shop premium artificial lawn grass and synthetic turf for balconies, terraces, gardens, homes, offices, and commercial spaces.'
+      : 'Shop artificial lawn grass, artificial plants, and vertical garden panels for beautiful, low-maintenance indoor and outdoor spaces.'
+    : currentCategory
+      ? `Shop premium ${currentCategory.name.toLowerCase()} from Signature Drapes. Explore quality designs for homes, offices, and commercial interiors.`
+      : DEFAULT_DESCRIPTION;
+  const canonicalPath = categoryId ? categoryPath(categoryId, subcategoryParam || undefined) : '/products';
+  const hasIndexableFilters = Boolean(searchQuery || filters.brands.length || filters.colors.length || currentPage > 1 || isBestSellerParam || isNewParam);
 
   return (
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords={pageName ? `${pageName}, ${pageName} online, home decor, interior furnishing, Signature Drapes` : undefined}
+        canonicalPath={canonicalPath}
+        robots={hasIndexableFilters ? 'noindex, follow' : 'index, follow'}
+        structuredData={collectionSchema(seoTitle, seoDescription, canonicalPath)}
+      />
     <main className="min-h-screen bg-background">
       <div className="w-full px-0 md:px-4 py-4 md:py-8">
         {/* Header */}
@@ -427,6 +379,7 @@ const ProductListing = () => {
         </div>
       </div>
     </main>
+    </>
   );
 }
 

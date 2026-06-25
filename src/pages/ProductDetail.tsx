@@ -21,6 +21,17 @@ import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
 import api from '@/Api';
 import { Product, Review, SizeVariant, CustomSize } from '@/types';
+import { SEO } from '@/components/seo/SEO';
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs';
+import {
+  breadcrumbSchema,
+  buildProductSeo,
+  categoryName,
+  categoryPath,
+  productPath,
+  productSchema,
+  subcategoryName
+} from '@/lib/seo';
 
 const formatSizeDisplay = (variant: SizeVariant, category?: string): string => {
 
@@ -164,6 +175,10 @@ export default function ProductDetail() {
 
         setProduct(data);
 
+        if (data.redirectToSlug) {
+          navigate(`/product/${data.redirectToSlug}`, { replace: true });
+        }
+
         // Set default size variant and ready-made option if available
         if (data.isCustomizable && data.sizeVariants && data.sizeVariants.length > 0) {
           setSelectedSizeVariant(data.sizeVariants[0]);
@@ -189,7 +204,7 @@ export default function ProductDetail() {
     };
 
     fetchProduct();
-  }, [productId, getProductById]);
+  }, [productId, getProductById, navigate]);
 
   // Fetch reviews for the product
   useEffect(() => {
@@ -224,6 +239,15 @@ export default function ProductDetail() {
 
   const relatedProducts = (products || [])
     .filter(p => p.category === product?.category && p._id !== product?._id);
+
+  const productBreadcrumbs = product ? [
+    { name: 'Home', path: '/' },
+    { name: categoryName(product.category) || 'Products', path: categoryPath(product.category) },
+    ...(product.subcategory ? [{ name: subcategoryName(product.category, product.subcategory) || product.subcategory, path: categoryPath(product.category, product.subcategory) }] : []),
+    { name: product.name, path: productPath(product) }
+  ] : [];
+
+  const productSeo = product ? buildProductSeo(product) : null;
 
   const discountPercentage = product?.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -560,12 +584,19 @@ export default function ProductDetail() {
   }
 
   return (
+    <>
+      <SEO
+        {...(productSeo ?? {})}
+        structuredData={[
+          productSchema(product),
+          breadcrumbSchema(productBreadcrumbs)
+        ]}
+      />
     <main className="min-h-screen bg-background">
       <div className="container-premium py-8">
-        {/* Breadcrumb */}
-        {/* <nav className="mb-8 text-sm text-muted-foreground">
-          <span>Home</span> / <span>Categories</span> / <span className="text-foreground">{product?.name}</span>
-        </nav> */}
+        <div className="mb-8">
+          <Breadcrumbs items={productBreadcrumbs} />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Product Images & Videos */}
@@ -579,7 +610,11 @@ export default function ProductDetail() {
               {selectedMediaType === 'image' ? (
                 <img
                   src={product?.images[selectedImage]?.url}
-                  alt={product?.name}
+                  alt={product?.images[selectedImage]?.alt || product.seo?.imageAlt || `${product.name} product image`}
+                  width={900}
+                  height={900}
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-contain cursor-zoom-in transition-transform duration-100 ease-out"
                   style={{
                     transformOrigin: `${zoomStyle.x}% ${zoomStyle.y}%`,
@@ -1672,10 +1707,10 @@ export default function ProductDetail() {
       <ImageZoomModal
         isOpen={isZoomModalOpen}
         onClose={() => setIsZoomModalOpen(false)}
-        images={product?.images.map(image => ({ url: image.url, alt: image.alt || product?.name || 'Product image' })) || []}
+        images={product?.images.map(image => ({ url: image.url, alt: image.alt || product?.seo?.imageAlt || product?.name || 'Product image' })) || []}
         initialIndex={selectedImage}
       />
     </main>
+    </>
   );
 }
-

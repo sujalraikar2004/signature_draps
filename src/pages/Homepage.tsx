@@ -6,6 +6,8 @@ import { HeroSlider } from '@/components/ui/HeroSlider';
 import { PremiumFeatures } from '@/components/home/PremiumFeatures';
 import { ProductCardSkeleton } from '@/components/ui/skeletons/ProductCardSkeleton';
 import { useProducts } from '@/contexts/ProductContext';
+import { SEO } from '@/components/seo/SEO';
+import { DEFAULT_DESCRIPTION, organizationSchema, websiteSchema } from '@/lib/seo';
 
 import slide1 from '@/assets/slider/slide-1.jpg';
 import slide2 from '@/assets/slider/slide-2.jpg';
@@ -117,6 +119,13 @@ const Homepage = () => {
   ];
 
   return (
+    <>
+    <SEO
+      title="Signature Drapes - Premium Interior Solutions"
+      description={DEFAULT_DESCRIPTION}
+      canonicalPath="/"
+      structuredData={[organizationSchema(), websiteSchema()]}
+    />
     <main className="min-h-screen ">
       {/* HERO */}
       <HeroSlider slides={sliderData} />
@@ -265,6 +274,7 @@ const Homepage = () => {
         </Link>
       </div>
     </main>
+    </>
   );
 };
 

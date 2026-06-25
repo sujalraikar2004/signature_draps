@@ -1,5 +1,37 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/(login|register|cart|checkout|account|profile|wishlist|orders|my-orders|payment|search)(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/robots.txt",
+      "destination": "https://signature-drapes-backend.vercel.app/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://signature-drapes-backend.vercel.app/sitemap.xml"
+    },
+    {
+      "source": "/sitemap-static.xml",
+      "destination": "https://signature-drapes-backend.vercel.app/sitemap-static.xml"
+    },
+    {
+      "source": "/sitemap-products-:page.xml",
+      "destination": "https://signature-drapes-backend.vercel.app/sitemap-products-:page.xml"
+    },
     { 
       "source": "/api/v1/:path*", 
       "destination": "https://signature-drapes-backend.vercel.app/api/v1/:path*" 

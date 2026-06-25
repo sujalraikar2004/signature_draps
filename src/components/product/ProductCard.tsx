@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
+import { productPath } from '@/lib/seo';
 
 interface ProductCardProps {
   product: Product;
@@ -62,15 +63,20 @@ export function ProductCard({ product, className = '', addToCartLabel }: Product
 
   const isInStock = product.inStock && product.stockQuantity > 0;
   const primaryImage = product.images[0];
+  const productUrl = productPath(product);
 
   return (
     <div className={`card-product group relative bg-transparent hover:shadow-lg md:transition-all md:duration-300 border-r border-b border-gray-100/50 md:border-none ${className}`}>
-      <Link to={`/product/${product._id}`} className="block relative">
+      <Link to={productUrl} className="block relative">
         {/* Image Container - Adjusted Aspect Ratio */}
         <div className="relative aspect-[6/7] overflow-hidden bg-gray-100">
           <img
             src={primaryImage.url}
-            alt={product.name}
+            alt={primaryImage.alt || product.seo?.imageAlt || `${product.name} product image`}
+            width={600}
+            height={700}
+            loading="lazy"
+            decoding="async"
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
           />
 

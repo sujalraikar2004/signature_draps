@@ -2,6 +2,17 @@ export interface Product {
   _id: string;
   name: string;
   productCode: string;
+  slug?: string;
+  previousSlugs?: string[];
+  redirectToSlug?: string | null;
+  seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    canonicalUrl?: string;
+    imageAlt?: string;
+    noIndex?: boolean;
+  };
   price: number;
   originalPrice?: number;
   discount?: number;
@@ -15,6 +26,8 @@ export interface Product {
   features: string[];
   inStock: boolean;
   stockQuantity: number;
+  searchKeywords?: string[];
+  tags?: string[];
   featured?: boolean;
   brand?: string;
   isLiked?: boolean;
