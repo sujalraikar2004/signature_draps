@@ -222,6 +222,54 @@ export const categorySeoContent: Record<string, CategorySeoContent> = {
       { label: "PVC Flooring", path: "/category/pvc-flooring" }
     ]
   },
+  "institutional-project-window-blinds": {
+    key: "institutional-project-window-blinds",
+    h1: "Institutional Project Window Blinds for Offices, Schools, Hospitals, and Commercial Spaces",
+    intro: [
+      "Institutional project window blinds are planned for spaces where durability, privacy, light control, maintenance, and consistent appearance matter across many rooms or windows. Signature Drapes supports office blinds, hospital blinds, school blinds, cabins, reception areas, training rooms, clinics, conference rooms, and commercial buildings where the window treatment must look professional and perform reliably every day.",
+      "Unlike a single home window purchase, institutional blind projects need proper measurement, product standardization, installation planning, and coordination with site conditions. The right blind should reduce glare, help control daylight, support privacy, withstand frequent use, and match the visual identity of the space. This category is built for customers who need practical project-ready window solutions rather than decorative products alone."
+    ],
+    benefits: [
+      "Creates a uniform professional look across offices, schools, hospitals, clinics, and institutions.",
+      "Helps control glare on screens, whiteboards, reception counters, and workstations.",
+      "Supports privacy in cabins, consultation rooms, meeting rooms, and administrative areas.",
+      "Allows project-level planning for multiple windows, floors, rooms, and installation phases."
+    ],
+    buyingGuide: [
+      "Start by listing the rooms, window sizes, wall conditions, sunlight direction, privacy needs, and daily usage. Office cabins may need a premium finish, while classrooms and hospital spaces often need practical, easy-clean options with dependable operation.",
+      "For screen-heavy offices, glare control is usually the top priority. Roller blinds and zebra blinds can work well depending on how much daylight should remain. For schools and institutions, durable and easy-maintenance blinds are often more important than decorative detail.",
+      "In hospital, clinic, and consultation environments, privacy and cleanability should be considered carefully. Avoid selecting a product only by color; check operation, fabric behavior, maintenance requirements, and whether multiple users will handle the blind daily.",
+      "For larger projects, ask for measurement support and a consistent specification. This helps avoid mismatched materials, uneven mounting heights, different control sides, and product variations between rooms."
+    ],
+    applications: [
+      "Office cabins, open work areas, conference rooms, meeting rooms, reception areas, hospitals, clinics, schools, classrooms, staff rooms, training centers, hotels, and institutional buildings.",
+      "Useful for privacy, glare reduction, daylight management, workstation comfort, project uniformity, and professional interior finishing."
+    ],
+    customization: "Institutional blinds can be selected by fabric type, opacity, width, height, color, operating side, mounting style, and room purpose. Larger projects can use standardized specifications so every room has a consistent look and easier future maintenance.",
+    installation: "Project installation should begin with accurate site measurement and window grouping. Check wall strength, ceiling height, window handles, grills, partitions, AC units, and electrical points before finalizing. A level installation line and consistent control placement make institutional blinds easier to operate and maintain.",
+    faqs: [
+      {
+        question: "Which blinds are best for offices?",
+        answer: "Roller blinds and zebra blinds are commonly used for offices because they control glare, look clean, and suit cabins, meeting rooms, and workstation areas. The best option depends on privacy and daylight needs."
+      },
+      {
+        question: "Can Signature Drapes handle multiple windows for a project?",
+        answer: "Yes. Institutional blind work can be planned by room, floor, window size, product type, and installation phase so the final result looks consistent across the project."
+      },
+      {
+        question: "Are institutional blinds suitable for schools and hospitals?",
+        answer: "Yes. Schools, hospitals, clinics, and training spaces can use blinds for daylight control, privacy, and easier maintenance. Product choice should consider cleaning and daily handling."
+      }
+    ],
+    relatedLinks: [
+      { label: "Office Blinds", path: "/category/institutional-project-window-blinds?subcategory=office-blinds" },
+      { label: "School Blinds", path: "/category/institutional-project-window-blinds?subcategory=school-blinds" },
+      { label: "Hospital Blinds", path: "/category/institutional-project-window-blinds?subcategory=hospital-blinds" },
+      { label: "Roller Blinds", path: "/category/window-blinds?subcategory=roller-blinds" },
+      { label: "Zebra Blinds", path: "/category/window-blinds?subcategory=zebra-blinds" },
+      { label: "PVC Blinds", path: "/category/pvc-wooden-window-blinds?subcategory=pvc-blinds" }
+    ]
+  },
   wallpaper: {
     key: "wallpaper",
     h1: "Wallpapers and Wall Coverings for Feature Walls and Interior Makeovers",

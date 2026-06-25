@@ -58,12 +58,13 @@ export function Footer() {
             <div className="space-y-4">
               <h4 className="font-heading font-semibold text-lg">Categories</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/category/curtains-furnishing" className="text-primary-foreground/80 hover:text-accent transition-colors">Curtains & Furnishing</Link></li>
-                <li><Link to="/category/blinds" className="text-primary-foreground/80 hover:text-accent transition-colors">Blinds</Link></li>
-                <li><Link to="/category/wallpaper" className="text-primary-foreground/80 hover:text-accent transition-colors">Wallpaper</Link></li>
-                <li><Link to="/category/bean-bags" className="text-primary-foreground/80 hover:text-accent transition-colors">Bean Bags</Link></li>
-                <li><Link to="/category/carpets-rugs" className="text-primary-foreground/80 hover:text-accent transition-colors">Carpets & Rugs</Link></li>
-                <li><Link to="/category/flooring-mats" className="text-primary-foreground/80 hover:text-accent transition-colors">Flooring & Mats</Link></li>
+                <li><Link to="/category/curtains-and-accessories" className="text-primary-foreground/80 hover:text-accent transition-colors">Curtains & Accessories</Link></li>
+                <li><Link to="/category/window-blinds" className="text-primary-foreground/80 hover:text-accent transition-colors">Window Blinds</Link></li>
+                <li><Link to="/category/institutional-project-window-blinds" className="text-primary-foreground/80 hover:text-accent transition-colors">Institutional Blinds</Link></li>
+                <li><Link to="/category/home-decor-wallpaper-stickers" className="text-primary-foreground/80 hover:text-accent transition-colors">Wallpaper & Wall Decor</Link></li>
+                <li><Link to="/category/bean-bags-and-beans" className="text-primary-foreground/80 hover:text-accent transition-colors">Bean Bags</Link></li>
+                <li><Link to="/category/carpet-rugs-door-mats" className="text-primary-foreground/80 hover:text-accent transition-colors">Carpets, Rugs & Door Mats</Link></li>
+                <li><Link to="/category/pvc-flooring" className="text-primary-foreground/80 hover:text-accent transition-colors">PVC Flooring</Link></li>
               </ul>
             </div>
 
