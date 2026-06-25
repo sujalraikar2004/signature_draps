@@ -327,9 +327,17 @@ const ProductListing = () => {
     ? `Shop premium ${currentCategory.name.toLowerCase()} from Signature Drapes. Explore quality designs for homes, offices, and commercial interiors.`
     : DEFAULT_DESCRIPTION);
   const canonicalPath = categoryId ? categoryPath(categoryId, subcategoryParam || undefined) : '/products';
+  const isCleanCategoryLanding = Boolean(
+    isCategoryRoute &&
+    !searchQuery &&
+    !hasActiveFilters &&
+    currentPage === 1 &&
+    !isBestSellerParam &&
+    !isNewParam
+  );
   const shouldNoindex = Boolean(
     isInvalidListing ||
-    isEmptyValidCategory ||
+    (isEmptyValidCategory && !(categoryContent && isCleanCategoryLanding)) ||
     searchQuery ||
     hasActiveFilters ||
     currentPage > 1 ||
