@@ -46,7 +46,8 @@ export const getProductSlug = (product: Partial<Product>) =>
   product.slug || slugify(product.name || product.productCode || product._id || "");
 
 export const productPath = (product: Partial<Product>) => {
-  return `/product/${product.slug || product._id}`;
+  const identifier = product.productCode || product.slug || product._id || "";
+  return `/product/${encodeURIComponent(identifier)}`;
 };
 
 export const categoryPath = (categoryId?: string, subcategoryId?: string) => {
