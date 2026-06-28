@@ -147,6 +147,7 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const reviewProductId = product?._id || productId;
 
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({ x: 0, y: 0 });
@@ -208,17 +209,17 @@ export default function ProductDetail() {
 
   // Fetch reviews for the product
   useEffect(() => {
-    if (!productId) return;
+    if (!reviewProductId) return;
     const fetchReviews = async () => {
       setReviewsLoading(true);
       setReviewsError(null);
       try {
-        const list = await getProductReviews(productId, 1, 'newest');
+        const list = await getProductReviews(reviewProductId, 1, 'newest');
         setReviews(list);
 
         // Check if current user has already reviewed this product
         if (user) {
-          const existingReview = await getUserReview(productId);
+          const existingReview = await getUserReview(reviewProductId);
           if (existingReview) {
             setUserExistingReview(existingReview);
             setNewReview({
@@ -235,7 +236,7 @@ export default function ProductDetail() {
       }
     };
     fetchReviews();
-  }, [productId, getProductReviews, getUserReview, user]);
+  }, [reviewProductId, getProductReviews, getUserReview, user]);
 
   const relatedProducts = (products || [])
     .filter(p => p.category === product?.category && p._id !== product?._id);
@@ -435,11 +436,11 @@ export default function ProductDetail() {
       return;
     }
     try {
-      if (!productId) return;
+      if (!reviewProductId) return;
 
       if (isEditingReview && userExistingReview) {
         // Update existing review
-        await updateReview(productId, userExistingReview._id, {
+        await updateReview(reviewProductId, userExistingReview._id, {
           rating: newReview.rating,
           title: newReview.title,
           comment: newReview.comment,
@@ -448,7 +449,7 @@ export default function ProductDetail() {
         setIsEditingReview(false);
       } else {
         // Try to add new review
-        await addReview(productId, {
+        await addReview(reviewProductId, {
           rating: newReview.rating,
           title: newReview.title,
           comment: newReview.comment,
@@ -457,13 +458,13 @@ export default function ProductDetail() {
       }
 
       // Refresh reviews and product rating/count
-      const list = await getProductReviews(productId, 1, 'newest');
+      const list = await getProductReviews(reviewProductId, 1, 'newest');
       setReviews(list);
-      const updated = await getProductById(productId);
+      const updated = await getProductById(reviewProductId);
       if (updated) setProduct(updated);
 
       // Refresh user's review status
-      const existingReview = await getUserReview(productId);
+      const existingReview = await getUserReview(reviewProductId);
       setUserExistingReview(existingReview);
     } catch (err: any) {
       if (err?.isExistingReview) {
@@ -510,8 +511,8 @@ export default function ProductDetail() {
         toast.error('Please login to vote');
         return;
       }
-      if (!productId) return;
-      await markReviewHelpful(productId, reviewId);
+      if (!reviewProductId) return;
+      await markReviewHelpful(reviewProductId, reviewId);
       // Optimistically update helpful count locally
       setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, helpful: (r.helpful || 0) + 1 } as Review : r));
     } catch (err: any) {
